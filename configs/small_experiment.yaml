@@ -1,2 +1,3 @@
-# Small experiment configuration; populate as the implementation develops.
-{}
+# Model choices for the small on-policy distillation experiment.
+student_model_id: Qwen/Qwen3-0.6B-Base
+teacher_model_id: Qwen/Qwen3-32B
