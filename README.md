@@ -5,12 +5,11 @@ A step-by-step reproduction of [Generalized Knowledge Distillation (GKD)](https:
 The student is `Qwen/Qwen3-0.6B-Base`; the teacher is `Qwen/Qwen3-32B`.
 The notebook generates a student trajectory, checks token compatibility,
 scores the same response with a frozen teacher, and measures reverse KL at
-the student-generated response positions. Saved outputs show Parts 1–6
-passing on an A100 80GB: 36 prompt tokens, 128 response tokens, matching
-student and teacher scoring shapes, and a mean reverse KL of about 0.1592
-nats for the sampled response. All 310 student parameter tensors received
-finite, nonzero gradients while the teacher received none. Part 7 adds an
-unrun, guarded one-step student update.
+the student-generated response positions. Saved A100 80GB outputs show all
+seven mechanics checkpoints passing: token alignment, matching tokenizer
+meanings, teacher scoring, student-only gradients, and one student update.
+The update increased mean reverse KL from about 0.1592 to 3.9137 nats on
+the saved response. This verifies the mechanics, not a quality improvement.
 
 ## Structure
 
