@@ -1,0 +1,19 @@
+{
+  "verified_at_utc": "2026-10-27T19:22:17.879862+00:00",
+  "model_revision": "da87bfb608c14b7cf20ba1ce41287e8de496c0cd",
+  "dataset_revision": "740312add88f781978c0658806c59bc2815b9866",
+  "prompt_tokenizations_checked": 32,
+  "response_decodes_checked": 32,
+  "reference_answers_checked": 32,
+  "dataset_test_rows": 1319,
+  "selection_reproduced": true,
+  "model_weights_loaded": false,
+  "fresh_inference": false,
+  "packages": {
+    "transformers": "4.57.6",
+    "datasets": "4.8.5",
+    "huggingface_hub": "0.36.2",
+    "tokenizers": "0.22.2"
+  },
+  "verification_script_sha256": "f242975ae82d236cff31fe2f2183c6708c2affff31517fb0c8abe44d3f264487"
+}

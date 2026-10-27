@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="767.7pt" height="213.984pt" viewBox="0 0 767.7 213.984" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 213.984
+L 767.7 213.984
+L 767.7 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 31.3056 104.596992
+L 171.4194 104.596992
+Q 182.7189 104.596992 182.7189 101.603232
+L 182.7189 60.488928
+Q 182.7189 57.495168 171.4194 57.495168
+L 31.3056 57.495168
+Q 20.0061 57.495168 20.0061 60.488928
+L 20.0061 101.603232
+Q 20.0061 104.596992 31.3056 104.596992
+z
+" clip-path="url(#p349c3feb1b)" style="fill: #f8fafc; stroke: #0f766e; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 31.3056 178.443072
+L 171.4194 178.443072
+Q 182.7189 178.443072 182.7189 175.449312
+L 182.7189 134.335008
+Q 182.7189 131.341248 171.4194 131.341248
+L 31.3056 131.341248
+Q 20.0061 131.341248 20.0061 134.335008
+L 20.0061 175.449312
+Q 20.0061 178.443072 31.3056 178.443072
+z
+" clip-path="url(#p349c3feb1b)" style="fill: #f8fafc; stroke: #2563eb; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 245.9961 142.517952
+L 378.5769 142.517952
+Q 389.8764 142.517952 389.8764 139.524192
+L 389.8764 96.414048
+Q 389.8764 93.420288 378.5769 93.420288
+L 245.9961 93.420288
+Q 234.6966 93.420288 234.6966 96.414048
+L 234.6966 139.524192
+Q 234.6966 142.517952 245.9961 142.517952
+z
+" clip-path="url(#p349c3feb1b)" style="fill: #f8fafc; stroke: #14253d; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 441.8541 142.517952
+L 566.9019 142.517952
+Q 578.2014 142.517952 578.2014 139.524192
+L 578.2014 96.414048
+Q 578.2014 93.420288 566.9019 93.420288
+L 441.8541 93.420288
+Q 430.5546 93.420288 430.5546 96.414048
+L 430.5546 139.524192
+Q 430.5546 142.517952 441.8541 142.517952
+z
+" clip-path="url(#p349c3feb1b)" style="fill: #f8fafc; stroke: #7c3aed; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 630.1791 142.517952
+L 732.6279 142.517952
+Q 743.9274 142.517952 743.9274 139.524192
+L 743.9274 96.414048
+Q 743.9274 93.420288 732.6279 93.420288
+L 630.1791 93.420288
+Q 618.8796 93.420288 618.8796 96.414048
+L 618.8796 139.524192
+Q 618.8796 142.517952 630.1791 142.517952
+z
+" clip-path="url(#p349c3feb1b)" style="fill: #f8fafc; stroke: #0f766e; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #14253d" x="22.266" y="21.17088" transform="rotate(-0 22.266 21.17088)">One protocol, two execution modes</text>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0f766e" x="101.3625" y="71.73946" transform="rotate(-0 101.3625 71.73946)">Replay (default)</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(38.573438 86.238267)">Versioned A100 responses</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(41.989727 99.973931)">CPU, no model download</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="101.3625" y="145.58554" transform="rotate(-0 101.3625 145.58554)">Generate (optional)</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(51.25 160.084347)">Fresh pinned student</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(46.119258 173.384347)">CUDA runtime required</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #14253d" x="312.2865" y="108.103664" transform="rotate(-0 312.2865 108.103664)">Validate records</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(255.751852 123.580433)">Checksums, prompt IDs</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(258.310914 136.880433)">Lengths and stop flags</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7c3aed" x="504.378" y="108.103664" transform="rotate(-0 504.378 108.103664)">Two checkers</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(474.396594 124.500746)">Strict format</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(467.925461 136.880433)">Prose, post-hoc</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0f766e" x="681.4035" y="108.103664" transform="rotate(-0 681.4035 108.103664)">Evidence report</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(643.455453 123.580433)">All 32 questions</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(636.82475 136.880433)">Tables, figures, ZIP</text>
+   </g>
+   <g id="patch_7">
+    <path d="M 181.222001 83.163858
+Q 208.708165 96.015074 234.77641 108.203339
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 231.722354 104.346819
+L 234.77641 108.203339
+L 229.85876 108.332671
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 181.276715 152.891691
+Q 208.708578 140.920919 234.705839 129.576181
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 229.793184 129.319626
+L 234.705839 129.576181
+L 231.553002 133.352372
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 388.848245 117.96912
+Q 410.213489 117.96912 430.013486 117.96912
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 425.613486 115.76912
+L 430.013486 117.96912
+L 425.613486 120.16912
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 577.173245 117.96912
+Q 598.538489 117.96912 618.338486 117.96912
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 613.938486 115.76912
+L 618.338486 117.96912
+L 613.938486 120.16912
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #64748b" x="383.85" y="198.80064" transform="rotate(-0 383.85 198.80064)">No teacher, optimizer, or weight update. The reference is used only after answer extraction.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p349c3feb1b">
+   <rect x="7.2" y="7.2" width="753.3" height="199.584"/>
+  </clipPath>
+ </defs>
+</svg>

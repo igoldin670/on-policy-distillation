@@ -1,0 +1,4 @@
+# Preserve the exact evidence bytes, including original line endings.
+notebooks/assets/02_baseline_evaluation/recorded_run/* -text
+# The CSV embeds verbatim response text, including intentional whitespace.
+notebooks/assets/02_baseline_evaluation/recorded_run/results.csv -diff

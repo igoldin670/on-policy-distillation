@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="767.7pt" height="264.323344pt" viewBox="0 0 767.7 264.323344" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 264.323344
+L 767.7 264.323344
+L 767.7 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 31.3056 164.316784
+L 163.8864 164.316784
+Q 175.1859 164.316784 175.1859 160.574584
+L 175.1859 106.686904
+Q 175.1859 102.944704 163.8864 102.944704
+L 31.3056 102.944704
+Q 20.0061 102.944704 20.0061 106.686904
+L 20.0061 160.574584
+Q 20.0061 164.316784 31.3056 164.316784
+z
+" clip-path="url(#pe239eb033d)" style="fill: #f8fafc; stroke: #2563eb; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 223.3971 164.316784
+L 348.4449 164.316784
+Q 359.7444 164.316784 359.7444 160.574584
+L 359.7444 106.686904
+Q 359.7444 102.944704 348.4449 102.944704
+L 223.3971 102.944704
+Q 212.0976 102.944704 212.0976 106.686904
+L 212.0976 160.574584
+Q 212.0976 164.316784 223.3971 164.316784
+z
+" clip-path="url(#pe239eb033d)" style="fill: #f8fafc; stroke: #0f766e; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 411.7221 104.441584
+L 551.8359 104.441584
+Q 563.1354 104.441584 563.1354 100.699384
+L 563.1354 56.790904
+Q 563.1354 53.048704 551.8359 53.048704
+L 411.7221 53.048704
+Q 400.4226 53.048704 400.4226 56.790904
+L 400.4226 100.699384
+Q 400.4226 104.441584 411.7221 104.441584
+z
+" clip-path="url(#pe239eb033d)" style="fill: #f8fafc; stroke: #7c3aed; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 411.7221 209.223184
+L 551.8359 209.223184
+Q 563.1354 209.223184 563.1354 205.480984
+L 563.1354 161.572504
+Q 563.1354 157.830304 551.8359 157.830304
+L 411.7221 157.830304
+Q 400.4226 157.830304 400.4226 161.572504
+L 400.4226 205.480984
+Q 400.4226 209.223184 411.7221 209.223184
+z
+" clip-path="url(#pe239eb033d)" style="fill: #f8fafc; stroke: #2563eb; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 615.1131 164.316784
+L 732.6279 164.316784
+Q 743.9274 164.316784 743.9274 160.574584
+L 743.9274 106.686904
+Q 743.9274 102.944704 732.6279 102.944704
+L 615.1131 102.944704
+Q 603.8136 102.944704 603.8136 106.686904
+L 603.8136 160.574584
+Q 603.8136 164.316784 615.1131 164.316784
+z
+" clip-path="url(#pe239eb033d)" style="fill: #f8fafc; stroke: #14253d; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 673.8705 162.320944
+L 673.8705 237.164944
+L 97.596 237.164944
+L 97.596 197.248144
+" clip-path="url(#pe239eb033d)" style="fill: none; stroke-dasharray: 4.81,2.08; stroke-dashoffset: 0; stroke: #2563eb; stroke-width: 1.3"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #14253d" x="22.266" y="20.117344" transform="rotate(-0 22.266 20.117344)">Research context: learn on the student's own prefixes</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #64748b" x="22.266" y="40.075744" transform="rotate(-0 22.266 40.075744)">Conceptual training loop. Notebook 02 measures the original student; it does not run this loop.</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="97.596" y="120.551986" transform="rotate(-0 97.596 120.551986)">Student samples</text>
+   </g>
+   <g id="text_4">
+    <!-- $y \sim p_S(\cdot\mid x)$ -->
+    <g style="fill: #14253d" transform="translate(71.4235 141.690628)">
+     <text>
+      <tspan x="0" y="-0.671875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">y</tspan>
+      <tspan x="17.283691" y="-0.671875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">p</tspan>
+      <tspan x="42.972656" y="-0.671875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">x</tspan>
+      <tspan x="7.4729" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">∼</tspan>
+      <tspan x="27.794922" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">(</tspan>
+      <tspan x="31.501221" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">⋅</tspan>
+      <tspan x="36.371826" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">∣</tspan>
+      <tspan x="48.594727" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">)</tspan>
+      <tspan x="23.313965" y="0.75312" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">S</tspan>
+     </text>
+    </g>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(52.271352 154.805823)">Exact response IDs</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0f766e" x="285.921" y="120.551986" transform="rotate(-0 285.921 120.551986)">Shared prefixes</text>
+   </g>
+   <g id="text_6">
+    <!-- $x, y_{&lt;t}$ -->
+    <g style="fill: #14253d" transform="translate(272.336 140.645628)">
+     <text>
+      <tspan x="0" y="-0.796875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">x</tspan>
+      <tspan x="10.492676" y="-0.796875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">y</tspan>
+      <tspan x="5.62207" y="-0.796875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">,</tspan>
+      <tspan x="17.410327" y="0.62812" style="font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">&lt;</tspan>
+      <tspan x="24.277881" y="0.62812" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">t</tspan>
+     </text>
+    </g>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(232.852367 154.952034)">Same token meanings</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7c3aed" x="481.779" y="68.460562" transform="rotate(-0 481.779 68.460562)">Frozen teacher</text>
+   </g>
+   <g id="text_8">
+    <!-- $p_T(\cdot\mid x,y_{&lt;t})$ -->
+    <g style="fill: #14253d" transform="translate(453.564 84.709396)">
+     <text>
+      <tspan x="0" y="-0.671875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">p</tspan>
+      <tspan x="25.529858" y="-0.671875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">x</tspan>
+      <tspan x="36.022534" y="-0.671875" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">y</tspan>
+      <tspan x="6.030273" y="0.75312" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">T</tspan>
+      <tspan x="49.807739" y="0.75312" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">t</tspan>
+      <tspan x="10.352124" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">(</tspan>
+      <tspan x="14.058423" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">⋅</tspan>
+      <tspan x="18.929028" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">∣</tspan>
+      <tspan x="31.151929" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">,</tspan>
+      <tspan x="52.674902" y="-0.671875" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">)</tspan>
+      <tspan x="42.940186" y="0.75312" style="font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">&lt;</tspan>
+     </text>
+    </g>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(431.622711 97.970802)">No teacher gradients</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="481.779" y="173.242162" transform="rotate(-0 481.779 173.242162)">Student scores</text>
+   </g>
+   <g id="text_10">
+    <!-- $p_S^\theta(\cdot\mid x,y_{&lt;t})$ -->
+    <g style="fill: #14253d" transform="translate(453.3265 189.870996)">
+     <text>
+      <tspan x="0" y="-0.659375" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">p</tspan>
+      <tspan x="25.97923" y="-0.659375" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">x</tspan>
+      <tspan x="36.471906" y="-0.659375" style="font-style: oblique; font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">y</tspan>
+      <tspan x="6.030273" y="2.492188" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">S</tspan>
+      <tspan x="6.473151" y="-4.892188" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">θ</tspan>
+      <tspan x="50.257111" y="0.76562" style="font-style: oblique; font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">t</tspan>
+      <tspan x="10.801496" y="-0.659375" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">(</tspan>
+      <tspan x="14.507795" y="-0.659375" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">⋅</tspan>
+      <tspan x="19.3784" y="-0.659375" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">∣</tspan>
+      <tspan x="31.6013" y="-0.659375" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">,</tspan>
+      <tspan x="53.124274" y="-0.659375" style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d">)</tspan>
+      <tspan x="43.389557" y="0.76562" style="font-size: 6.65px; font-family: 'DejaVu Sans'; fill: #14253d">&lt;</tspan>
+     </text>
+    </g>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(439.086891 202.752402)">Student gradients</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #14253d" x="673.8705" y="120.551986" transform="rotate(-0 673.8705 120.551986)">Divergence</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(637.978313 141.652034)">Full vocabulary</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(628.257883 154.952034)">Response positions</text>
+   </g>
+   <g id="patch_7">
+    <path d="M 174.159354 133.630744
+Q 193.6421 133.630744 211.559599 133.630744
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 207.159599 131.430744
+L 211.559599 133.630744
+L 207.159599 135.830744
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 357.435304 124.052167
+Q 380.082898 103.693685 401.566431 84.381606
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 396.823438 85.686984
+L 401.566431 84.381606
+L 399.764938 88.959228
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 357.52542 143.110192
+Q 380.083598 162.321027 401.450101 180.517017
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 399.52663 175.989296
+L 401.450101 180.517017
+L 396.673841 179.339161
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 561.006537 83.127337
+Q 583.475474 101.199127 604.724721 118.289919
+" style="fill: none; stroke: #7c3aed; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 602.674924 113.81797
+L 604.724721 118.289919
+L 599.917283 117.246587
+z
+" style="fill: #7c3aed; stroke: #7c3aed; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 561.18677 181.880243
+Q 583.474784 166.062943 604.486327 151.151525
+" style="fill: none; stroke: #2563eb; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 599.624852 151.903896
+L 604.486327 151.151525
+L 602.171339 155.492127
+z
+" style="fill: #2563eb; stroke: #2563eb; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 97.596 192.246971
+Q 97.596 179.78449 97.596 168.887257
+" style="fill: none; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #2563eb; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 95.396 173.287257
+L 97.596 168.887257
+L 99.796 173.287257
+z
+" style="fill: #2563eb; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #2563eb; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="376.317" y="253.381144" transform="rotate(-0 376.317 253.381144)">Update student only, then sample fresh responses for the next iteration</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pe239eb033d">
+   <rect x="7.2" y="7.643344" width="753.3" height="249.48"/>
+  </clipPath>
+ </defs>
+</svg>
