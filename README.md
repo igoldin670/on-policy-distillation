@@ -14,7 +14,7 @@ the saved response. This verifies the mechanics, not a quality improvement.
 ## Structure
 
 - `notebooks/01_reverse_kl_demo.ipynb`: generate a student response, score it with the student, check teacher token compatibility, score it with a frozen teacher, measure reverse KL, verify student-only gradient flow, and test one guarded optimizer step.
-- `notebooks/02_baseline_evaluation.ipynb`: evaluate the baseline model.
+- `notebooks/02_baseline_evaluation.ipynb`: evaluate a fresh student on 32 fixed GSM8K test questions, inspect accuracy and answer-format failures, and download reproducible results.
 - `notebooks/03_sft_cold_start.ipynb`: prepare a supervised fine-tuning cold start.
 - `notebooks/04_on_policy_distillation.ipynb`: run on-policy distillation.
 - `src/`: shared data, generation, log-probability, loss, evaluation, and utility code.
@@ -22,7 +22,103 @@ the saved response. This verifies the mechanics, not a quality improvement.
 - `results/`: experiment outputs.
 
 The first notebook covers student trajectory generation, student token log
-probabilities, teacher compatibility, frozen teacher scoring, a read-only
-reverse-KL calculation, a gradient-flow checkpoint, and a single-update
-checkpoint. The other notebooks and source modules are scaffolds for later
-steps.
+probabilities, teacher compatibility, frozen teacher scoring, reverse KL,
+student-only gradients, and a single guarded update. Notebook 02 turns the
+recorded A100 baseline into a reproducible experiment with versioned evidence,
+two explicit scoring contracts, mathematical context, and data-backed figures.
+Notebooks 03 and 04 remain scaffolds for later steps.
+
+## Run the baseline
+
+Open [Notebook 02](notebooks/02_baseline_evaluation.ipynb) and run from top to
+bottom. It currently defaults to **generate** mode for Colab GPU inference;
+set `MODE = "replay"` to analyze the checksummed recorded run on CPU without
+model weights or a live dataset download. The saved outputs show the author's
+completed Colab generation run. The local validator always selects replay and
+preserves those GPU outputs in the source notebook.
+
+For an isolated local environment (validated on Linux with Python 3.14;
+the pinned analysis packages require Python 3.12+):
+
+```bash
+uv venv
+uv pip install -r requirements-notebook.txt
+.venv/bin/python scripts/validate_notebook02.py
+```
+
+The validator starts a clean kernel, executes all cells sequentially,
+rejects errors or unexpected stderr, and writes a separate executed replay
+notebook and HTML preview under `results/notebook02_qa/`. It does not overwrite
+the source notebook unless `--update-notebook` is explicitly requested. Select
+the installed environment in Jupyter or VS Code for interactive use. In Colab, the first cell finds or clones the
+public project without Google Drive and installs the analysis libraries,
+including a compatible bottleneck version for pandas. In generate mode it also
+installs the pinned Hugging Face helpers before model imports. If dependencies
+change, restart the Colab kernel when prompted, then run from the top.
+
+For fresh inference, use an A100 or L4 Colab runtime and set `MODE` to
+`"generate"`. The optional path loads only the original 0.6B student,
+reuses the pinned questions and decoding settings, and writes a new run.
+`requirements-generation.txt` preserves the runtime's working PyTorch/CUDA
+stack. The teacher and notebook 01's updated student are never reused.
+
+The evaluation uses a reproducible 32-question sample from the
+[GSM8K test split](https://huggingface.co/datasets/openai/gsm8k). The student
+must end each response with `#### <number>`. Accuracy includes every
+question; missing or malformed final answers count as incorrect. Format
+success and token-limit stops are reported separately. This is a small,
+custom baseline, not an official benchmark score.
+
+The immutable run is stored under
+`notebooks/assets/02_baseline_evaluation/recorded_run/`; derived reports
+are written under ignored `results/` folders. The archive records source
+fingerprints, both scores, exact checker source, code hashes, and separate
+recorded-inference and current-analysis environments. New analysis archives also
+include `raw_run/` with the exact source manifest, response text and token IDs,
+results, summary, and checksums. Download the archive and save
+the executed notebook before disconnecting from Colab. Keep the selected
+test questions out of later training and tuning.
+
+## Rescore saved answers without a GPU
+
+Notebook 02 adds a conservative checker for explicit answers
+such as `Final answer: 21` and clear concluding sentences. It reads the
+response without seeing the reference answer, records its evidence, and
+rejects unclear answers and token-limit stops. Numeric agreement does not
+certify the reasoning or units. The original strict score stays unchanged.
+
+The original strict score is **0/32**. The exploratory prose score is
+**17/32 (53.125%)**, with 28 extracted answers, 11 parsed mismatches, and
+4 abstentions. The same recorded responses underlie both scores; this is
+not a training improvement or verified reasoning accuracy. The notebook
+includes a concrete example where a matching number has the wrong unit scope.
+
+The equivalent local command uses only Python's standard library:
+
+```bash
+python3 -m src.evaluation /path/to/downloaded/baseline --output-directory results/prose_review
+```
+
+The output directory must be new. It contains a separate JSON/CSV report
+and a sibling ZIP, with source fingerprints and checker version
+`clear_final_numeric_answer_v2`. Version 2 rejects contradictions between
+prose conclusions and a final strict marker; the recorded run's counts are
+unchanged from v1. The original baseline files are never
+overwritten. This metric is **exploratory** because the checker was designed
+after inspecting the first test run. Freeze its rules and use untouched
+examples for a stronger future comparison; do not tune the checker against
+the current test labels.
+
+Run the extraction and report-integrity tests with:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+The mathematical reference code, token-boundary guards, metric partitions,
+source-integrity checks, and report round trips have dedicated tests.
+Fresh CUDA generation must be validated separately on the connected GPU;
+a successful CPU replay is not evidence that a new model forward pass ran.
+See the [validation record](notebooks/assets/02_baseline_evaluation/VALIDATION.md)
+for the checks performed and the boundary between the saved user GPU run and
+local CPU validation.

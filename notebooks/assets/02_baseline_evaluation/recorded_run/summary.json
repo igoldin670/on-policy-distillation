@@ -1,0 +1,9 @@
+{
+  "number_of_examples": 32,
+  "number_correct": 0,
+  "accuracy": 0.0,
+  "number_parsed": 0,
+  "answer_parse_rate": 0.0,
+  "number_at_token_limit": 2,
+  "mean_response_tokens": 214.25
+}
