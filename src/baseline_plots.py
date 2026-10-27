@@ -203,7 +203,7 @@ def plot_evaluation_workflow(directory: Path) -> Path:
             0.52,
             0.20,
             0.22,
-            "Replay (default)",
+            "Replay (CPU)",
             "Versioned A100 responses\nCPU, no model download",
             TEAL,
         )
@@ -213,7 +213,7 @@ def plot_evaluation_workflow(directory: Path) -> Path:
             0.15,
             0.20,
             0.22,
-            "Generate (optional)",
+            "Generate (CUDA)",
             "Fresh pinned student\nCUDA runtime required",
             BLUE,
         )

@@ -107,13 +107,25 @@ class RecordedRunTests(unittest.TestCase):
             archive = export_analysis(root, run, execution_mode="replay")
             with zipfile.ZipFile(archive) as bundle:
                 self.assertIsNone(bundle.testzip())
-                self.assertEqual(len(bundle.namelist()), 6)
+                self.assertEqual(
+                    len([name for name in bundle.namelist() if not name.endswith("/")]),
+                    11,
+                )
                 metadata = json.loads(bundle.read("analysis_metadata.json"))
                 self.assertFalse(metadata["inference_performed_this_execution"])
                 self.assertEqual(metadata["execution_mode"], "replay")
                 self.assertEqual(
                     json.loads(bundle.read("rescore_summary.json")), run["scores"]
                 )
+                for name in (*run["artifact_sha256"], "SHA256SUMS.json"):
+                    self.assertEqual(
+                        bundle.read(f"raw_run/{name}"), (RECORDED / name).read_bytes()
+                    )
+                restored_directory = root / "restored"
+                bundle.extractall(restored_directory)
+                restored = verify_recorded_run(restored_directory / "raw_run")
+                self.assertEqual(restored["rows"], run["rows"])
+                self.assertEqual(restored["scores"], run["scores"])
         self.assertEqual(
             verify_recorded_run(RECORDED)["artifact_sha256"], hashes_before
         )

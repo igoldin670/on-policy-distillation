@@ -1,7 +1,7 @@
 """Notebook 02's replay validation, optional GPU generation, and analysis export.
 
-Importing this module never imports PyTorch or downloads a model. The default
-portfolio path replays a checksummed recorded experiment entirely on CPU.
+Importing this module never imports PyTorch or downloads a model. The CPU
+replay path analyzes a checksummed recorded experiment entirely on CPU.
 """
 
 from __future__ import annotations
@@ -141,6 +141,7 @@ def verify_recorded_run(directory: Path) -> dict:
         ):
             raise ValueError("CSV and JSONL contain different records.")
     return {
+        "directory": directory.resolve(),
         "manifest": manifest,
         "rows": rows,
         "original_summary": original_summary,
@@ -185,6 +186,7 @@ def analysis_environment() -> dict:
         "numpy",
         "pandas",
         "matplotlib",
+        "bottleneck",
         "nbformat",
         "nbclient",
         "nbconvert",
@@ -219,6 +221,7 @@ def export_analysis(project_root: Path, run: dict, *, execution_mode: str) -> Pa
         "recorded_inference_environment": run["manifest"]["environment"],
         "analysis_environment": analysis_environment(),
         "checker_version": PROSE_CHECKER_VERSION,
+        "raw_run_directory": "raw_run",
         "code_sha256": {
             name: sha256_file(root / "src" / name)
             for name in ["baseline.py", "evaluation.py", "baseline_plots.py"]
@@ -238,6 +241,18 @@ def export_analysis(project_root: Path, run: dict, *, execution_mode: str) -> Pa
     (destination / "analysis_metadata.json").write_text(
         json.dumps(metadata, indent=2) + "\n"
     )
+    # A Colab runtime is temporary. Include the exact raw inference evidence,
+    # especially token IDs and generation settings, in the downloaded report.
+    # Revalidate at export time so an edited source cannot enter the archive.
+    source_directory = Path(run["directory"])
+    checked_source = verify_recorded_run(source_directory)
+    if checked_source["artifact_sha256"] != run["artifact_sha256"]:
+        raise ValueError("Source artifacts changed after analysis; export rejected.")
+    raw_directory = destination / "raw_run"
+    raw_directory.mkdir()
+    for name in (*RUN_FILES, "SHA256SUMS.json"):
+        shutil.copyfile(source_directory / name, raw_directory / name)
+    verify_recorded_run(raw_directory)
     # Include the final metadata inside the downloadable archive too.
     shutil.make_archive(str(destination), "zip", root_dir=destination)
     return archive
@@ -282,11 +297,13 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
     seed = policy["selection_seed"]
     random.seed(seed)
     torch.manual_seed(seed)
+    print("Loading the pinned GSM8K dataset...", flush=True)
     dataset = load_dataset(
         policy["dataset_id"],
         policy["dataset_config"],
         split=policy["dataset_split"],
         revision=policy["dataset_revision"],
+        token=False,
     )
     policy["dataset_fingerprint"] = dataset._fingerprint
     selected = sorted(
@@ -307,8 +324,9 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
             )
 
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    print(f"Loading {policy['student_model_id']} on CUDA...", flush=True)
     tokenizer = AutoTokenizer.from_pretrained(
-        policy["student_model_id"], revision=policy["student_revision"]
+        policy["student_model_id"], revision=policy["student_revision"], token=False
     )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -317,6 +335,7 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
         revision=policy["student_revision"],
         dtype=dtype,
         device_map={"": 0},
+        token=False,
     )
     student.eval()
     if len(tokenizer) > student.config.vocab_size:
@@ -331,7 +350,12 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
     if not eos_ids:
         raise ValueError("The generation policy must define end tokens.")
     rows = []
-    for example in policy["examples"]:
+    for example_number, example in enumerate(policy["examples"], start=1):
+        print(
+            f"Generating response {example_number}/{len(policy['examples'])}: "
+            f"{example['example_id']}",
+            flush=True,
+        )
         # No reference answer enters the input. Batch size is always one.
         prompt = policy["prompt_template"].format(question=example["question"])
         inputs = tokenizer(prompt, return_tensors="pt").to("cuda:0")
@@ -425,4 +449,5 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
     checksums = {name: sha256_file(output / name) for name in RUN_FILES}
     (output / "SHA256SUMS.json").write_text(json.dumps(checksums, indent=2) + "\n")
     verify_recorded_run(output)
+    print(f"Completed and validated {len(rows)} responses: {output.name}", flush=True)
     return output

@@ -20,7 +20,10 @@ for export. `src/baseline_plots.py` regenerates every figure:
 - `metric_comparison`: counts from the same 32 recorded responses, under two checkers.
 - `response_lengths`: recorded response-token counts and stopping behavior.
 
-The notebook's checked-in execution is a clean-kernel CPU replay. It validates
-and analyzes recorded inference; it does not rerun the A100 model. Derived
-reports and HTML validation previews live under ignored `results/` folders.
+The notebook preserves the author's completed Colab `generate` execution.
+Local clean-kernel QA runs a separate CPU replay and preserves those saved GPU
+outputs. See `VALIDATION.md` for the evidence and limits. Derived reports,
+the executed replay notebook, and HTML previews live under ignored `results/`.
+New exported ZIPs include a `raw_run/` copy of the exact source evidence,
+including token IDs, so fresh Colab experiments can be preserved too.
 No model weights, credentials, caches, or temporary environments are versioned here.

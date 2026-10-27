@@ -31,9 +31,11 @@ Notebooks 03 and 04 remain scaffolds for later steps.
 ## Run the baseline
 
 Open [Notebook 02](notebooks/02_baseline_evaluation.ipynb) and run from top to
-bottom. Its default **replay** mode uses the checksummed recorded run and
-needs no GPU, model weights, or live dataset download. The notebook's saved
-outputs are explicitly labeled as replay, not new inference.
+bottom. It currently defaults to **generate** mode for Colab GPU inference;
+set `MODE = "replay"` to analyze the checksummed recorded run on CPU without
+model weights or a live dataset download. The saved outputs show the author's
+completed Colab generation run. The local validator always selects replay and
+preserves those GPU outputs in the source notebook.
 
 For an isolated local environment (validated on Linux with Python 3.14;
 the pinned analysis packages require Python 3.12+):
@@ -45,10 +47,14 @@ uv pip install -r requirements-notebook.txt
 ```
 
 The validator starts a clean kernel, executes all cells sequentially,
-rejects errors or unexpected stderr, and writes an HTML preview under
-`results/notebook02_qa/`. Select the installed environment in Jupyter or
-VS Code for interactive use. In Colab, the first cell finds or clones the
-public project without Google Drive and installs the analysis libraries.
+rejects errors or unexpected stderr, and writes a separate executed replay
+notebook and HTML preview under `results/notebook02_qa/`. It does not overwrite
+the source notebook unless `--update-notebook` is explicitly requested. Select
+the installed environment in Jupyter or VS Code for interactive use. In Colab, the first cell finds or clones the
+public project without Google Drive and installs the analysis libraries,
+including a compatible bottleneck version for pandas. In generate mode it also
+installs the pinned Hugging Face helpers before model imports. If dependencies
+change, restart the Colab kernel when prompted, then run from the top.
 
 For fresh inference, use an A100 or L4 Colab runtime and set `MODE` to
 `"generate"`. The optional path loads only the original 0.6B student,
@@ -67,7 +73,9 @@ The immutable run is stored under
 `notebooks/assets/02_baseline_evaluation/recorded_run/`; derived reports
 are written under ignored `results/` folders. The archive records source
 fingerprints, both scores, exact checker source, code hashes, and separate
-recorded-inference and current-analysis environments. Download it and save
+recorded-inference and current-analysis environments. New analysis archives also
+include `raw_run/` with the exact source manifest, response text and token IDs,
+results, summary, and checksums. Download the archive and save
 the executed notebook before disconnecting from Colab. Keep the selected
 test questions out of later training and tuning.
 
@@ -111,3 +119,6 @@ The mathematical reference code, token-boundary guards, metric partitions,
 source-integrity checks, and report round trips have dedicated tests.
 Fresh CUDA generation must be validated separately on the connected GPU;
 a successful CPU replay is not evidence that a new model forward pass ran.
+See the [validation record](notebooks/assets/02_baseline_evaluation/VALIDATION.md)
+for the checks performed and the boundary between the saved user GPU run and
+local CPU validation.

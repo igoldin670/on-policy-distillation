@@ -1,12 +1,20 @@
 {
-  "validated_at_utc": "2026-10-27T19:36:59.368723+00:00",
-  "execution_mode": "replay",
-  "clean_kernel": true,
-  "code_cells_executed": 15,
-  "unit_tests_passed": 20,
-  "cell_errors": 0,
-  "stderr_cell_outputs": 0,
+  "validated_at_utc": "2026-10-27T22:46:57.992894+00:00",
+  "local_validation": {
+    "execution_mode": "replay",
+    "fresh_model_inference": false,
+    "clean_kernel": true,
+    "code_cells_executed": 15,
+    "errors": 0,
+    "stderr_outputs": 0,
+    "rendered_figures": 4,
+    "html_export": "results/notebook02_qa/notebook02.html",
+    "replay_notebook": "results/notebook02_qa/notebook02_replay.ipynb",
+    "source_notebook_updated": false
+  },
+  "unit_tests_passed": 25,
   "display_equations_rendered": 4,
+  "total_math_expressions_rendered": 46,
   "equation_renderer": "KaTeX 0.16.22",
   "figures": [
     {
@@ -23,7 +31,7 @@
         1812,
         505
       ],
-      "sha256": "f22f922b4fb39e16d9b020b08556494ff967a3838710fc6a7ed512f46a62e38d"
+      "sha256": "f550a3cbc994af4c9a49af973128e9a05b2b97f40bd0110ba3c0822384f85e83"
     },
     {
       "file": "metric_comparison.png",
@@ -44,8 +52,19 @@
   ],
   "html_export_and_relative_links_checked": true,
   "figure_render_byte_reproducibility_checked": true,
-  "fresh_cuda_inference_performed": false,
-  "pinned_tokenizer_and_dataset_verified": true,
+  "fresh_cuda_inference_performed_by_local_qa": false,
+  "saved_user_colab_execution": {
+    "mode": "generate",
+    "code_cells_with_execution_counts": 15,
+    "saved_exceptions": 0,
+    "reports_fresh_inference": true,
+    "python": "3.13.16",
+    "pandas": "3.1.0",
+    "raw_archive_independently_audited_locally": false,
+    "model_and_metric_outputs_preserved": true,
+    "conceptual_workflow_figure_refreshed": true,
+    "final_generation_auth_and_progress_changes_rerun_on_cuda": false
+  },
   "checker_version": "clear_final_numeric_answer_v2",
   "recorded_counts": {
     "questions": 32,
@@ -54,10 +73,19 @@
     "prose_parsed": 28,
     "token_limit_stops": 2
   },
+  "raw_run_archive_round_trip_verified": true,
+  "strict_format_diagnosis": {
+    "prompts_requesting_marker": 32,
+    "responses_containing_marker": 0,
+    "natural_eos_stops": 30
+  },
+  "pinned_tokenizer_and_dataset_source_report": "source_verification.json",
+  "source_verification_script_hash_matches": true,
   "visual_review_scope": "PNG figures inspected; HTML structure and links checked; TeX rendered. No live GitHub-browser screenshot.",
   "code_sha256": {
-    "baseline.py": "b9093328d0062c23a683a4f46facbf2ae3f8967fbdd6b9f3c1f3f55b7efd5d7d",
+    "baseline.py": "e5b4172fc4b2f04b018b58a6b208d03f65e2879dfdfbc27cc6b9f43a50b22173",
     "evaluation.py": "5b0c70f95aea612817bdbc876c9e37386bd61d58e56b4bb21983deaec7ca7f89",
-    "baseline_plots.py": "b6532fbc404a609f7fc5b07bb8be96a637eeb2986214d5b69dae551f0cef0e3d"
-  }
+    "baseline_plots.py": "53a7ac9118a8e8f5589770c838f8483003fc3156a557071a9717ffe829d04fca"
+  },
+  "notebook_source_sha256": "5e94273047dbcef8f0b2ea92daa141fea1c11092245b6029b75e8914278523c0"
 }

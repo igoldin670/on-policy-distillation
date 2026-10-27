@@ -97,14 +97,14 @@ z
     <text style="font-weight: 700; font-size: 17px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #14253d" x="22.266" y="21.17088" transform="rotate(-0 22.266 21.17088)">One protocol, two execution modes</text>
    </g>
    <g id="text_2">
-    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0f766e" x="101.3625" y="71.73946" transform="rotate(-0 101.3625 71.73946)">Replay (default)</text>
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0f766e" x="101.3625" y="71.73946" transform="rotate(-0 101.3625 71.73946)">Replay (CPU)</text>
    </g>
    <g id="text_3">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(38.573438 86.238267)">Versioned A100 responses</text>
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(41.989727 99.973931)">CPU, no model download</text>
    </g>
    <g id="text_4">
-    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="101.3625" y="145.58554" transform="rotate(-0 101.3625 145.58554)">Generate (optional)</text>
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="101.3625" y="145.58509" transform="rotate(-0 101.3625 145.58509)">Generate (CUDA)</text>
    </g>
    <g id="text_5">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(51.25 160.084347)">Fresh pinned student</text>

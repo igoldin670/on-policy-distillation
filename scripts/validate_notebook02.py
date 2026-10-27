@@ -7,6 +7,7 @@ validates replay only; it must never be reported as a new CUDA inference run.
 from __future__ import annotations
 
 import ast
+import copy
 import html as html_tools
 import json
 import os
@@ -22,7 +23,7 @@ from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 
 
-def validate_and_execute(root: Path) -> dict:
+def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
     print("Checking notebook structure and relative assets...", flush=True)
     path = root / "notebooks/02_baseline_evaluation.ipynb"
     notebook = nbformat.read(path, as_version=4)
@@ -112,16 +113,27 @@ def validate_and_execute(root: Path) -> dict:
                 and output.text.strip()
             ):
                 raise ValueError(f"Unexpected warning/log in {cell.id}: {output.text}")
-    # Save only genuinely executed outputs, then render the same document.
+    # Keep the author's saved CUDA outputs intact by default. CPU validation
+    # produces a separate, genuinely executed replay notebook and HTML preview.
     notebook.metadata.kernelspec = {
         "display_name": "Python 3",
         "language": "python",
         "name": "python3",
     }
-    nbformat.write(notebook, path)
-    print("Execution complete; exporting HTML...", flush=True)
     output_directory = root / "results/notebook02_qa"
     output_directory.mkdir(parents=True, exist_ok=True)
+    replay_path = output_directory / "notebook02_replay.ipynb"
+    replay_notebook = copy.deepcopy(notebook)
+    for cell in replay_notebook.cells:
+        if cell.cell_type == "markdown":
+            for link in re.findall(r"\]\(([^)]+)\)", cell.source):
+                if not link.startswith(("http:", "https:", "#")):
+                    relocated = os.path.relpath(path.parent / link, output_directory)
+                    cell.source = cell.source.replace(f"]({link})", f"]({relocated})")
+    nbformat.write(replay_notebook, replay_path)
+    if update_notebook:
+        nbformat.write(notebook, path)
+    print("Execution complete; exporting HTML...", flush=True)
     exporter = HTMLExporter(
         template_name="lab",
         embed_images=True,
@@ -158,6 +170,8 @@ def validate_and_execute(root: Path) -> dict:
         "stderr_outputs": 0,
         "rendered_figures": png_outputs,
         "html_export": str(html_path.relative_to(root)),
+        "replay_notebook": str(replay_path.relative_to(root)),
+        "source_notebook_updated": update_notebook,
     }
     (output_directory / "execution_report.json").write_text(
         json.dumps(report, indent=2) + "\n"
@@ -166,6 +180,21 @@ def validate_and_execute(root: Path) -> dict:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--update-notebook",
+        action="store_true",
+        help="Replace the source notebook outputs with CPU replay (default: preserve).",
+    )
+    args = parser.parse_args()
     print(
-        json.dumps(validate_and_execute(Path(__file__).resolve().parents[1]), indent=2)
+        json.dumps(
+            validate_and_execute(
+                Path(__file__).resolve().parents[1],
+                update_notebook=args.update_notebook,
+            ),
+            indent=2,
+        )
     )
