@@ -1,0 +1,71 @@
+{
+  "validated_at_utc": "2026-11-02T21:26:59.997764+00:00",
+  "cpu_inspection": {
+    "execution_mode": "inspect",
+    "clean_kernel": true,
+    "code_cells_executed": 11,
+    "errors": 0,
+    "stderr_outputs": 0,
+    "student_weights_loaded": false,
+    "real_student_training_performed": false,
+    "source_notebook_updated": true,
+    "html_export": "results/notebook03_qa/notebook03.html"
+  },
+  "unit_tests": {
+    "passed": 39,
+    "skipped": 0,
+    "includes_previous_baseline_tests": true,
+    "training_smoke_model": "tiny randomly initialized Qwen3; not pretrained Qwen3-0.6B-Base",
+    "actual_notebook_training_loop_tested_on_cpu": true,
+    "cuda_housekeeping_mocked_in_cpu_loop_test": true,
+    "checks": [
+      "reference cleanup",
+      "split isolation and reproducibility",
+      "unstable BPE boundary rejection",
+      "no silent truncation",
+      "prompt/response and real EOS/padding masks",
+      "single causal shift against Hugging Face loss",
+      "token-weighted accumulation versus a combined batch",
+      "partial accumulation group",
+      "optimizer parameter changes",
+      "question-only generation",
+      "checkpoint reload and checksum tampering",
+      "report ZIP round trip"
+    ]
+  },
+  "pinned_data_inspection": {
+    "model_revision": "da87bfb608c14b7cf20ba1ce41287e8de496c0cd",
+    "dataset_revision": "740312add88f781978c0658806c59bc2815b9866",
+    "dataset_fingerprint": "f05f26914266d799",
+    "source_split": "train",
+    "source_rows": 7473,
+    "training_examples": 256,
+    "validation_examples": 64,
+    "exclusions": [],
+    "maximum_selected_sequence_tokens": 339,
+    "selection_sha256": "d097694fbc8b000d0b2a26485282b893b1b2ecff2fdb9a859fcbc3a9cf99fd7f"
+  },
+  "math": {
+    "renderer": "KaTeX 0.16.22",
+    "total": 4,
+    "display": 1
+  },
+  "artwork_visually_reviewed": true,
+  "readme_and_notebook_html_exported": true,
+  "source_notebooks_01_and_02_unchanged": true,
+  "ruff_checks_passed": true,
+  "real_student_weights_loaded": false,
+  "real_student_cuda_training_performed": false,
+  "post_sft_accuracy_available": false,
+  "teacher_loaded": false,
+  "limitations": [
+    "Colab dependency installation and mixed precision require a live GPU runtime.",
+    "No real 0.6B checkpoint or task improvement is claimed.",
+    "HTML and PNGs reviewed; no live GitHub browser-renderer screenshot."
+  ],
+  "source_sha256": {
+    "src/sft.py": "b7aca5370f81f83fd0476114de7bdb23ce3519e994c932229df8d7538eeec9cb",
+    "tests/test_sft.py": "2a9a873f394e932ff3502b2a908709166817a409f931e0fce6a81f97c6b8807e",
+    "scripts/validate_notebook03.py": "95f63896b1d68001c730b491195169f4d8f6e50d1128ee1fb76215414d54c37e"
+  }
+}
