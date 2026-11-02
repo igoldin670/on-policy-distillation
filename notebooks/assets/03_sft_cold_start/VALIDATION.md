@@ -1,55 +1,86 @@
-# Notebook 03 validation boundaries
+# Notebook 03 final validation record
 
-This notebook implements reference-solution supervised fine-tuning of the original
-Qwen3-0.6B-Base student. Inspection checks the real pinned tokenizer and GSM8K
-training data; it does not load the student weights. Real CUDA training and any
-resulting accuracy improvement remain unverified until the notebook is run on Colab.
+Notebook 03 has a completed user-run A100 supervised experiment. The notebook's
+saved model outputs are preserved exactly; local CPU QA writes separate artifacts.
+No teacher or on-policy loss was used in this supervised stage.
 
-CPU unit tests use a tiny **randomly initialized** Qwen3 causal model. They are
-checks of token alignment, response-only loss, token-weighted gradient accumulation,
-optimizer updates, checkpoint reload, and archive integrity. They are not model
-performance measurements. Training and validation questions are disjoint and
-normalized overlaps with the reserved Notebook 02 questions are excluded.
+## Observed A100 run
 
-The small fixed recipe is not a reproduction of the paper's hyperparameters,
-models, generated training solutions, or reported results. No teacher model,
-LoRA adapter, or on-policy loss is used in Notebook 03.
+The saved execution reports an A100-SXM4-80GB, PyTorch 2.11.0+cu130, FP32 parameter
+storage with BF16 autocast, 256 practice examples, 64 separate validation examples,
+and 32 optimizer updates in 82.2 seconds (excluding generation and export).
+All 11 code cells completed without a saved exception.
 
-The completed local checks are:
+| Validation measurement | Before | After |
+| :--- | ---: | ---: |
+| Required format | 0/64 | 59/64 |
+| Strict numeric matches | 0/64 | 35/64 |
+| Exploratory prose numeric matches | 31/64 | 35/64 |
+| Response-target NLL | 0.776109 | 0.667247 |
+| Token-limit stops | 0/64 | 5/64 |
 
-- All 11 notebook code cells ran sequentially in a clean CPU inspection kernel,
-  with zero exceptions and zero stderr outputs.
-- All 39 tests passed, including the existing baseline regressions and 14 new SFT
-  checks. The actual notebook training loop ran with a tiny random CPU model;
-  only CUDA synchronization/cache housekeeping was mocked in that test.
-- The real pinned tokenizer and training split produced 256 practice and 64
-  validation examples. Joint tokenization preserved every selected prompt boundary.
-- Equation rendering with KaTeX, notebook/README HTML export, relative links,
-  diagram SVG parsing, Ruff lint/formatting, and Git whitespace checks passed.
-- The banner and both diagrams were visually inspected. This is not a live
-  GitHub browser-renderer screenshot review.
-- Notebooks 01 and 02 and the original baseline evidence remain unchanged.
+Final reserved-test results were 14/32 strict matches, 32/32 format compliance,
+and 13/32 exploratory prose matches. Historical 02 prose matching was 17/32 under
+different execution provenance. This small experiment demonstrates strong format
+learning and mixed reasoning results, not broad reasoning improvement. The saved
+watermelon example regressed from a correct 10 to an incorrect formatted 26.
 
-See `validation_summary.json` for machine-readable checks and execution status.
-The validators never turn CPU inspection into a claim that the pretrained student
-was trained. No placeholder accuracy or learning-curve output is provided.
+## Preservation and limits
+
+An ignored local backup of the pre-finalization notebook (including A100 outputs),
+training helper, and README is under `.cache/finalize_notebook03/`, with hashes.
+The code and saved outputs are also versioned. The actual Colab report ZIP and
+checkpoint weights are **not present locally** and have not been independently
+audited here. A notebook is not a weight backup; preserve both Colab downloads
+before the runtime expires. Notebook 04 remains a scaffold.
+
+The saved checkpoint message came from the original vocabulary/logit check.
+That check passed but also emitted a tokenizer regex warning. The final helper
+adds text-to-token and token-to-text checks; this enhanced check has not been
+rerun against the actual Colab checkpoint by local QA.
+
+## Tokenizer warning investigation
+
+Transformers 4.57.6 can classify a locally saved Qwen3 config in its Mistral regex
+migration logic. We reproduced the warning with the pinned Qwen tokenizer saved
+beside minimal Qwen3 identifying config, without student weights. For confirmed
+`model_type = "qwen3"`, the loader explicitly sets `fix_mistral_regex=False`.
+It never applies Mistral's regex to Qwen3 and leaves other model families alone.
+
+The tokenizer-only check compares all selected training and validation prompts
+and reference answers, the 32 reserved prompts, and whitespace, number,
+punctuation, Unicode, and final-marker examples. It checks both special-token
+encoding modes, decoding, vocabulary, special-token meanings, and saved IDs.
+See `tokenizer_verification.json` for the actual probe count and result.
+
+## Local checks
+
+- 41 tests pass, including the 25 earlier baseline tests and 16 SFT tests.
+- The actual notebook training loop is exercised with a tiny random CPU Qwen3
+  model; only CUDA housekeeping is mocked. This is not pretrained-student training.
+- Unequal-length gradient accumulation matches a combined batch; padding and
+  end-token handling, causal shift, source isolation, generation input, optimizer
+  changes, checkpoint reload, changed tokenizer encodings, and report integrity
+  have dedicated checks.
+- All 11 cells run in a separate clean CPU inspection kernel without errors or
+  stderr. No `--save-inspection` flag is used during finalization.
+- Schema, syntax, Markdown/navigation links, HTML export, math rendering, artwork,
+  Ruff, and Git diff checks are performed. No live GitHub renderer screenshot is claimed.
+- Notebooks 01 and 02, their evidence, and Notebook 04 are unchanged.
 
 ## Reproduce
 
 Use an isolated environment with PyTorch, `requirements-notebook.txt`, and
-`requirements-sft.txt`. Preserve Colab's own PyTorch/CUDA stack.
+`requirements-sft.txt`. Preserve Colab's existing PyTorch/CUDA build.
 
 ```bash
 python -m unittest discover -s tests -v
 python scripts/validate_notebook03.py
+python scripts/verify_sft_tokenizer.py
 ```
 
-The second command uses a clean CPU inspection kernel and downloads the public
-pinned tokenizer/data if needed. It writes a separate HTML preview and executed
-inspection copy under ignored `results/notebook03_qa/`. Use `--save-inspection`
-only when intentionally updating the source notebook's inspection outputs.
-
-For actual training, sync the complete project to the Colab runtime, open 03,
-choose `MODE = "train"`, restart when dependency installation requests it, then
-run all cells from the top. Save the separate report and large checkpoint before
-the runtime disconnects. Notebook 04 will load that checkpoint from local files.
+The notebook validator writes a separate executed inspection notebook and HTML
+under ignored `results/notebook03_qa/`. Its optional `--save-inspection` flag would
+replace source outputs and must not be used to preserve the saved training run.
+The tokenizer verifier needs the pinned public tokenizer/data or their cache;
+it does not load student weights. See `validation_summary.json` for final QA.

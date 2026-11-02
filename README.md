@@ -41,7 +41,7 @@ GSM8K reference solutions. It does not load the 32B teacher.
 | :--- | :--- | :--- |
 | [**01 · One student trajectory**](notebooks/01_reverse_kl_demo.ipynb) | Token probabilities, tokenizer compatibility, frozen-teacher scoring, reverse KL, and one student update | Saved A100 outputs verify the seven mechanics checkpoints; no quality improvement established |
 | [**02 · Baseline evaluation**](notebooks/02_baseline_evaluation.ipynb) | Fixed questions, greedy generation, answer extraction, metrics, and failure analysis | Completed Colab generation outputs plus separately validated CPU replay |
-| [**03 · Supervised cold start**](notebooks/03_sft_cold_start.ipynb) | Response-only SFT, data isolation, gradient accumulation, paired validation, checkpoint export | Implemented; CPU inspection and tiny-model checks are distinguished from real Qwen training, which awaits Colab |
+| [**03 · Supervised cold start**](notebooks/03_sft_cold_start.ipynb) | Response-only SFT, data isolation, gradient accumulation, paired validation, checkpoint export | Completed A100 SFT outputs; format learning is strong, reasoning results are mixed; stronger tokenizer reload checks added afterward |
 | [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Fresh student responses and frozen-teacher feedback after the cold start | Planned; scaffold only |
 
 Each notebook introduces the idea, walks through small examples and tensor shapes,
@@ -56,7 +56,7 @@ start independently; they do not require an earlier notebook's live kernel state
 | 02: strict-format numeric matches | **0 / 32** | None of the original responses used the requested `####` marker |
 | 02: exploratory prose numeric matches | **17 / 32 (53.125%)** | A broader, post-hoc extractor found matching numbers; this is not a training gain |
 | 02: prose-parsed responses / token-limit stops | **28 / 32** parsed; **2 / 32** budget stops | Format, arithmetic, extraction, and stopping failures are kept visible |
-| 03: pretrained-student training results | **Not yet verified** | No invented learning curve or post-SFT accuracy is reported |
+| 03: paired validation after 256 reference examples | Format **0/64 → 59/64**; prose matches **31/64 → 35/64**; NLL **0.776 → 0.667** | A real A100 run; strong format learning, modest numeric gain, and visible regressions |
 
 The two 02 scores use the **same model responses**, with all questions retained
 in the denominator. Numeric agreement does not certify reasoning or units. The
@@ -163,8 +163,8 @@ student generates itself. The original arithmetic experiments began from
 supervised-fine-tuned models. Our 03 reference-solution warm start is a smaller,
 explicitly different adaptation. It does not itself perform distillation.
 
-The project currently establishes working mechanics and an inspectable baseline.
-It does **not** establish a post-distillation quality gain. The teacher remains
+The project establishes working mechanics, an inspectable baseline, and a completed small supervised cold start.
+It does **not** establish a post-distillation quality gain. The 03 run also produced five validation token-limit stops and a displayed correct-to-incorrect answer regression. Its saved test score is 14/32 strict matches; broad reasoning improvement is not established. The teacher remains
 fixed in the mechanics demonstration; no large-scale training or multi-seed
 benchmark comparison has been completed. Stronger claims require untouched test
 data, frozen metrics, repeated runs, and actual trained-model evidence.

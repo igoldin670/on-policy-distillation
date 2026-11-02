@@ -28,6 +28,7 @@ from src.sft import (
     collate_examples,
     encode_example,
     generate_evaluation,
+    load_checkpoint_tokenizer,
     normalize_question,
     prepare_splits,
     response_loss_sum,
@@ -37,6 +38,7 @@ from src.sft import (
     validation_loss,
     verify_checkpoint,
     verify_report,
+    verify_tokenizer_roundtrip,
     write_json,
 )
 
@@ -337,6 +339,33 @@ class SFTTensorTests(unittest.TestCase):
     def test_no_response_targets_fail(self):
         with self.assertRaises(ValueError):
             collate_examples([{"input_ids": [2, 3], "labels": [-100, -100]}], 1)
+
+    def test_tokenizer_encoding_mismatch_is_not_hidden_by_identical_vocabulary(self):
+        from tokenizers.pre_tokenizers import Whitespace
+
+        backend = Tokenizer(
+            WordLevel({"<unk>": 0, "hi": 1, "there": 2}, unk_token="<unk>")
+        )
+        original = PreTrainedTokenizerFast(tokenizer_object=backend, unk_token="<unk>")
+        restored = copy.deepcopy(original)
+        restored.backend_tokenizer.pre_tokenizer = Whitespace()
+        self.assertEqual(original.get_vocab(), restored.get_vocab())
+        with self.assertRaisesRegex(ValueError, "text encoding differs"):
+            verify_tokenizer_roundtrip(original, restored, ["hi there"], [1])
+
+    def test_mistral_override_is_only_used_for_confirmed_qwen3(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            for model_type in ("qwen3", "mistral"):
+                (path / "config.json").write_text(
+                    json.dumps({"model_type": model_type})
+                )
+                with patch("transformers.AutoTokenizer.from_pretrained") as loader:
+                    load_checkpoint_tokenizer(path)
+                self.assertEqual(
+                    loader.call_args.kwargs.get("fix_mistral_regex"),
+                    False if model_type == "qwen3" else None,
+                )
 
     def test_checkpoint_reload_and_tamper_detection(self):
         backend = Tokenizer(

@@ -1,5 +1,5 @@
 {
-  "validated_at_utc": "2026-11-02T21:26:59.997764+00:00",
+  "validated_at_utc": "2026-11-02T22:12:57.769315+00:00",
   "cpu_inspection": {
     "execution_mode": "inspect",
     "clean_kernel": true,
@@ -8,11 +8,11 @@
     "stderr_outputs": 0,
     "student_weights_loaded": false,
     "real_student_training_performed": false,
-    "source_notebook_updated": true,
+    "source_notebook_updated": false,
     "html_export": "results/notebook03_qa/notebook03.html"
   },
   "unit_tests": {
-    "passed": 39,
+    "passed": 41,
     "skipped": 0,
     "includes_previous_baseline_tests": true,
     "training_smoke_model": "tiny randomly initialized Qwen3; not pretrained Qwen3-0.6B-Base",
@@ -30,7 +30,9 @@
       "optimizer parameter changes",
       "question-only generation",
       "checkpoint reload and checksum tampering",
-      "report ZIP round trip"
+      "report ZIP round trip",
+      "text encoding/decoding mismatch detection",
+      "Qwen-only Mistral migration opt-out"
     ]
   },
   "pinned_data_inspection": {
@@ -54,18 +56,62 @@
   "readme_and_notebook_html_exported": true,
   "source_notebooks_01_and_02_unchanged": true,
   "ruff_checks_passed": true,
-  "real_student_weights_loaded": false,
-  "real_student_cuda_training_performed": false,
-  "post_sft_accuracy_available": false,
+  "post_sft_accuracy_available": true,
   "teacher_loaded": false,
   "limitations": [
-    "Colab dependency installation and mixed precision require a live GPU runtime.",
-    "No real 0.6B checkpoint or task improvement is claimed.",
-    "HTML and PNGs reviewed; no live GitHub browser-renderer screenshot."
+    "Saved A100 results reviewed, but raw Colab checkpoint/report unavailable locally.",
+    "Enhanced tokenizer check validated locally without trained weights.",
+    "No additional CUDA training performed during finalization.",
+    "Small experiment and exploratory prose metric; broad reasoning improvement not established.",
+    "HTML/plots reviewed; no live GitHub-renderer screenshot."
   ],
   "source_sha256": {
-    "src/sft.py": "b7aca5370f81f83fd0476114de7bdb23ce3519e994c932229df8d7538eeec9cb",
-    "tests/test_sft.py": "2a9a873f394e932ff3502b2a908709166817a409f931e0fce6a81f97c6b8807e",
-    "scripts/validate_notebook03.py": "95f63896b1d68001c730b491195169f4d8f6e50d1128ee1fb76215414d54c37e"
+    "src/sft.py": "b4bc5869b84a56cc007f81fa9f0b0a52045c7520d5f4678f5840d2089c8e428f",
+    "tests/test_sft.py": "f7ed1aa4f07b6fe39d08fcd143dfaf640a4fe80403ae0f8cae0105b720fab849",
+    "scripts/validate_notebook03.py": "95f63896b1d68001c730b491195169f4d8f6e50d1128ee1fb76215414d54c37e",
+    "scripts/verify_sft_tokenizer.py": "af2114efa090f88424f017702f052e7785073726bfbe9c061012c210853978c1"
+  },
+  "local_qa_real_student_training_performed": false,
+  "saved_user_a100_run": {
+    "completed": true,
+    "code_cells_executed": 11,
+    "saved_exceptions": 0,
+    "optimizer_steps": 32,
+    "training_seconds": 82.2,
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "torch": "2.11.0+cu130",
+    "outputs_preserved_exactly": true,
+    "validation_before": {
+      "format_matches": 0,
+      "strict_matches": 0,
+      "prose_matches": 31,
+      "nll": 0.7761093043389092,
+      "token_limit_stops": 0
+    },
+    "validation_after": {
+      "format_matches": 59,
+      "strict_matches": 35,
+      "prose_matches": 35,
+      "nll": 0.6672472623115244,
+      "token_limit_stops": 5
+    },
+    "final_test": {
+      "questions": 32,
+      "format_matches": 32,
+      "strict_matches": 14,
+      "prose_matches": 13
+    },
+    "actual_checkpoint_and_report_present_locally": false,
+    "enhanced_tokenizer_check_rerun_on_actual_checkpoint": false
+  },
+  "tokenizer_roundtrip": {
+    "transformers": "4.57.6",
+    "model_revision": "da87bfb608c14b7cf20ba1ce41287e8de496c0cd",
+    "mistral_warning_reproduced": true,
+    "probe_texts": 676,
+    "encoding_and_decoding_checks_passed": true,
+    "student_weights_loaded": false,
+    "actual_colab_checkpoint_checked": false,
+    "scope": "Pinned tokenizer saved locally beside minimal Qwen3 identifying config; not the trained checkpoint."
   }
 }

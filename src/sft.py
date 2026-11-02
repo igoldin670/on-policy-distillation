@@ -491,11 +491,62 @@ def save_checkpoint(model, tokenizer, directory: Path):
     )
 
 
+def load_checkpoint_tokenizer(directory: Path):
+    """Preserve Qwen3's regex; do not apply an unrelated Mistral migration.
+
+    Transformers 4.57.6 can mistake a local Qwen3 configuration for Mistral.
+    Only opt out after checking the checkpoint's actual model_type.
+    """
+    from transformers import AutoTokenizer
+
+    directory = Path(directory)
+    config = json.loads((directory / "config.json").read_text())
+    options = (
+        {"fix_mistral_regex": False} if config.get("model_type") == "qwen3" else {}
+    )
+    return AutoTokenizer.from_pretrained(directory, local_files_only=True, **options)
+
+
+def verify_tokenizer_roundtrip(original, restored, texts, token_ids):
+    """Vocabulary identity alone cannot establish text-tokenizer identity."""
+    if restored.get_vocab() != original.get_vocab():
+        raise ValueError("Reloaded tokenizer mapping differs.")
+    if restored.special_tokens_map != original.special_tokens_map:
+        raise ValueError("Reloaded special-token meanings differ.")
+    for text in texts:
+        for add_special in (False, True):
+            left = original.encode(text, add_special_tokens=add_special)
+            right = restored.encode(text, add_special_tokens=add_special)
+            if left != right:
+                raise ValueError("Reloaded tokenizer text encoding differs.")
+            for skip_special in (False, True):
+                options = {
+                    "skip_special_tokens": skip_special,
+                    "clean_up_tokenization_spaces": False,
+                }
+                if original.decode(left, **options) != restored.decode(
+                    right, **options
+                ):
+                    raise ValueError("Reloaded tokenizer text decoding differs.")
+    if original.decode(token_ids, skip_special_tokens=False) != restored.decode(
+        token_ids, skip_special_tokens=False
+    ):
+        raise ValueError("Reloaded tokenizer decodes saved token IDs differently.")
+    return True
+
+
 def verify_checkpoint(
-    model, tokenizer, directory: Path, token_ids: list[int], device, dtype
+    model,
+    tokenizer,
+    directory: Path,
+    token_ids: list[int],
+    device,
+    dtype,
+    *,
+    probe_texts=None,
 ):
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModelForCausalLM
 
     directory = Path(directory)
     hashes = json.loads((directory / "SHA256SUMS.json").read_text())
@@ -509,9 +560,16 @@ def verify_checkpoint(
     for name, digest in hashes.items():
         if sha256_file(directory / name) != digest:
             raise ValueError(f"Checkpoint checksum mismatch: {name}")
-    restored_tokenizer = AutoTokenizer.from_pretrained(directory, local_files_only=True)
-    if restored_tokenizer.get_vocab() != tokenizer.get_vocab():
-        raise ValueError("Reloaded tokenizer mapping differs.")
+    restored_tokenizer = load_checkpoint_tokenizer(directory)
+    probes = list(probe_texts or []) + [
+        tokenizer.decode(token_ids),
+        "Question: What is 3 + 2?\n\nAnswer:\n",
+        "3 + 2 = 5.\n#### 5",
+        "\t  spaces\n\n",
+        "£12.50 − 3 = 9.50",
+        "Café 中文 🙂 １２３",
+    ]
+    verify_tokenizer_roundtrip(tokenizer, restored_tokenizer, probes, token_ids)
     restored = AutoModelForCausalLM.from_pretrained(
         directory, dtype=torch.float32, local_files_only=True
     ).to(device)
