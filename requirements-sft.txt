@@ -1,0 +1,4 @@
+# Notebook 03. Preserve the runtime's installed PyTorch/CUDA build.
+-r requirements-generation.txt
+# Hugging Face's notebook progress integration needs IProgress even when bars are disabled.
+ipywidgets==8.1.8

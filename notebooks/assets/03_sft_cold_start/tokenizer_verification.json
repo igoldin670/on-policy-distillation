@@ -1,0 +1,10 @@
+{
+  "transformers": "4.57.6",
+  "model_revision": "da87bfb608c14b7cf20ba1ce41287e8de496c0cd",
+  "mistral_warning_reproduced": true,
+  "probe_texts": 676,
+  "encoding_and_decoding_checks_passed": true,
+  "student_weights_loaded": false,
+  "actual_colab_checkpoint_checked": false,
+  "scope": "Pinned tokenizer saved locally beside minimal Qwen3 identifying config; not the trained checkpoint."
+}
