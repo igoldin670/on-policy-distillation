@@ -31,9 +31,7 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
     ids = [cell.id for cell in notebook.cells]
     if len(ids) != len(set(ids)):
         raise ValueError("Notebook cell IDs must be unique.")
-    markdown = "\n".join(
-        cell.source for cell in notebook.cells if cell.cell_type == "markdown"
-    )
+    markdown = "\n".join(cell.source for cell in notebook.cells if cell.cell_type == "markdown")
     anchors = set(re.findall(r'<a id="([^"]+)"></a>', markdown))
     if not set(re.findall(r"\]\(#([^)]+)\)", markdown)) <= anchors:
         raise ValueError("A notebook navigation link has no target.")
@@ -45,10 +43,7 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
         elif cell.source.count("```") % 2:
             raise ValueError(f"Unbalanced Markdown code fence: {cell.id}")
     for link in re.findall(r"\]\(([^)]+)\)", markdown):
-        if (
-            not link.startswith(("http:", "https:", "#"))
-            and not (path.parent / link).exists()
-        ):
+        if not link.startswith(("http:", "https:", "#")) and not (path.parent / link).exists():
             raise ValueError(f"Missing relative asset or file: {link}")
 
     # A private temporary kernelspec points to this exact Python environment.
@@ -75,11 +70,7 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
         manager = KernelManager(
             kernel_name="python3",
             kernel_spec_manager=KernelSpecManager(kernel_dirs=[folder]),
-            **(
-                {"transport": "ipc", "ip": str(Path(folder) / "kernel")}
-                if os.name != "nt"
-                else {}
-            ),
+            **({"transport": "ipc", "ip": str(Path(folder) / "kernel")} if os.name != "nt" else {}),
         )
         client = NotebookClient(
             notebook,
@@ -90,28 +81,20 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
             startup_timeout=25,
         )
         try:
-            print(
-                "Starting an isolated kernel and executing replay cells...", flush=True
-            )
+            print("Starting an isolated kernel and executing replay cells...", flush=True)
             client.execute()
         finally:
             if manager.has_kernel:
                 manager.shutdown_kernel(now=True)
 
     code_cells = [cell for cell in notebook.cells if cell.cell_type == "code"]
-    if [cell.execution_count for cell in code_cells] != list(
-        range(1, len(code_cells) + 1)
-    ):
+    if [cell.execution_count for cell in code_cells] != list(range(1, len(code_cells) + 1)):
         raise ValueError("Expected a sequential clean-kernel execution.")
     for cell in code_cells:
         for output in cell.outputs:
             if output.output_type == "error":
                 raise ValueError(f"Execution error in {cell.id}")
-            if (
-                output.output_type == "stream"
-                and output.name == "stderr"
-                and output.text.strip()
-            ):
+            if output.output_type == "stream" and output.name == "stderr" and output.text.strip():
                 raise ValueError(f"Unexpected warning/log in {cell.id}: {output.text}")
     # Keep the author's saved CUDA outputs intact by default. CPU validation
     # produces a separate, genuinely executed replay notebook and HTML preview.
@@ -155,9 +138,7 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
     html_path = output_directory / "notebook02.html"
     html_path.write_text(html, encoding="utf-8")
     png_outputs = sum(
-        "image/png" in output.get("data", {})
-        for cell in code_cells
-        for output in cell.outputs
+        "image/png" in output.get("data", {}) for cell in code_cells for output in cell.outputs
     )
     if png_outputs != 4:
         raise ValueError("Expected four rendered figures.")
@@ -173,9 +154,7 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
         "replay_notebook": str(replay_path.relative_to(root)),
         "source_notebook_updated": update_notebook,
     }
-    (output_directory / "execution_report.json").write_text(
-        json.dumps(report, indent=2) + "\n"
-    )
+    (output_directory / "execution_report.json").write_text(json.dumps(report, indent=2) + "\n")
     return report
 
 

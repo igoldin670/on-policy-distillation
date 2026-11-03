@@ -66,9 +66,7 @@ class RecordedRunTests(unittest.TestCase):
                 path = target / "responses.jsonl"
                 rows = [json.loads(line) for line in path.read_text().splitlines()]
                 mutation(rows[0])
-                path.write_text(
-                    "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows)
-                )
+                path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows))
                 checksums = json.loads((target / "SHA256SUMS.json").read_text())
                 checksums[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
                 (target / "SHA256SUMS.json").write_text(json.dumps(checksums))
@@ -114,21 +112,15 @@ class RecordedRunTests(unittest.TestCase):
                 metadata = json.loads(bundle.read("analysis_metadata.json"))
                 self.assertFalse(metadata["inference_performed_this_execution"])
                 self.assertEqual(metadata["execution_mode"], "replay")
-                self.assertEqual(
-                    json.loads(bundle.read("rescore_summary.json")), run["scores"]
-                )
+                self.assertEqual(json.loads(bundle.read("rescore_summary.json")), run["scores"])
                 for name in (*run["artifact_sha256"], "SHA256SUMS.json"):
-                    self.assertEqual(
-                        bundle.read(f"raw_run/{name}"), (RECORDED / name).read_bytes()
-                    )
+                    self.assertEqual(bundle.read(f"raw_run/{name}"), (RECORDED / name).read_bytes())
                 restored_directory = root / "restored"
                 bundle.extractall(restored_directory)
                 restored = verify_recorded_run(restored_directory / "raw_run")
                 self.assertEqual(restored["rows"], run["rows"])
                 self.assertEqual(restored["scores"], run["scores"])
-        self.assertEqual(
-            verify_recorded_run(RECORDED)["artifact_sha256"], hashes_before
-        )
+        self.assertEqual(verify_recorded_run(RECORDED)["artifact_sha256"], hashes_before)
 
 
 class GenerationBoundaryTests(unittest.TestCase):

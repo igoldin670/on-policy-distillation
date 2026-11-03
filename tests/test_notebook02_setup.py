@@ -12,9 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class ColabSetupTests(unittest.TestCase):
     def run_setup(self, installed_version, loaded_modules, *, mode="replay"):
-        notebook = json.loads(
-            (ROOT / "notebooks/02_baseline_evaluation.ipynb").read_text()
-        )
+        notebook = json.loads((ROOT / "notebooks/02_baseline_evaluation.ipynb").read_text())
         source = "".join(notebook["cells"][2]["source"])
         # Exercise the actual Colab dependency block, without the clone/bootstrap.
         block = next(
@@ -30,9 +28,7 @@ class ColabSetupTests(unittest.TestCase):
             "MODE": mode,
             "PROJECT_ROOT": ROOT,
             "sys": SimpleNamespace(modules=loaded_modules),
-            "importlib": SimpleNamespace(
-                metadata=SimpleNamespace(version=installed_version)
-            ),
+            "importlib": SimpleNamespace(metadata=SimpleNamespace(version=installed_version)),
             "install_with_uv": installer,
         }
         return (
@@ -70,15 +66,11 @@ class ColabSetupTests(unittest.TestCase):
         self.assertIn("bottleneck==1.5.0", installer.call_args.args[0])
 
     def test_generation_dependencies_install_before_model_imports(self):
-        code, namespace, installer = self.run_setup(
-            lambda name: "old", {}, mode="generate"
-        )
+        code, namespace, installer = self.run_setup(lambda name: "old", {}, mode="generate")
         with self.assertRaisesRegex(RuntimeError, "installed successfully"):
             exec(code, namespace)
         self.assertIn("transformers==4.57.6", installer.call_args.args[0])
-        self.assertFalse(
-            any(item.startswith("torch") for item in installer.call_args.args[0])
-        )
+        self.assertFalse(any(item.startswith("torch") for item in installer.call_args.args[0]))
 
     def test_fresh_matching_kernel_continues(self):
         versions = dict(

@@ -1,0 +1,93 @@
+{
+  "validation_date": "2026-11-02",
+  "status": "implemented_and_cpu_validated_real_qwen_training_pending",
+  "environment": {
+    "python": "3.14.7",
+    "torch": "2.10.0+cpu",
+    "cuda_available": false,
+    "packages": {
+      "transformers": "4.57.6",
+      "datasets": "4.8.5",
+      "accelerate": "1.15.0",
+      "huggingface_hub": "0.36.2",
+      "numpy": "2.5.4",
+      "pandas": "3.1.0",
+      "matplotlib": "3.11.2"
+    }
+  },
+  "notebook04_inspection": {
+    "execution_mode": "inspect",
+    "clean_kernel": true,
+    "code_cells_executed": 15,
+    "errors": 0,
+    "stderr_outputs": 0,
+    "real_student_weights_loaded": false,
+    "teacher_weights_loaded": false,
+    "real_qwen_training_performed": false,
+    "source_notebook_updated": true,
+    "html_export": "results/notebook04_qa/notebook04.html"
+  },
+  "real_source_checks": {
+    "mode": "inspect",
+    "split_counts": {
+      "train": 1024,
+      "validation": 64,
+      "primary_test": 256,
+      "historical_test": 32
+    },
+    "selection_exclusions": 326,
+    "tokenizer_checks": {
+      "identical_token_mapping": true,
+      "text_probes_checked": 2180,
+      "output_vocabulary_size": 151936,
+      "student_eos_token_id": 151643,
+      "teacher_eos_token_id": 151645
+    },
+    "stop_token_ids": [
+      151643,
+      151645
+    ],
+    "teacher_revision": "9216db5781bf21249d130ec9da846c4624c16137",
+    "maximum_selected_reference_length": 453,
+    "maximum_selected_prompt_length": 191,
+    "model_weights_loaded": false
+  },
+  "regressions": {
+    "tests_run": 72,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "training_test_models": "Tiny randomly initialized Qwen3 models with 32 output tokens; not pretrained Qwen."
+  },
+  "cpu_pipeline_checked": [
+    "both actual notebook training arms",
+    "partial accumulation group",
+    "checkpoint and tokenizer reload",
+    "optimizer/RNG resume and finalization recovery",
+    "actual notebook final evaluation and paired comparisons",
+    "training/performance plot rendering",
+    "actual notebook report export and repeated export"
+  ],
+  "equations_rendered_with_katex": 12,
+  "notebook02_clean_kernel": {
+    "mode": "replay",
+    "cells_executed": 15,
+    "source_preserved": true
+  },
+  "notebook03_clean_kernel": {
+    "mode": "inspect",
+    "cells_executed": 11,
+    "saved_a100_outputs_preserved": true
+  },
+  "upstream_report": {
+    "sha256": "942170822f03cb80d6353c8196e142372cef6a46a36295b1b4cd214b2624fae0",
+    "checksums_verified": 14,
+    "evaluations_rescored": 3,
+    "weights_in_report": false
+  },
+  "real_student_training_performed": false,
+  "real_teacher_weights_loaded": false,
+  "real_colab_checkpoint_verified_locally": false,
+  "notebooks_01_02_03_byte_preserved": true,
+  "git_delivery": "Local dev changes only. No commit, push, merge, or main change."
+}

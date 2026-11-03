@@ -17,9 +17,7 @@ try:
     from tokenizers.models import WordLevel
     from transformers import PreTrainedTokenizerFast, Qwen3Config, Qwen3ForCausalLM
 except ImportError as error:
-    raise unittest.SkipTest(
-        "SFT CPU tests need PyTorch and requirements-generation.txt"
-    ) from error
+    raise unittest.SkipTest("SFT CPU tests need PyTorch and requirements-generation.txt") from error
 
 from src.sft import (
     SFTConfig,
@@ -137,13 +135,9 @@ class SFTDataTests(unittest.TestCase):
             "prompt_template": "{question}\n",
             "examples": [{"question": "held out"}],
         }
-        config = SFTConfig(
-            train_examples=5, validation_examples=5, max_sequence_length=100
-        )
+        config = SFTConfig(train_examples=5, validation_examples=5, max_sequence_length=100)
         splits = prepare_splits(dataset, CharacterTokenizer(), protocol, config)
-        self.assertEqual(
-            splits, prepare_splits(dataset, CharacterTokenizer(), protocol, config)
-        )
+        self.assertEqual(splits, prepare_splits(dataset, CharacterTokenizer(), protocol, config))
         train = {normalize_question(e["question"]) for e in splits["train"]}
         validation = {normalize_question(e["question"]) for e in splits["validation"]}
         self.assertFalse(train & validation)
@@ -154,9 +148,7 @@ class SFTDataTests(unittest.TestCase):
                 dataset,
                 CharacterTokenizer(),
                 protocol,
-                SFTConfig(
-                    train_examples=20, validation_examples=1, max_sequence_length=100
-                ),
+                SFTConfig(train_examples=20, validation_examples=1, max_sequence_length=100),
             )
 
     def test_padding_does_not_mask_real_end_tokens(self):
@@ -176,14 +168,10 @@ class SFTTensorTests(unittest.TestCase):
 
         notebook = json.loads((ROOT / "notebooks/03_sft_cold_start.ipynb").read_text())
         source = next(
-            "".join(c["source"])
-            for c in notebook["cells"]
-            if c["id"] == "sft-train-loop"
+            "".join(c["source"]) for c in notebook["cells"] if c["id"] == "sft-train-loop"
         )
         model = tiny_model()
-        model.gradient_checkpointing_enable(
-            gradient_checkpointing_kwargs={"use_reentrant": False}
-        )
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
         original = {name: p.detach().clone() for name, p in model.named_parameters()}
         examples = [sample(), sample((2, 3, 4, 5, 1)), sample((2, 6, 1), 1)]
         with tempfile.TemporaryDirectory() as folder:
@@ -224,10 +212,7 @@ class SFTTensorTests(unittest.TestCase):
                 len(json.loads((Path(folder) / "training_history.json").read_text())), 2
             )
             self.assertTrue(
-                any(
-                    not torch.equal(p, original[name])
-                    for name, p in model.named_parameters()
-                )
+                any(not torch.equal(p, original[name]) for name, p in model.named_parameters())
             )
 
     def test_generation_uses_only_prompt_not_reference_solution(self):
@@ -300,15 +285,11 @@ class SFTTensorTests(unittest.TestCase):
         loss_sum, count = response_loss_sum(combined, collate_examples(examples, 1))
         (loss_sum / count).backward()
         self.assertEqual(metrics["response_tokens"], count)
-        for left, right in zip(
-            accumulated.parameters(), combined.parameters(), strict=True
-        ):
+        for left, right in zip(accumulated.parameters(), combined.parameters(), strict=True):
             self.assertTrue(torch.allclose(left.grad, right.grad, atol=2e-6, rtol=2e-4))
 
     def test_partial_group_and_optimizer_update(self):
-        config = SFTConfig(
-            train_examples=3, validation_examples=1, accumulation_steps=2
-        )
+        config = SFTConfig(train_examples=3, validation_examples=1, accumulation_steps=2)
         examples = [sample(), sample((2, 4, 1), 1), sample((2, 5, 1), 1)]
         groups = list(training_groups(examples, config, 0))
         self.assertEqual([len(group) for group in groups], [2, 1])
@@ -320,17 +301,12 @@ class SFTTensorTests(unittest.TestCase):
             optimizer.zero_grad(set_to_none=True)
             metrics = backward_group(model, group, 1, "cpu", None, scaler)
             self.assertGreater(metrics["loss"], 0)
-            norm = torch.nn.utils.clip_grad_norm_(
-                model.parameters(), 1.0, error_if_nonfinite=True
-            )
+            norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0, error_if_nonfinite=True)
             self.assertTrue(torch.isfinite(norm))
             scaler.step(optimizer)
             scaler.update()
         self.assertTrue(
-            any(
-                not torch.equal(p, original[name])
-                for name, p in model.named_parameters()
-            )
+            any(not torch.equal(p, original[name]) for name, p in model.named_parameters())
         )
         score = validation_loss(model, examples, 1, "cpu", None)
         self.assertGreater(score, 0)
@@ -343,9 +319,7 @@ class SFTTensorTests(unittest.TestCase):
     def test_tokenizer_encoding_mismatch_is_not_hidden_by_identical_vocabulary(self):
         from tokenizers.pre_tokenizers import Whitespace
 
-        backend = Tokenizer(
-            WordLevel({"<unk>": 0, "hi": 1, "there": 2}, unk_token="<unk>")
-        )
+        backend = Tokenizer(WordLevel({"<unk>": 0, "hi": 1, "there": 2}, unk_token="<unk>"))
         original = PreTrainedTokenizerFast(tokenizer_object=backend, unk_token="<unk>")
         restored = copy.deepcopy(original)
         restored.backend_tokenizer.pre_tokenizer = Whitespace()
@@ -357,9 +331,7 @@ class SFTTensorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder)
             for model_type in ("qwen3", "mistral"):
-                (path / "config.json").write_text(
-                    json.dumps({"model_type": model_type})
-                )
+                (path / "config.json").write_text(json.dumps({"model_type": model_type}))
                 with patch("transformers.AutoTokenizer.from_pretrained") as loader:
                     load_checkpoint_tokenizer(path)
                 self.assertEqual(
@@ -368,9 +340,7 @@ class SFTTensorTests(unittest.TestCase):
                 )
 
     def test_checkpoint_reload_and_tamper_detection(self):
-        backend = Tokenizer(
-            WordLevel({"<unk>": 0, "<eos>": 1, "hi": 2}, unk_token="<unk>")
-        )
+        backend = Tokenizer(WordLevel({"<unk>": 0, "<eos>": 1, "hi": 2}, unk_token="<unk>"))
         tokenizer = PreTrainedTokenizerFast(
             tokenizer_object=backend,
             unk_token="<unk>",
@@ -381,9 +351,7 @@ class SFTTensorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             checkpoint = Path(folder) / "checkpoint"
             save_checkpoint(model, tokenizer, checkpoint)
-            self.assertTrue(
-                verify_checkpoint(model, tokenizer, checkpoint, [2, 2, 1], "cpu", None)
-            )
+            self.assertTrue(verify_checkpoint(model, tokenizer, checkpoint, [2, 2, 1], "cpu", None))
             with self.assertRaises(FileExistsError):
                 save_checkpoint(model, tokenizer, checkpoint)
             (checkpoint / "config.json").write_text("{}")

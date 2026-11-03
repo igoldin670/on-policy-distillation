@@ -30,9 +30,7 @@ def validate(root: Path, *, save_inspection: bool = False):
     for c in notebook.cells:
         if c.cell_type == "code":
             ast.parse(c.source)
-            assert any(
-                line.lstrip().startswith("#") for line in c.source.splitlines()
-            ), c.id
+            assert any(line.lstrip().startswith("#") for line in c.source.splitlines()), c.id
             c.outputs, c.execution_count = [], None
         else:
             assert c.source.count("```") % 2 == 0
@@ -66,11 +64,7 @@ def validate(root: Path, *, save_inspection: bool = False):
         manager = KernelManager(
             kernel_name="python3",
             kernel_spec_manager=KernelSpecManager(kernel_dirs=[folder]),
-            **(
-                {"transport": "ipc", "ip": str(Path(folder) / "kernel")}
-                if os.name != "nt"
-                else {}
-            ),
+            **({"transport": "ipc", "ip": str(Path(folder) / "kernel")} if os.name != "nt" else {}),
         )
         client = NotebookClient(
             notebook,
@@ -90,18 +84,12 @@ def validate(root: Path, *, save_inspection: bool = False):
             if manager.has_kernel:
                 manager.shutdown_kernel(now=True)
     code_cells = [c for c in notebook.cells if c.cell_type == "code"]
-    assert [c.execution_count for c in code_cells] == list(
-        range(1, len(code_cells) + 1)
-    )
+    assert [c.execution_count for c in code_cells] == list(range(1, len(code_cells) + 1))
     warnings = []
     for c in code_cells:
         for output in c.outputs:
             assert output.output_type != "error", c.id
-            if (
-                output.output_type == "stream"
-                and output.name == "stderr"
-                and output.text.strip()
-            ):
+            if output.output_type == "stream" and output.name == "stderr" and output.text.strip():
                 warnings.append({"cell": c.id, "text": output.text})
     # Keep logs explicit; unexpected warnings must be resolved, not suppressed here.
     if warnings:
@@ -144,9 +132,7 @@ def validate(root: Path, *, save_inspection: bool = False):
         "source_notebook_updated": save_inspection,
         "html_export": str((destination / "notebook03.html").relative_to(root)),
     }
-    (destination / "execution_report.json").write_text(
-        json.dumps(report, indent=2) + "\n"
-    )
+    (destination / "execution_report.json").write_text(json.dumps(report, indent=2) + "\n")
     return report
 
 

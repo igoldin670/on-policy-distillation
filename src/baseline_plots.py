@@ -39,9 +39,7 @@ def _save(figure, directory: Path, name: str) -> Path:
     figure.savefig(svg, bbox_inches="tight", metadata={"Date": None})
     # Newlines already separate path coordinates, so strip Matplotlib's trailing
     # spaces to keep generated vector files clean without changing the artwork.
-    svg.write_text(
-        "\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n"
-    )
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n")
     plt.close(figure)
     return png
 
@@ -194,9 +192,7 @@ def plot_evaluation_workflow(directory: Path) -> Path:
         fig, ax = plt.subplots(figsize=(13.5, 3.6))
         ax.set(xlim=(0, 1), ylim=(0, 1))
         ax.axis("off")
-        ax.text(
-            0.02, 0.93, "One protocol, two execution modes", fontsize=17, weight="bold"
-        )
+        ax.text(0.02, 0.93, "One protocol, two execution modes", fontsize=17, weight="bold")
         _box(
             ax,
             0.025,
@@ -274,9 +270,7 @@ def plot_metric_comparison(metrics: list[dict], directory: Path) -> Path:
             ("unparsed", "No extracted answer", AMBER),
         ]:
             values = [row[field] for row in metrics]
-            ax.barh(
-                positions, values, left=offsets, height=0.48, color=color, label=label
-            )
+            ax.barh(positions, values, left=offsets, height=0.48, color=color, label=label)
             for y, left, value in zip(positions, offsets, values, strict=True):
                 if value:
                     ax.text(
@@ -288,9 +282,7 @@ def plot_metric_comparison(metrics: list[dict], directory: Path) -> Path:
                         color="white",
                         weight="bold",
                     )
-            offsets = [
-                left + value for left, value in zip(offsets, values, strict=True)
-            ]
+            offsets = [left + value for left, value in zip(offsets, values, strict=True)]
         total = metrics[0]["questions"]
         ax.set(
             yticks=positions,
@@ -330,9 +322,7 @@ def plot_metric_comparison(metrics: list[dict], directory: Path) -> Path:
 def plot_response_lengths(rows: list[dict], budget: int, directory: Path) -> Path:
     with plt.rc_context(STYLE):
         fig, ax = plt.subplots(figsize=(10.8, 4.2))
-        complete = [
-            row["response_length"] for row in rows if not row["hit_token_limit"]
-        ]
+        complete = [row["response_length"] for row in rows if not row["hit_token_limit"]]
         limited = [row["response_length"] for row in rows if row["hit_token_limit"]]
         bins = [budget * index / 8 for index in range(9)]
         ax.hist(

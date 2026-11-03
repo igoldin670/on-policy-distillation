@@ -25,9 +25,9 @@ def verify(root: Path):
         verify_tokenizer_roundtrip,
     )
 
-    protocol = verify_recorded_run(
-        root / "notebooks/assets/02_baseline_evaluation/recorded_run"
-    )["manifest"]["protocol"]
+    protocol = verify_recorded_run(root / "notebooks/assets/02_baseline_evaluation/recorded_run")[
+        "manifest"
+    ]["protocol"]
     tokenizer = AutoTokenizer.from_pretrained(
         protocol["student_model_id"], revision=protocol["student_revision"], token=False
     )
@@ -69,9 +69,7 @@ def verify(root: Path):
             logger.removeHandler(handler)
         warning_seen = "incorrect regex pattern" in stream.getvalue()
         restored = load_checkpoint_tokenizer(directory)
-        verify_tokenizer_roundtrip(
-            tokenizer, restored, probes, splits["train"][0]["input_ids"]
-        )
+        verify_tokenizer_roundtrip(tokenizer, restored, probes, splits["train"][0]["input_ids"])
     return {
         "transformers": __version__,
         "model_revision": protocol["student_revision"],
@@ -87,7 +85,7 @@ def verify(root: Path):
 if __name__ == "__main__":
     root = Path(__file__).resolve().parents[1]
     report = verify(root)
-    (
-        root / "notebooks/assets/03_sft_cold_start/tokenizer_verification.json"
-    ).write_text(json.dumps(report, indent=2) + "\n")
+    (root / "notebooks/assets/03_sft_cold_start/tokenizer_verification.json").write_text(
+        json.dumps(report, indent=2) + "\n"
+    )
     print(json.dumps(report, indent=2))

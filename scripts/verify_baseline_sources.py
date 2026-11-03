@@ -40,20 +40,15 @@ def verify_sources(root: Path) -> dict:
     )
     for row in run["rows"]:
         if tokenizer(row["prompt"])["input_ids"] != row["prompt_token_ids"]:
-            raise ValueError(
-                "Pinned tokenizer does not reproduce prompt IDs: " + row["example_id"]
-            )
+            raise ValueError("Pinned tokenizer does not reproduce prompt IDs: " + row["example_id"])
         if (
             tokenizer.decode(row["response_token_ids"], skip_special_tokens=True)
             != row["response_text"]
         ):
             raise ValueError(
-                "Pinned tokenizer does not reproduce response text: "
-                + row["example_id"]
+                "Pinned tokenizer does not reproduce response text: " + row["example_id"]
             )
-    print(
-        "Pinned tokenizer verified: all 32 prompts and response-ID decodes.", flush=True
-    )
+    print("Pinned tokenizer verified: all 32 prompts and response-ID decodes.", flush=True)
     dataset = load_dataset(
         protocol["dataset_id"],
         protocol["dataset_config"],
@@ -71,12 +66,8 @@ def verify_sources(root: Path) -> dict:
     for row in run["rows"]:
         reference = dataset[row["source_index"]]
         if reference["question"] != row["question"]:
-            raise ValueError(
-                "Question differs from the pinned dataset: " + row["example_id"]
-            )
-        if extract_strict_final_answer(reference["answer"]) != Decimal(
-            row["expected_answer"]
-        ):
+            raise ValueError("Question differs from the pinned dataset: " + row["example_id"])
+        if extract_strict_final_answer(reference["answer"]) != Decimal(row["expected_answer"]):
             raise ValueError(
                 "Reference number differs from the pinned dataset: " + row["example_id"]
             )
@@ -99,13 +90,9 @@ def verify_sources(root: Path) -> dict:
             name: importlib.metadata.version(name)
             for name in ["transformers", "datasets", "huggingface_hub", "tokenizers"]
         },
-        "verification_script_sha256": hashlib.sha256(
-            Path(__file__).read_bytes()
-        ).hexdigest(),
+        "verification_script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     }
-    (assets / "source_verification.json").write_text(
-        json.dumps(report, indent=2) + "\n"
-    )
+    (assets / "source_verification.json").write_text(json.dumps(report, indent=2) + "\n")
     return report
 
 

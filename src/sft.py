@@ -19,6 +19,7 @@ from pathlib import Path
 
 from src.baseline import analysis_environment, sha256_file, validate_generation_ids
 from src.evaluation import extract_strict_final_answer, rescore_response_rows
+from src.utils import verify_inventory, write_json
 
 
 @dataclass(frozen=True)
@@ -52,9 +53,7 @@ class SFTConfig:
             raise ValueError("Need space for a prompt, response, and end token.")
         for value in (self.learning_rate, self.max_grad_norm):
             if not math.isfinite(value) or value <= 0:
-                raise ValueError(
-                    "Learning rate and clipping norm must be finite and positive."
-                )
+                raise ValueError("Learning rate and clipping norm must be finite and positive.")
         if (
             not 0 <= self.warmup_fraction < 1
             or not math.isfinite(self.weight_decay)
@@ -76,9 +75,7 @@ def clean_solution(answer: str) -> tuple[str, str]:
     return cleaned, str(number)
 
 
-def encode_example(
-    tokenizer, question: str, answer: str, protocol: dict, max_length: int
-) -> dict:
+def encode_example(tokenizer, question: str, answer: str, protocol: dict, max_length: int) -> dict:
     target, number = clean_solution(answer)
     prompt = protocol["prompt_template"].format(question=question)
     # Joint tokenization preserves normal text tokenization. Verify the prompt
@@ -142,18 +139,14 @@ def prepare_splits(dataset, tokenizer, protocol: dict, config: SFTConfig) -> dic
             exclusions.append({"source_index": index, "reason": reason})
             continue
         seen.add(key)
-        selected.append(
-            {"example_id": f"gsm8k/train/{index}", "source_index": index, **example}
-        )
+        selected.append({"example_id": f"gsm8k/train/{index}", "source_index": index, **example})
         if len(selected) == required:
             break
     if len(selected) != required:
         raise ValueError(f"Only {len(selected)} eligible examples; need {required}.")
     train = selected[: config.train_examples]
     validation = selected[config.train_examples :]
-    assert not (
-        {e["source_index"] for e in train} & {e["source_index"] for e in validation}
-    )
+    assert not ({e["source_index"] for e in train} & {e["source_index"] for e in validation})
     assert not ({normalize_question(e["question"]) for e in selected} & blocked)
     return {
         "train": train,
@@ -240,16 +233,12 @@ def backward_group(model, group, pad_token_id, device, dtype, scaler) -> dict:
     The caller zeroes gradients, unscales/clips them, then steps the optimizer.
     Dividing each microbatch mean by eight is incorrect when lengths differ.
     """
-    total_tokens = sum(
-        sum(t != -100 for t in e["labels"][1:]) for batch in group for e in batch
-    )
+    total_tokens = sum(sum(t != -100 for t in e["labels"][1:]) for batch in group for e in batch)
     if total_tokens == 0:
         raise ValueError("Empty accumulation group.")
     total_loss = 0.0
     for examples in group:
-        batch = {
-            k: v.to(device) for k, v in collate_examples(examples, pad_token_id).items()
-        }
+        batch = {k: v.to(device) for k, v in collate_examples(examples, pad_token_id).items()}
         with precision_context(device, dtype):
             loss_sum, _ = response_loss_sum(model, batch)
         # Every response token has the same weight, including in a partial group.
@@ -272,8 +261,7 @@ def validation_loss(model, examples, pad_token_id, device, dtype) -> float:
         with torch.inference_mode():
             for example in examples:
                 batch = {
-                    k: v.to(device)
-                    for k, v in collate_examples([example], pad_token_id).items()
+                    k: v.to(device) for k, v in collate_examples([example], pad_token_id).items()
                 }
                 with precision_context(device, dtype):
                     loss_sum, count = response_loss_sum(model, batch)
@@ -287,13 +275,23 @@ def validation_loss(model, examples, pad_token_id, device, dtype) -> float:
 
 
 def generate_evaluation(
-    model, tokenizer, examples, generation_policy, device, dtype
+    model,
+    tokenizer,
+    examples,
+    generation_policy,
+    device,
+    dtype,
+    *,
+    progress_interval=1,
+    use_model_defaults=None,
 ) -> dict:
     """Generate from question-only prompts; never supply worked solutions."""
     import torch
     from transformers import GenerationConfig
 
     policy = GenerationConfig.from_dict(generation_policy)
+    if type(progress_interval) is not int or progress_interval < 1:
+        raise ValueError("progress_interval must be a positive integer.")
     if policy.do_sample or policy.num_beams != 1:
         raise ValueError("Use Notebook 02's greedy one-beam evaluation policy.")
     eos = policy.eos_token_id
@@ -304,10 +302,11 @@ def generate_evaluation(
     try:
         with torch.inference_mode():
             for index, example in enumerate(examples, 1):
-                print(
-                    f"Evaluating {index}/{len(examples)}: {example['example_id']}",
-                    flush=True,
-                )
+                if index == 1 or index == len(examples) or index % progress_interval == 0:
+                    print(
+                        f"Evaluating {index}/{len(examples)}: {example['example_id']}",
+                        flush=True,
+                    )
                 inputs = tokenizer(
                     example["prompt"],
                     return_tensors="pt",
@@ -316,7 +315,10 @@ def generate_evaluation(
                 ).to(device)
                 with precision_context(device, dtype):
                     complete = model.generate(
-                        **inputs, generation_config=policy, use_cache=True
+                        **inputs,
+                        generation_config=policy,
+                        use_cache=True,
+                        use_model_defaults=use_model_defaults,
                     )
                 if complete.ndim != 2 or complete.shape[0] != 1:
                     raise ValueError("Expected [1, complete_length] generated IDs.")
@@ -332,16 +334,13 @@ def generate_evaluation(
                         "question": example["question"],
                         "prompt": example["prompt"],
                         "expected_answer": example["expected_answer"],
-                        "response_text": tokenizer.decode(
-                            response_ids, skip_special_tokens=True
-                        ),
+                        "response_text": tokenizer.decode(response_ids, skip_special_tokens=True),
                         "prompt_token_ids": prompt_ids,
                         "response_token_ids": response_ids,
                         "prompt_length": len(prompt_ids),
                         "response_length": len(response_ids),
                         "ended_with_eos": ended,
-                        "hit_token_limit": len(response_ids) == policy.max_new_tokens
-                        and not ended,
+                        "hit_token_limit": len(response_ids) == policy.max_new_tokens and not ended,
                     }
                 )
     finally:
@@ -372,13 +371,6 @@ def new_run_directory(project_root: Path) -> Path:
     return directory
 
 
-def write_json(path: Path, value):
-    path.write_text(
-        json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
-        encoding="utf-8",
-    )
-
-
 def save_report(
     root,
     directory,
@@ -404,21 +396,16 @@ def save_report(
         write_json(report / f"{name}.json", evaluation)
     source = report / "source"
     source.mkdir()
-    for name in ("sft.py", "evaluation.py", "baseline.py"):
+    for name in ("sft.py", "evaluation.py", "baseline.py", "utils.py"):
         shutil.copyfile(root / "src" / name, source / name)
     notebook = json.loads((root / "notebooks/03_sft_cold_start.ipynb").read_text())
     write_json(
         source / "notebook03_source.json",
-        [
-            {"cell_type": cell["cell_type"], "source": cell["source"]}
-            for cell in notebook["cells"]
-        ],
+        [{"cell_type": cell["cell_type"], "source": cell["source"]} for cell in notebook["cells"]],
     )
     # Include the observed chart and the checkpoint's fingerprints, not its weights.
     if (directory / "observed_results.png").is_file():
-        shutil.copyfile(
-            directory / "observed_results.png", report / "observed_results.png"
-        )
+        shutil.copyfile(directory / "observed_results.png", report / "observed_results.png")
     if (directory / "checkpoint/SHA256SUMS.json").is_file():
         shutil.copyfile(
             directory / "checkpoint/SHA256SUMS.json",
@@ -446,30 +433,16 @@ def save_report(
     }
     write_json(report / "manifest.json", manifest)
     hashes = {
-        str(p.relative_to(report)): sha256_file(p)
-        for p in sorted(report.rglob("*"))
-        if p.is_file()
+        str(p.relative_to(report)): sha256_file(p) for p in sorted(report.rglob("*")) if p.is_file()
     }
     write_json(report / "SHA256SUMS.json", hashes)
-    archive = Path(
-        shutil.make_archive(str(directory / "report"), "zip", root_dir=report)
-    )
+    archive = Path(shutil.make_archive(str(directory / "report"), "zip", root_dir=report))
     return archive
 
 
 def verify_report(directory: Path):
     directory = Path(directory)
-    hashes = json.loads((directory / "SHA256SUMS.json").read_text())
-    files = {
-        str(p.relative_to(directory))
-        for p in directory.rglob("*")
-        if p.is_file() and p.name != "SHA256SUMS.json"
-    }
-    if files != set(hashes):
-        raise ValueError("Report inventory differs from its checksum list.")
-    for name, digest in hashes.items():
-        if sha256_file(directory / name) != digest:
-            raise ValueError(f"Report checksum mismatch: {name}")
+    verify_inventory(directory)
     return json.loads((directory / "manifest.json").read_text())
 
 
@@ -501,9 +474,7 @@ def load_checkpoint_tokenizer(directory: Path):
 
     directory = Path(directory)
     config = json.loads((directory / "config.json").read_text())
-    options = (
-        {"fix_mistral_regex": False} if config.get("model_type") == "qwen3" else {}
-    )
+    options = {"fix_mistral_regex": False} if config.get("model_type") == "qwen3" else {}
     return AutoTokenizer.from_pretrained(directory, local_files_only=True, **options)
 
 
@@ -524,9 +495,7 @@ def verify_tokenizer_roundtrip(original, restored, texts, token_ids):
                     "skip_special_tokens": skip_special,
                     "clean_up_tokenization_spaces": False,
                 }
-                if original.decode(left, **options) != restored.decode(
-                    right, **options
-                ):
+                if original.decode(left, **options) != restored.decode(right, **options):
                     raise ValueError("Reloaded tokenizer text decoding differs.")
     if original.decode(token_ids, skip_special_tokens=False) != restored.decode(
         token_ids, skip_special_tokens=False
@@ -549,17 +518,7 @@ def verify_checkpoint(
     from transformers import AutoModelForCausalLM
 
     directory = Path(directory)
-    hashes = json.loads((directory / "SHA256SUMS.json").read_text())
-    files = {
-        p.name
-        for p in directory.iterdir()
-        if p.is_file() and p.name != "SHA256SUMS.json"
-    }
-    if set(hashes) != files:
-        raise ValueError("Checkpoint inventory differs from its checksum list.")
-    for name, digest in hashes.items():
-        if sha256_file(directory / name) != digest:
-            raise ValueError(f"Checkpoint checksum mismatch: {name}")
+    verify_inventory(directory)
     restored_tokenizer = load_checkpoint_tokenizer(directory)
     probes = list(probe_texts or []) + [
         tokenizer.decode(token_ids),
@@ -573,16 +532,20 @@ def verify_checkpoint(
     restored = AutoModelForCausalLM.from_pretrained(
         directory, dtype=torch.float32, local_files_only=True
     ).to(device)
+    was_training = model.training
     model.eval()
     restored.eval()
-    # Compare identical small prefixes to avoid a second long generation pass.
-    inputs = torch.tensor([token_ids[:32]], device=device)
-    with torch.inference_mode(), precision_context(device, dtype):
-        original_logits = model(inputs, use_cache=False).logits
-        restored_logits = restored(inputs, use_cache=False).logits
-    if not torch.allclose(
-        original_logits.float(), restored_logits.float(), rtol=1e-4, atol=1e-5
-    ):
-        raise ValueError("Reloaded checkpoint logits differ from the trained model.")
-    del restored
+    try:
+        # Compare identical small prefixes to avoid a second long generation pass.
+        inputs = torch.tensor([token_ids[:32]], device=device)
+        with torch.inference_mode(), precision_context(device, dtype):
+            original_logits = model(inputs, use_cache=False).logits
+            restored_logits = restored(inputs, use_cache=False).logits
+        if not torch.allclose(
+            original_logits.float(), restored_logits.float(), rtol=1e-4, atol=1e-5
+        ):
+            raise ValueError("Reloaded checkpoint logits differ from the trained model.")
+    finally:
+        model.train(was_training)
+        del restored
     return True

@@ -58,18 +58,14 @@ def _read_number_and_units(text: str) -> Decimal | None:
     """Read a number followed only by short unit text, never a second calculation."""
     text = text.strip().rstrip(".!").strip()
     match = re.fullmatch(
-        r"\$?\s*("
-        + NUMBER_PATTERN
-        + r")(?P<units>(?:\s+[A-Za-z]+(?:[-/][A-Za-z]+)?){0,5}|\s*%)",
+        r"\$?\s*(" + NUMBER_PATTERN + r")(?P<units>(?:\s+[A-Za-z]+(?:[-/][A-Za-z]+)?){0,5}|\s*%)",
         text,
     )
     if match is None:
         return None
     # A suffix such as 'or 7', 'is wrong', or 'but maybe' is not a unit.
     units = match.group("units")
-    if re.search(
-        r"\b(?:or|and|but|if|unless|because|is|are|was|were|not)\b", units, re.I
-    ):
+    if re.search(r"\b(?:or|and|but|if|unless|because|is|are|was|were|not)\b", units, re.I):
         return None
     if UNCERTAIN.search(text):
         return None
@@ -124,18 +120,14 @@ def _conclusion_candidate(line: str) -> tuple[Decimal | None, str | None]:
     return None, None
 
 
-def extract_prose_final_answer(
-    response_text: str, *, hit_token_limit: bool = False
-) -> dict:
+def extract_prose_final_answer(response_text: str, *, hit_token_limit: bool = False) -> dict:
     """Return an auditable extraction using only response text and stopping status.
 
     This function deliberately has no reference-answer argument. Its result must
     not depend on which candidate happens to match the correct answer.
     """
 
-    def result(
-        answer=None, method="unparsed", reason="no_clear_final_answer", evidence=""
-    ):
+    def result(answer=None, method="unparsed", reason="no_clear_final_answer", evidence=""):
         return {
             "answer": str(answer) if answer is not None else None,
             "method": method,
@@ -147,9 +139,7 @@ def extract_prose_final_answer(
     # even when a correct number occurred somewhere in the reasoning.
     if hit_token_limit:
         return result(reason="token_limit_stop")
-    lines = [
-        _clean_final_line(line) for line in response_text.splitlines() if line.strip()
-    ]
+    lines = [_clean_final_line(line) for line in response_text.splitlines() if line.strip()]
     if not lines:
         return result(reason="empty_response")
     strict_answer = extract_strict_final_answer(response_text)
@@ -181,9 +171,7 @@ def extract_prose_final_answer(
             # Use the same conservative one-number rules as a concluding sentence.
             answer, _ = _conclusion_candidate("Therefore, " + final_line)
         if answer is not None:
-            return result(
-                answer, "answer_header", "accepted", lines[-2] + "\n" + final_line
-            )
+            return result(answer, "answer_header", "accepted", lines[-2] + "\n" + final_line)
     answer, method = _conclusion_candidate(final_line)
     if answer is not None:
         return result(answer, method, "accepted", final_line)
@@ -192,9 +180,7 @@ def extract_prose_final_answer(
 
 def rescore_response_rows(response_rows: list[dict]) -> tuple[list[dict], dict]:
     """Create separate annotations and metrics without mutating original rows."""
-    if not response_rows or len({row["example_id"] for row in response_rows}) != len(
-        response_rows
-    ):
+    if not response_rows or len({row["example_id"] for row in response_rows}) != len(response_rows):
         raise ValueError("Expected nonempty responses with unique example IDs.")
     scored_rows = []
     for row in response_rows:
@@ -212,34 +198,25 @@ def rescore_response_rows(response_rows: list[dict]) -> tuple[list[dict], dict]:
         strict_correct = strict_answer is not None and strict_answer == expected
         if "is_correct" in row and row["is_correct"] != strict_correct:
             raise ValueError(
-                "Saved strict score disagrees with its original rule: "
-                + row["example_id"]
+                "Saved strict score disagrees with its original rule: " + row["example_id"]
             )
         if "predicted_answer" in row:
             saved_answer = (
-                Decimal(row["predicted_answer"])
-                if row["predicted_answer"] is not None
-                else None
+                Decimal(row["predicted_answer"]) if row["predicted_answer"] is not None else None
             )
             if saved_answer != strict_answer:
                 raise ValueError(
-                    "Saved strict extraction disagrees with its original rule: "
-                    + row["example_id"]
+                    "Saved strict extraction disagrees with its original rule: " + row["example_id"]
                 )
-        if "answer_parsed" in row and row["answer_parsed"] != (
-            strict_answer is not None
-        ):
+        if "answer_parsed" in row and row["answer_parsed"] != (strict_answer is not None):
             raise ValueError(
-                "Saved strict parse status disagrees with its original rule: "
-                + row["example_id"]
+                "Saved strict parse status disagrees with its original rule: " + row["example_id"]
             )
         scored_rows.append(
             {
                 "example_id": row["example_id"],
                 "expected_answer": str(expected),
-                "strict_answer": str(strict_answer)
-                if strict_answer is not None
-                else None,
+                "strict_answer": str(strict_answer) if strict_answer is not None else None,
                 "strict_correct": strict_correct,
                 "prose_answer": extraction["answer"],
                 "prose_correct": extraction["answer"] is not None
@@ -311,9 +288,7 @@ def load_saved_baseline(input_directory: str | Path) -> tuple[list[dict], dict]:
     if digest != manifest["protocol_sha256"]:
         raise ValueError("Source protocol fingerprint does not match its manifest.")
     rows = [
-        json.loads(line)
-        for line in response_bytes.decode("utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in response_bytes.decode("utf-8").splitlines() if line.strip()
     ]
     if len(rows) != protocol["number_of_examples"]:
         raise ValueError("Source response count does not match its manifest.")
@@ -347,32 +322,24 @@ def save_rescore_report(
         "source": source,
         "note": "Checker designed after inspecting baseline responses. This is not a preregistered test score.",
         "truncation_policy": "Exclude token-limit stops from prose extraction; retain all rows in the denominator.",
-        "checker_source_sha256": hashlib.sha256(
-            Path(__file__).read_bytes()
-        ).hexdigest(),
+        "checker_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     }
     (output / "rescore_manifest.json").write_text(
         json.dumps(report_manifest, indent=2), encoding="utf-8"
     )
     # Archive the exact reference-blind checker, not just a mutable version label.
     (output / "checker_source.py").write_bytes(Path(__file__).read_bytes())
-    (output / "rescore_summary.json").write_text(
-        json.dumps(summaries, indent=2), encoding="utf-8"
-    )
+    (output / "rescore_summary.json").write_text(json.dumps(summaries, indent=2), encoding="utf-8")
     with (output / "rescore_results.jsonl").open("w", encoding="utf-8") as handle:
         for row in scored_rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
-    with (output / "rescore_results.csv").open(
-        "w", newline="", encoding="utf-8"
-    ) as handle:
+    with (output / "rescore_results.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(scored_rows[0]))
         writer.writeheader()
         writer.writerows(scored_rows)
     restored = [
         json.loads(line)
-        for line in (output / "rescore_results.jsonl")
-        .read_text(encoding="utf-8")
-        .splitlines()
+        for line in (output / "rescore_results.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert restored == scored_rows
     archive = Path(shutil.make_archive(str(output), "zip", root_dir=output))

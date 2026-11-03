@@ -160,29 +160,21 @@ class RescoreReportTests(unittest.TestCase):
             source_directory = Path(directory) / "original"
             source_directory.mkdir()
             (source_directory / "manifest.json").write_text(json.dumps(manifest))
-            (source_directory / "responses.jsonl").write_text(
-                json.dumps(rows[0]) + "\n"
-            )
+            (source_directory / "responses.jsonl").write_text(json.dumps(rows[0]) + "\n")
             before = {p.name: p.read_bytes() for p in source_directory.iterdir()}
             loaded, provenance = load_saved_baseline(source_directory)
             scored, summary = rescore_response_rows(loaded)
-            archive = save_rescore_report(
-                Path(directory) / "report", scored, summary, provenance
-            )
+            archive = save_rescore_report(Path(directory) / "report", scored, summary, provenance)
             with zipfile.ZipFile(archive) as report:
                 self.assertIsNone(report.testzip())
-                self.assertEqual(
-                    json.loads(report.read("rescore_summary.json")), summary
-                )
+                self.assertEqual(json.loads(report.read("rescore_summary.json")), summary)
                 saved_manifest = json.loads(report.read("rescore_manifest.json"))
                 self.assertEqual(saved_manifest["source"]["original_run_id"], "fixture")
                 self.assertEqual(
                     hashlib.sha256(report.read("checker_source.py")).hexdigest(),
                     saved_manifest["checker_source_sha256"],
                 )
-            self.assertEqual(
-                before, {p.name: p.read_bytes() for p in source_directory.iterdir()}
-            )
+            self.assertEqual(before, {p.name: p.read_bytes() for p in source_directory.iterdir()})
             with self.assertRaises(FileExistsError):
                 save_rescore_report(source_directory, scored, summary, provenance)
             manifest["protocol"]["number_of_examples"] = 2
@@ -193,9 +185,7 @@ class RescoreReportTests(unittest.TestCase):
 
 class KLDivergenceTests(unittest.TestCase):
     def test_known_value_and_self_divergence(self):
-        self.assertAlmostEqual(
-            categorical_kl([0.5, 0.5], [0.25, 0.75]), 0.5 * math.log(4 / 3)
-        )
+        self.assertAlmostEqual(categorical_kl([0.5, 0.5], [0.25, 0.75]), 0.5 * math.log(4 / 3))
         self.assertEqual(categorical_kl([0.3, 0.7], [0.3, 0.7]), 0)
 
     def test_divergence_is_asymmetric(self):

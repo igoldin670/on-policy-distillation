@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>A guided language-model distillation project, from one trajectory to a supervised starting point.</strong><br>
+  <strong>A guided language-model distillation project, from one trajectory to a controlled training experiment.</strong><br>
   PyTorch · Hugging Face · Qwen3 · Google Colab
 </p>
 
@@ -11,6 +11,7 @@
   <a href="notebooks/01_reverse_kl_demo.ipynb">Explore the mechanics</a> ·
   <a href="notebooks/02_baseline_evaluation.ipynb">Inspect the baseline</a> ·
   <a href="notebooks/03_sft_cold_start.ipynb">Build the supervised start</a> ·
+  <a href="notebooks/04_on_policy_distillation.ipynb">Run on-policy distillation</a> ·
   <a href="https://arxiv.org/abs/2306.13649">Read the GKD paper</a>
 </p>
 
@@ -30,10 +31,11 @@ can follow, rather than a claim of state-of-the-art performance.
 
 | Student | Teacher | Working environment |
 | :--- | :--- | :--- |
-| `Qwen/Qwen3-0.6B-Base` | `Qwen/Qwen3-32B` | Colab A100 80GB for the recorded mechanics run; 03 targets A100/L4 |
+| `Qwen/Qwen3-0.6B-Base` | `Qwen/Qwen3-32B` | Colab A100 80GB for 01/04; 03 trains only the small student |
 
-The teacher is loaded in 01. **Notebook 03 only trains the student** using existing
-GSM8K reference solutions. It does not load the 32B teacher.
+The teacher is loaded in 01 and in 04's CUDA experiment. **Notebook 03 only trains
+the student** using existing GSM8K reference solutions. 04 reads its saved checkpoint
+and report, not an earlier notebook's live kernel variables.
 
 ## Follow the experiment
 
@@ -42,11 +44,17 @@ GSM8K reference solutions. It does not load the 32B teacher.
 | [**01 · One student trajectory**](notebooks/01_reverse_kl_demo.ipynb) | Token probabilities, tokenizer compatibility, frozen-teacher scoring, reverse KL, and one student update | Saved A100 outputs verify the seven mechanics checkpoints; no quality improvement established |
 | [**02 · Baseline evaluation**](notebooks/02_baseline_evaluation.ipynb) | Fixed questions, greedy generation, answer extraction, metrics, and failure analysis | Completed Colab generation outputs plus separately validated CPU replay |
 | [**03 · Supervised cold start**](notebooks/03_sft_cold_start.ipynb) | Response-only SFT, data isolation, gradient accumulation, paired validation, checkpoint export | Completed A100 SFT outputs; format learning is strong, reasoning results are mixed; stronger tokenizer reload checks added afterward |
-| [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Fresh student responses and frozen-teacher feedback after the cold start | Planned; scaffold only |
+| [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Full-vocabulary forward KL, fresh student responses, continued-SFT control, paired evaluation, restart/export | Implemented; local checks are documented separately; real Qwen distillation remains unverified |
 
 Each notebook introduces the idea, walks through small examples and tensor shapes,
-checks assumptions, and ends with a plain-language recap. Notebooks 02 and 03
-start independently; they do not require an earlier notebook's live kernel state.
+checks assumptions, and ends with a plain-language recap. No notebook depends on
+an earlier notebook's live kernel state. 04 reads 03's verified saved artifacts.
+
+<p align="center">
+  <a href="notebooks/04_on_policy_distillation.ipynb">
+    <img src="notebooks/assets/04_on_policy_distillation/on_policy_workflow.png" alt="The student samples a response, the frozen teacher scores its prefixes, and only the student learns" width="100%">
+  </a>
+</p>
 
 ## What the evidence actually says
 
@@ -57,6 +65,7 @@ start independently; they do not require an earlier notebook's live kernel state
 | 02: exploratory prose numeric matches | **17 / 32 (53.125%)** | A broader, post-hoc extractor found matching numbers; this is not a training gain |
 | 02: prose-parsed responses / token-limit stops | **28 / 32** parsed; **2 / 32** budget stops | Format, arithmetic, extraction, and stopping failures are kept visible |
 | 03: paired validation after 256 reference examples | Format **0/64 → 59/64**; prose matches **31/64 → 35/64**; NLL **0.776 → 0.667** | A real A100 run; strong format learning, modest numeric gain, and visible regressions |
+| 04: post-distillation task performance | **Not yet measured** | Implementation and CPU tests cannot substitute for a real Qwen CUDA run |
 
 The two 02 scores use the **same model responses**, with all questions retained
 in the denominator. Numeric agreement does not certify reasoning or units. The
@@ -80,6 +89,7 @@ rewritten to make its answers look better.
 
 1. Open [02](notebooks/02_baseline_evaluation.ipynb) to inspect evaluation, or
    [03](notebooks/03_sft_cold_start.ipynb) to prepare the supervised starting point.
+   With its saved checkpoint and report, continue to [04](notebooks/04_on_policy_distillation.ipynb).
 2. Make sure the **complete project** is available on the runtime. The notebook
    can clone public `dev` into `/content`; an existing runtime checkout must be
    updated separately from local VS Code files.
@@ -92,12 +102,37 @@ rewritten to make its answers look better.
 | :--- | :--- | :--- |
 | 02 | `MODE = "replay"`: analyze the checksummed original responses | `MODE = "generate"`: generate a fresh baseline |
 | 03 | `MODE = "inspect"`: real tokenizer/data and target-mask checks | `MODE = "train"`: small full-parameter SFT run, evaluation, and export |
+| 04 | `MODE = "inspect"`: data isolation, shared tokenizer, masks, illustrative KL | `MODE = "train"`: A100 80GB; continued SFT and on-policy KD from the same checkpoint |
 
 For 03, defaults are **256 practice / 64 validation examples**, one epoch,
 1,024-token complete sequences, microbatch size 1, and accumulation over eight
 microbatches. The notebook explains the response-only loss and makes optimizer
 steps visible. Reserved test questions are excluded from training and tuning.
 Checkpoint weights are large, so report and weight downloads have separate switches.
+
+### Notebook 04: the checkpoint handoff
+
+Keep both **03's `report.zip` and `checkpoint.zip`**. The report contains split IDs,
+metrics, and weight fingerprints, but no weights. If the original Colab runtime
+still has its `results/sft_cold_start_.../checkpoint` and `report` folders, 04 can
+find them. Otherwise upload both ZIPs and set `SFT_REPORT_PATH` and
+`SFT_CHECKPOINT_PATH` to their paths on the remote runtime.
+
+04 defaults to inspection. Its fixed recipe uses **1,024 new practice questions**,
+**128 updates per arm**, a **256-token sampled-response budget**, and a
+**256-question primary test** excluding the previously inspected 32 questions.
+Teacher targets use temperature 0.1; student sampling uses temperature 1 without
+top-k/top-p filtering. No LoRA or quantization is used. The teacher revision is
+pinned and its full output vocabulary is retained.
+
+All three 04 models are evaluated again under identical greedy settings, including
+both models' recognized end-token IDs. This differs from 02/03's historical
+stopping rule. Those old scores remain context, not a paired 04 baseline.
+
+04 saves restart state every 32 updates. Set `RESUME_RUN_DIRECTORY` after an
+interruption to continue from a matching optimizer boundary. Reports and final
+weights are separate. A file created under `/content/` still needs to be downloaded
+using VS Code before the Colab session disappears.
 
 ### Local validation
 
@@ -115,9 +150,12 @@ libraries and an appropriate PyTorch build. On a CPU-only machine:
 
 ```bash
 uv pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
-uv pip install -r requirements-sft.txt
+uv pip install -r requirements-opd.txt
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/validate_notebook03.py
+.venv/bin/python scripts/validate_notebook04.py
+.venv/bin/python -m ruff check src scripts tests notebooks/04_on_policy_distillation.ipynb
+.venv/bin/python -m ruff format --check src scripts tests notebooks/04_on_policy_distillation.ipynb
 ```
 
 **Do not install the CPU PyTorch build into Colab.** Its notebook setup preserves
@@ -126,14 +164,14 @@ Colab's existing PyTorch/CUDA stack. Local CPU tests do not establish that the
 
 Validators write separate executed QA copies and HTML previews under ignored
 `results/`. They preserve the source notebooks unless their explicit output-update
-flag is requested. 03 inspection needs the public pinned tokenizer/data download
-on its first run, but no student weights.
+flag is requested. 03/04 inspection needs public pinned tokenizer/data downloads
+on the first run, but no model weights. 04 also reads the teacher's pinned tokenizer/configuration.
 
 ## Under the hood
 
 ```text
 notebooks/       Guided experiments, diagrams, and recorded evidence
-src/             Evaluation, baseline inference, and supervised-training helpers
+src/             Evaluation, generation, token alignment, SFT, and exact KL helpers
 configs/         Student and teacher model choices
 scripts/         Notebook QA, source verification, and asset generation
 tests/           Extraction, alignment, gradient, checkpoint, and archive checks
@@ -141,10 +179,12 @@ results/         Local run artifacts and previews, ignored by Git
 ```
 
 - **Inspect the math:** [response-only SFT](src/sft.py),
+  [full-vocabulary forward KL](src/opd_loss.py), [causal alignment](src/logprobs.py),
   [reference-blind extraction](src/evaluation.py), and
   [baseline generation and evidence validation](src/baseline.py).
 - **Audit the evidence:** [02 validation](notebooks/assets/02_baseline_evaluation/VALIDATION.md),
-  [03 validation](notebooks/assets/03_sft_cold_start/VALIDATION.md), and
+  [03 validation](notebooks/assets/03_sft_cold_start/VALIDATION.md),
+  [04 validation](notebooks/assets/04_on_policy_distillation/VALIDATION.md), and
   [the immutable original A100 run](notebooks/assets/02_baseline_evaluation/recorded_run).
 - **Reuse the result:** 03 saves a Hugging Face-compatible student checkpoint for
   04, plus separate training/evaluation evidence with checksums. Weights and
@@ -163,11 +203,17 @@ student generates itself. The original arithmetic experiments began from
 supervised-fine-tuned models. Our 03 reference-solution warm start is a smaller,
 explicitly different adaptation. It does not itself perform distillation.
 
-The project establishes working mechanics, an inspectable baseline, and a completed small supervised cold start.
+The project establishes working mechanics, an inspectable baseline, a completed
+small supervised cold start, and an implemented controlled distillation experiment.
 It does **not** establish a post-distillation quality gain. The 03 run also produced five validation token-limit stops and a displayed correct-to-incorrect answer regression. Its saved test score is 14/32 strict matches; broad reasoning improvement is not established. The teacher remains
-fixed in the mechanics demonstration; no large-scale training or multi-seed
+fixed in distillation; no large-scale training or multi-seed
 benchmark comparison has been completed. Stronger claims require untouched test
 data, frozen metrics, repeated runs, and actual trained-model evidence.
+
+04's arms have different objectives, response lengths, and compute costs. An
+off-policy KD arm would be needed to isolate the effect of student-generated
+prefixes alone. We use a shared plain prompt for exact token alignment, rather
+than the teacher's chat template, and have not separately measured its task accuracy.
 
 - [On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes](https://arxiv.org/abs/2306.13649)
 - [GSM8K dataset and reference solutions](https://huggingface.co/datasets/openai/gsm8k), MIT licensed;

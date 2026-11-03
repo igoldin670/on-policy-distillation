@@ -176,9 +176,7 @@ def render_assets():
                         edgecolor="#93C5FD" if response else "#CBD5E1",
                     )
                 )
-                ax.text(
-                    x, y, value, ha="center", va="center", fontsize=10, color="#14253D"
-                )
+                ax.text(x, y, value, ha="center", va="center", fontsize=10, color="#14253D")
         ax.text(
             -1.6,
             -0.22,

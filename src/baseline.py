@@ -26,13 +26,9 @@ from src.evaluation import (
     rescore_response_rows,
     save_rescore_report,
 )
+from src.utils import sha256_file
 
 RUN_FILES = ("manifest.json", "responses.jsonl", "results.csv", "summary.json")
-
-
-def sha256_file(path: Path) -> str:
-    """Fingerprint bytes, rather than a path tied to one person's computer."""
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def verify_recorded_run(directory: Path) -> dict:
@@ -76,9 +72,7 @@ def verify_recorded_run(directory: Path) -> dict:
                 or length != len(ids)
                 or not ids
             ):
-                raise ValueError(
-                    f"Invalid recorded token shape: {row['example_id']} / {ids_key}"
-                )
+                raise ValueError(f"Invalid recorded token shape: {row['example_id']} / {ids_key}")
             if any(type(token) is not int or token < 0 for token in ids):
                 raise ValueError("Token IDs must be nonnegative integers.")
         for flag in [
@@ -97,22 +91,16 @@ def verify_recorded_run(directory: Path) -> dict:
             length == budget and not ended
         ):
             raise ValueError("Stored stop flags disagree with response IDs and budget.")
-        if row["answer_parsed"] != (
-            extract_strict_final_answer(row["response_text"]) is not None
-        ):
+        if row["answer_parsed"] != (extract_strict_final_answer(row["response_text"]) is not None):
             raise ValueError("Stored strict parse flag is inconsistent.")
-        if row["prompt"] != protocol["prompt_template"].format(
-            question=row["question"]
-        ):
-            raise ValueError(
-                "A prompt does not match the fixed question-only template."
-            )
+        if row["prompt"] != protocol["prompt_template"].format(question=row["question"]):
+            raise ValueError("A prompt does not match the fixed question-only template.")
     if protocol["selected_indices"] != [row["source_index"] for row in rows]:
         raise ValueError("Selected dataset indices do not match response order.")
     indices = protocol["selected_indices"]
-    if any(type(index) is not int or index < 0 for index in indices) or len(
-        set(indices)
-    ) != len(indices):
+    if any(type(index) is not int or index < 0 for index in indices) or len(set(indices)) != len(
+        indices
+    ):
         raise ValueError("Selected indices must be unique, nonnegative integers.")
 
     annotations, scores = rescore_response_rows(rows)
@@ -127,17 +115,14 @@ def verify_recorded_run(directory: Path) -> dict:
         "mean_response_tokens": sum(row["response_length"] for row in rows) / len(rows),
     }
     if original_summary != expected_summary:
-        raise ValueError(
-            "Stored summary does not match independently recomputed metrics."
-        )
+        raise ValueError("Stored summary does not match independently recomputed metrics.")
     with (directory / "results.csv").open(newline="", encoding="utf-8") as handle:
         csv_rows = list(csv.DictReader(handle))
     if len(csv_rows) != len(rows):
         raise ValueError("CSV row count differs from JSONL.")
     for csv_row, row in zip(csv_rows, rows, strict=True):
         if any(
-            value != ("" if row[key] is None else str(row[key]))
-            for key, value in csv_row.items()
+            value != ("" if row[key] is None else str(row[key])) for key, value in csv_row.items()
         ):
             raise ValueError("CSV and JSONL contain different records.")
     return {
@@ -173,9 +158,7 @@ def metric_rows(annotations: list[dict], scores: dict) -> list[dict]:
         )
     for row in table:
         if row["correct"] + row["parsed_wrong"] + row["unparsed"] != len(annotations):
-            raise ValueError(
-                "Metric categories must partition all evaluation examples."
-            )
+            raise ValueError("Metric categories must partition all evaluation examples.")
     return table
 
 
@@ -211,9 +194,7 @@ def export_analysis(project_root: Path, run: dict, *, execution_mode: str) -> Pa
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     destination = root / "results" / f"baseline_analysis_{stamp}"
     source = {**run["provenance"], "artifact_sha256": run["artifact_sha256"]}
-    archive = save_rescore_report(
-        destination, run["annotations"], run["scores"], source
-    )
+    archive = save_rescore_report(destination, run["annotations"], run["scores"], source)
     metadata = {
         "execution_mode": execution_mode,
         "inference_performed_this_execution": execution_mode == "generate",
@@ -224,7 +205,7 @@ def export_analysis(project_root: Path, run: dict, *, execution_mode: str) -> Pa
         "raw_run_directory": "raw_run",
         "code_sha256": {
             name: sha256_file(root / "src" / name)
-            for name in ["baseline.py", "evaluation.py", "baseline_plots.py"]
+            for name in ["baseline.py", "evaluation.py", "baseline_plots.py", "utils.py"]
         },
         "limitations": [
             "32-question sample",
@@ -238,9 +219,7 @@ def export_analysis(project_root: Path, run: dict, *, execution_mode: str) -> Pa
     metadata["notebook_source_sha256"] = hashlib.sha256(
         json.dumps(sources, ensure_ascii=False).encode()
     ).hexdigest()
-    (destination / "analysis_metadata.json").write_text(
-        json.dumps(metadata, indent=2) + "\n"
-    )
+    (destination / "analysis_metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
     # A Colab runtime is temporary. Include the exact raw inference evidence,
     # especially token IDs and generation settings, in the downloaded report.
     # Revalidate at export time so an edited source cannot enter the archive.
@@ -285,9 +264,7 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
             "Install requirements-generation.txt in a CUDA-enabled runtime first."
         ) from error
     if not torch.cuda.is_available():
-        raise RuntimeError(
-            "Fresh inference requires a working CUDA GPU. Use MODE='replay' on CPU."
-        )
+        raise RuntimeError("Fresh inference requires a working CUDA GPU. Use MODE='replay' on CPU.")
     output = Path(output_directory)
     if output.exists():
         raise FileExistsError("Choose a new output directory for a fresh model run.")
@@ -306,9 +283,7 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
         token=False,
     )
     policy["dataset_fingerprint"] = dataset._fingerprint
-    selected = sorted(
-        random.Random(seed).sample(range(len(dataset)), policy["number_of_examples"])
-    )
+    selected = sorted(random.Random(seed).sample(range(len(dataset)), policy["number_of_examples"]))
     if selected != policy["selected_indices"]:
         raise ValueError(
             "Dataset revision or selected question set differs from the recorded protocol."
@@ -319,9 +294,7 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
         if reference["question"] != example["question"] or answer != Decimal(
             example["expected_answer"]
         ):
-            raise ValueError(
-                "Pinned dataset content differs from the saved evaluation examples."
-            )
+            raise ValueError("Pinned dataset content differs from the saved evaluation examples.")
 
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     print(f"Loading {policy['student_model_id']} on CUDA...", flush=True)
@@ -400,8 +373,7 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
         "number_parsed": strict["number_parsed"],
         "answer_parse_rate": strict["parse_rate"],
         "number_at_token_limit": sum(row["hit_token_limit"] for row in rows),
-        "mean_response_tokens": math.fsum(row["response_length"] for row in rows)
-        / len(rows),
+        "mean_response_tokens": math.fsum(row["response_length"] for row in rows) / len(rows),
     }
     manifest = {
         "run_id": output.name,
@@ -430,19 +402,13 @@ def generate_fresh_baseline(protocol: dict, output_directory: Path) -> Path:
         },
     }
     output.mkdir(parents=True, exist_ok=False)
-    (output / "manifest.json").write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
-    )
+    (output / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     (output / "responses.jsonl").write_text(
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows)
     )
     with (output / "results.csv").open("w", newline="", encoding="utf-8") as handle:
-        fields = [
-            key
-            for key in rows[0]
-            if key not in {"prompt_token_ids", "response_token_ids"}
-        ]
+        fields = [key for key in rows[0] if key not in {"prompt_token_ids", "response_token_ids"}]
         writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
