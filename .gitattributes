@@ -2,3 +2,13 @@
 notebooks/assets/02_baseline_evaluation/recorded_run/* -text
 # The CSV embeds verbatim response text, including intentional whitespace.
 notebooks/assets/02_baseline_evaluation/recorded_run/results.csv -diff
+# Preserve the latest SFT report and interrupted-run evidence byte for byte.
+notebooks/assets/03_sft_cold_start/recorded_run/** -text
+notebooks/assets/04_on_policy_distillation/recorded_failure/** -text
+# Full token arrays remain available in file view without dominating code review.
+notebooks/assets/03_sft_cold_start/recorded_run/data_splits.json -diff
+notebooks/assets/03_sft_cold_start/recorded_run/before_validation.json -diff
+notebooks/assets/03_sft_cold_start/recorded_run/after_validation.json -diff
+notebooks/assets/03_sft_cold_start/recorded_run/final_test.json -diff
+notebooks/assets/04_on_policy_distillation/recorded_failure/training_trajectories.jsonl -diff
+notebooks/assets/04_on_policy_distillation/recorded_failure/notebook04_snapshot.json -diff

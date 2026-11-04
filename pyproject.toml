@@ -1,7 +1,9 @@
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-include = ["*.py", "notebooks/04_on_policy_distillation.ipynb"]
+include = ["*.py", "notebooks/*.ipynb"]
+# Archived source describes past runs and is immutable evidence.
+extend-exclude = ["notebooks/assets/**/recorded_run/source"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]

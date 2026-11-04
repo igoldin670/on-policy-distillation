@@ -31,7 +31,12 @@ except ImportError as error:
 
 from src.data import prepare_opd_splits
 from src.generation import sample_trajectory
-from src.logprobs import response_prediction_logits, selected_log_probs, verify_shared_tokenizer
+from src.logprobs import (
+    response_prediction_logits,
+    selected_log_probs,
+    teacher_prompt_token_ids,
+    verify_shared_tokenizer,
+)
 from src.opd import (
     OPDConfig,
     append_trajectories,
@@ -49,7 +54,9 @@ from src.opd import (
     restore_training_state,
     save_resume,
     seed_everything,
+    training_health,
     trajectory_kl,
+    trajectory_tensors,
     truncate_uncommitted_trajectories,
     validate_trajectory_log,
 )
@@ -58,12 +65,19 @@ from src.sft import (
     collate_examples,
     evaluation_summary,
     generate_evaluation,
+    precision_context,
     response_loss_sum,
     save_checkpoint,
     validation_loss,
     verify_checkpoint,
 )
-from src.utils import artifact_directory, verify_inventory, write_inventory, write_json
+from src.utils import (
+    artifact_directory,
+    verified_zip,
+    verify_inventory,
+    write_inventory,
+    write_json,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -108,6 +122,7 @@ def example(index=0, response=(3, 4, 1)):
         "source_index": index,
         "question": "question",
         "prompt": "question",
+        "teacher_prompt_token_ids": [6, 2],
         "expected_answer": "5",
         "target_text": "reason 5",
         "input_ids": [2] + list(response),
@@ -122,6 +137,8 @@ def trajectory(index=0, response=(3, 4, 1), policy_step=0):
         "example_id": f"unit/{index}",
         "policy_step": policy_step,
         "prompt_token_ids": [2],
+        "teacher_prompt_token_ids": [6, 2],
+        "teacher_prompt_length": 2,
         "response_token_ids": list(response),
         "complete_sequence_ids": [2] + list(response),
         "prompt_length": 1,
@@ -294,7 +311,7 @@ class AlignmentAndSamplingTests(unittest.TestCase):
 
 
 class TrainingTests(unittest.TestCase):
-    def test_teacher_same_ids_frozen_and_student_changes(self):
+    def test_teacher_context_preserves_response_ids_and_frozen_weights(self):
         student, teacher = tiny_model(), tiny_model(77).requires_grad_(False).eval()
         before_teacher = {k: v.clone() for k, v in teacher.state_dict().items()}
         before_student = {k: v.clone() for k, v in student.state_dict().items()}
@@ -303,7 +320,9 @@ class TrainingTests(unittest.TestCase):
             metrics = backward_opd_group(
                 student, teacher, [trajectory()], "cpu", None, OPDConfig(), scaler, 0
             )
-            self.assertEqual(teacher_forward.call_args.kwargs["input_ids"].tolist(), [[2, 3, 4, 1]])
+            self.assertEqual(
+                teacher_forward.call_args.kwargs["input_ids"].tolist(), [[6, 2, 3, 4, 1]]
+            )
         optimizer = torch.optim.AdamW(student.parameters(), lr=1e-3)
         optimizer.step()
         self.assertTrue(math.isfinite(metrics["loss"]))
@@ -440,6 +459,7 @@ class TrainingTests(unittest.TestCase):
             namespace = dict(
                 globals(),
                 config=config,
+                starting_validation_loss=4.0,
                 signature="tiny-qa",
                 run_directory=directory,
                 starting_checkpoint_directory=checkpoint,
@@ -510,6 +530,8 @@ class TrainingTests(unittest.TestCase):
 
             namespace.update(
                 MODE="train",
+                FULL_RUN_COMPLETE=True,
+                teacher_template_sha256="tiny-template",
                 PROJECT_ROOT=ROOT,
                 control_result=control,
                 on_policy_result=on_policy,
@@ -747,6 +769,402 @@ class ArtifactAndProtocolTests(unittest.TestCase):
         self.assertEqual(comparison["paired_bootstrap_95_interval"], [1, 1])
         with self.assertRaises(ValueError):
             paired_accuracy_difference(first, {"annotations": []})
+
+
+class CorrectedContextTests(unittest.TestCase):
+    def test_template_uses_verbatim_question_and_nonthinking_assistant_prefix(self):
+        tokenizer = SimpleNamespace(chat_template="pinned template")
+        from unittest.mock import Mock
+
+        tokenizer.apply_chat_template = Mock(return_value=[7, 8, 2])
+        prompt = "Question: Café 中文 🙂 3 + 2?\n\nAnswer:\n"
+        self.assertEqual(teacher_prompt_token_ids(tokenizer, prompt), [7, 8, 2])
+        tokenizer.apply_chat_template.assert_called_once_with(
+            [{"role": "user", "content": prompt}],
+            tokenize=True,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+        tokenizer.chat_template = None
+        with self.assertRaises(ValueError):
+            teacher_prompt_token_ids(tokenizer, prompt)
+
+    def test_separate_context_lengths_align_identical_response_ids(self):
+        row = trajectory(response=(3, 4, 1))
+        student_ids, _ = trajectory_tensors(row, "cpu")
+        teacher_ids, _ = trajectory_tensors(row, "cpu", context="teacher")
+        self.assertEqual(student_ids.tolist(), [[2, 3, 4, 1]])
+        self.assertEqual(teacher_ids.tolist(), [[6, 2, 3, 4, 1]])
+        student_logits = torch.randn(1, 4, 32, requires_grad=True)
+        teacher_logits = torch.randn(1, 5, 32, requires_grad=True)
+        student_scores = response_prediction_logits(student_logits, student_ids, 1)
+        teacher_scores = response_prediction_logits(teacher_logits, teacher_ids, 2)
+        self.assertEqual(student_scores.shape, teacher_scores.shape)
+        loss = forward_kl_loss(student_scores, teacher_scores)
+        loss.backward()
+        self.assertIsNone(teacher_logits.grad)
+        self.assertTrue(
+            torch.equal(student_logits.grad[:, -1], torch.zeros_like(student_logits.grad[:, -1]))
+        )
+        legacy = {k: v for k, v in row.items() if not k.startswith("teacher_prompt")}
+        with self.assertRaisesRegex(ValueError, "Legacy"):
+            trajectory_tensors(legacy, "cpu", context="teacher")
+
+    def test_actual_generation_stops_at_the_teachers_end_id(self):
+        model, tokenizer = tiny_model(), tiny_tokenizer()
+        original_forward = model.forward
+
+        def favor_teacher_end(*args, **kwargs):
+            result = original_forward(*args, **kwargs)
+            result.logits[..., 5] = 1000
+            return result
+
+        with patch.object(model, "forward", side_effect=favor_teacher_end):
+            row = sample_trajectory(
+                model,
+                tokenizer,
+                example(),
+                device="cpu",
+                dtype=None,
+                max_new_tokens=3,
+                stop_token_ids=[1, 5],
+                policy_step=0,
+            )
+        self.assertEqual(row["response_token_ids"], [5])
+        self.assertTrue(row["ended_with_eos"])
+        self.assertFalse(row["hit_token_limit"])
+        self.assertEqual(row["teacher_prompt_token_ids"], [6, 2])
+
+    def test_health_window_and_reference_loss_warning_are_independent(self):
+        config = OPDConfig()
+        healthy = [{"response_limit_flags": [True] * 23 + [False] * 9}]
+        self.assertFalse(training_health(healthy, config, 1.0)["pause"])
+        stopped = [{"response_limit_flags": [True] * 24 + [False] * 8}]
+        self.assertTrue(training_health(stopped, config, 1.0)["pause"])
+        short = [{"response_limit_flags": [True] * 31}]
+        self.assertFalse(training_health(short, config, 1.0)["pause"])
+        warning = [{"validation_reference_nll": 1.3}]
+        result = training_health(warning, config, 1.0)
+        self.assertFalse(result["pause"])
+        self.assertEqual(len(result["warnings"]), 1)
+
+    def test_full_stage_notebook_requires_reviewed_pilot_before_training(self):
+        notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
+        source = next(
+            "".join(c["source"]) for c in notebook["cells"] if c["id"] == "opd-run-on-policy"
+        )
+        with tempfile.TemporaryDirectory() as folder:
+            namespace = dict(MODE="train", RUN_STAGE="full", run_directory=Path(folder))
+            with self.assertRaisesRegex(AssertionError, "pilot snapshot"):
+                exec(compile(source, "stage_gate", "exec"), namespace)
+
+    def test_interrupted_json_write_preserves_the_previous_record(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "history.json"
+            write_json(path, {"step": 1})
+            with patch.object(Path, "write_text", side_effect=OSError("simulated write failure")):
+                with self.assertRaises(OSError):
+                    write_json(path, {"step": 2})
+            self.assertEqual(json.loads(path.read_text()), {"step": 1})
+            self.assertFalse(list(Path(folder).glob(".json-*")))
+
+    def test_checkpoint_zip_reuse_and_corruption_detection(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            artifact = root / "checkpoint"
+            artifact.mkdir()
+            (artifact / "weights").write_bytes(b"test weights")
+            write_inventory(artifact)
+            archive = verified_zip(artifact, root / "checkpoint.zip")
+            original_mtime = archive.stat().st_mtime_ns
+            self.assertEqual(verified_zip(artifact, archive), archive)
+            self.assertEqual(archive.stat().st_mtime_ns, original_mtime)
+            archive.write_bytes(b"interrupted download")
+            with self.assertRaisesRegex(ValueError, "damaged ZIP"):
+                verified_zip(artifact, archive)
+            self.assertEqual((artifact / "weights").read_bytes(), b"test weights")
+
+    def test_interrupted_packaging_never_exposes_a_final_archive(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            artifact = root / "checkpoint"
+            artifact.mkdir()
+            (artifact / "weights").write_bytes(b"test weights")
+            write_inventory(artifact)
+            with patch("zipfile.ZipFile.write", side_effect=OSError("simulated interrupted write")):
+                with self.assertRaises(OSError):
+                    verified_zip(artifact, root / "checkpoint.zip")
+            self.assertFalse((root / "checkpoint.zip").exists())
+            self.assertFalse(list(root.glob(".archive-*")))
+
+    def test_concurrent_checkpoint_packaging_publishes_one_verified_archive(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Barrier
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            artifact = root / "checkpoint"
+            artifact.mkdir()
+            (artifact / "weights").write_bytes(b"concurrent test weights")
+            write_inventory(artifact)
+            archive = root / "checkpoint.zip"
+            barrier = Barrier(2)
+            original = Path.hardlink_to
+
+            def publish(path, target):
+                barrier.wait(timeout=10)
+                return original(path, target)
+
+            with (
+                patch.object(Path, "hardlink_to", publish),
+                ThreadPoolExecutor(max_workers=2) as pool,
+            ):
+                futures = [pool.submit(verified_zip, artifact, archive) for _ in range(2)]
+                self.assertEqual([future.result() for future in futures], [archive, archive])
+            self.assertEqual(verified_zip(artifact, archive), archive)
+            self.assertFalse(list(root.glob(".archive-*")))
+
+    def test_zip_checks_entry_hashes_beyond_valid_crc(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            artifact = root / "checkpoint"
+            artifact.mkdir()
+            (artifact / "weights").write_bytes(b"actual weights")
+            write_inventory(artifact)
+            archive = root / "tampered.zip"
+            with zipfile.ZipFile(archive, "w") as stream:
+                stream.writestr("weights", b"different weights")
+                stream.write(artifact / "SHA256SUMS.json", "SHA256SUMS.json")
+            with self.assertRaisesRegex(ValueError, "checksum mismatch"):
+                verified_zip(artifact, archive)
+
+    def test_named_pilot_report_survives_a_later_full_export(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            write_json(directory / "experiment.json", {"signature": "same-run"})
+            pilot = export_report(
+                ROOT,
+                directory,
+                {"status": "pilot_complete", "signature": "same-run"},
+                report_name="report_pilot_complete_0032",
+            )
+            original = pilot.read_bytes()
+            full = export_report(ROOT, directory, {"status": "completed", "signature": "same-run"})
+            self.assertNotEqual(pilot, full)
+            self.assertEqual(pilot.read_bytes(), original)
+            with self.assertRaises(ValueError):
+                export_report(ROOT, directory, {"status": "bad"}, report_name="../escape")
+
+
+class StagedTrainingTests(unittest.TestCase):
+    def namespace(self, directory, config):
+        tokenizer = tiny_tokenizer()
+        checkpoint = directory / "initial"
+        save_checkpoint(tiny_model(), tokenizer, checkpoint)
+        examples = [example(i) for i in range(config.train_examples)]
+
+        def evaluate(model, rows, name):
+            result = generate_evaluation(
+                model,
+                tokenizer,
+                rows,
+                {
+                    "max_new_tokens": 3,
+                    "do_sample": False,
+                    "num_beams": 1,
+                    "eos_token_id": [1, 5],
+                    "pad_token_id": 1,
+                    "bos_token_id": 0,
+                },
+                "cpu",
+                None,
+                use_model_defaults=False,
+            )
+            write_json(directory / f"{name}.json", result)
+            return result
+
+        namespace = dict(
+            globals(),
+            config=config,
+            precision_context=precision_context,
+            starting_validation_loss=4.0,
+            signature="staged-test-only",
+            run_directory=directory,
+            starting_checkpoint_directory=checkpoint,
+            tokenizer=tokenizer,
+            device="cpu",
+            compute_dtype=None,
+            train_examples=examples,
+            validation_examples=examples[:1],
+            diagnostic_trajectories=[trajectory()],
+            stop_token_ids=[1, 5],
+            evaluation_policy={
+                "max_new_tokens": 3,
+                "do_sample": False,
+                "num_beams": 1,
+                "eos_token_id": [1, 5],
+                "pad_token_id": 1,
+                "bos_token_id": 0,
+            },
+            evaluate_and_save=evaluate,
+        )
+        notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
+        source = next("".join(c["source"]) for c in notebook["cells"] if c["id"] == "opd-train-arm")
+        exec(compile(source, "actual_staged_notebook_loop", "exec"), namespace)
+        return namespace
+
+    def test_pilot_resume_matches_uninterrupted_weights_rng_and_schedule(self):
+        from safetensors.torch import load_file
+
+        config = OPDConfig(
+            train_examples=8,
+            accumulation_steps=2,
+            pilot_updates=2,
+            pilot_check_interval=1,
+            checkpoint_interval=2,
+            validation_interval=2,
+            max_prompt_length=8,
+            max_response_length=3,
+            max_sequence_length=16,
+            diagnostic_examples=1,
+            cap_window_responses=100,
+        )
+        teacher = tiny_model(77).requires_grad_(False).eval()
+        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
+            root = Path(folder)
+            staged, continuous = root / "staged", root / "continuous"
+            staged.mkdir()
+            continuous.mkdir()
+            namespace = self.namespace(staged, config)
+            pilot = namespace["train_arm"]("on_policy", teacher, stop_after_steps=2)
+            self.assertEqual(pilot["status"], "pilot_complete")
+            self.assertEqual(pilot["completed_steps"], 2)
+            self.assertFalse((staged / "checkpoints/on_policy").exists())
+            self.assertTrue(Path(pilot["resume_snapshot"]).is_dir())
+            resumed = namespace["train_arm"]("on_policy", teacher)
+            other = self.namespace(continuous, config)
+            uninterrupted = other["train_arm"]("on_policy", teacher)
+            self.assertEqual(resumed["status"], "completed")
+            self.assertEqual(resumed["resumed_from_step"], 2)
+            left = load_file(staged / "checkpoints/on_policy/model.safetensors")
+            right = load_file(continuous / "checkpoints/on_policy/model.safetensors")
+            self.assertTrue(all(torch.equal(left[k], right[k]) for k in left))
+            self.assertEqual(
+                [r["learning_rate"] for r in resumed["history"]],
+                [r["learning_rate"] for r in uninterrupted["history"]],
+            )
+            self.assertEqual(
+                (staged / "training_trajectories.jsonl").read_text(),
+                (continuous / "training_trajectories.jsonl").read_text(),
+            )
+            for key in ("torch_rng", "python_rng", "scheduler"):
+                first = torch.load(
+                    staged / "resume/on_policy/step_0004/training_state.pt", weights_only=True
+                )[key]
+                second = torch.load(
+                    continuous / "resume/on_policy/step_0004/training_state.pt", weights_only=True
+                )[key]
+                if isinstance(first, torch.Tensor):
+                    self.assertTrue(torch.equal(first, second))
+                else:
+                    self.assertEqual(first, second)
+
+    def test_default_pilot_boundary_is_32_of_128_updates(self):
+        # Random-model responses need no quality qualification in this workflow test.
+        config = OPDConfig(
+            max_prompt_length=8,
+            max_response_length=3,
+            max_sequence_length=16,
+            cap_window_responses=10000,
+        )
+        self.assertEqual(config.optimizer_steps, 128)
+        teacher = tiny_model(77).requires_grad_(False).eval()
+        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
+            namespace = self.namespace(Path(folder), config)
+            result = namespace["train_arm"](
+                "on_policy", teacher, stop_after_steps=config.pilot_updates
+            )
+            self.assertEqual(result["completed_steps"], 32)
+            self.assertEqual(result["status"], "pilot_complete")
+            self.assertEqual(result["resumed_from_step"], 0)
+            rows = (Path(folder) / "training_trajectories.jsonl").read_text().splitlines()
+            self.assertEqual(len(rows), 256)
+            metadata = read_resume(
+                Path(result["resume_snapshot"]), arm="on_policy", signature="staged-test-only"
+            )
+            self.assertEqual(metadata["completed_steps"], 32)
+
+    def test_actual_teacher_alignment_cell_uses_separate_contexts(self):
+        # Execute the notebook's entire alignment/qualification cell using random models.
+        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
+            config = OPDConfig(
+                train_examples=2,
+                accumulation_steps=1,
+                max_prompt_length=8,
+                max_response_length=3,
+                max_sequence_length=16,
+            )
+            namespace = self.namespace(Path(folder), config)
+            teacher = tiny_model(77).requires_grad_(False).eval()
+            for row in namespace["validation_examples"]:
+                # These two IDs decode to 'reason question' in the tiny tokenizer.
+                row["teacher_prompt_token_ids"] = [3, 2]
+            namespace["diagnostic_trajectories"][0]["teacher_prompt_token_ids"] = [3, 2]
+            namespace.update(
+                MODE="train",
+                pd=__import__("pandas"),
+                display=lambda frame: None,
+                teacher_tokenizer=namespace["tokenizer"],
+                load_teacher=lambda device: teacher,
+                starting_validation={"scores": {"strict": {"accuracy": 0.0}}},
+            )
+            notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
+            source = next(
+                "".join(c["source"])
+                for c in notebook["cells"]
+                if c["id"] == "opd-teacher-alignment"
+            )
+            exec(compile(source, "actual_teacher_alignment_cell", "exec"), namespace)
+            boundary = json.loads((Path(folder) / "teacher_boundary_probe.json").read_text())
+            self.assertTrue(boundary["sampled_ended_with_eos"])
+            self.assertTrue(0 <= boundary["teacher_target_stop_probability"] <= 1)
+            self.assertTrue(
+                all(p.grad is None and not p.requires_grad for p in teacher.parameters())
+            )
+            self.assertIn("starting_fixed_diagnostics", namespace)
+
+    def test_health_pause_saves_nonperiodic_boundary_and_blocks_resume(self):
+        config = OPDConfig(
+            train_examples=8,
+            accumulation_steps=2,
+            pilot_updates=4,
+            pilot_check_interval=3,
+            checkpoint_interval=3,
+            validation_interval=3,
+            max_prompt_length=8,
+            max_response_length=3,
+            max_sequence_length=16,
+            diagnostic_examples=1,
+            cap_window_responses=4,
+        )
+        teacher = tiny_model(77).requires_grad_(False).eval()
+        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
+            namespace = self.namespace(Path(folder), config)
+
+            def capped(model, tokenizer, row, **kwargs):
+                return trajectory(row["source_index"], (3, 4, 4), kwargs["policy_step"]) | {
+                    "ended_with_eos": False,
+                    "hit_token_limit": True,
+                }
+
+            namespace["sample_trajectory"] = capped
+            result = namespace["train_arm"]("on_policy", teacher)
+            self.assertEqual(result["status"], "health_paused")
+            self.assertEqual(result["completed_steps"], 2)
+            self.assertTrue((Path(folder) / "resume/on_policy/step_0002/resume.json").exists())
+            self.assertFalse((Path(folder) / "checkpoints/on_policy").exists())
+            with self.assertRaisesRegex(RuntimeError, "health-paused"):
+                namespace["train_arm"]("on_policy", teacher)
 
 
 class DataTests(unittest.TestCase):

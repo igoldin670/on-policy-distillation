@@ -1,0 +1,45 @@
+{
+  "scope": "Rounded values parsed from the saved user-run A100 stdout; one early response.",
+  "rows": [
+    {
+      "context": "current_raw_prompt",
+      "response_position": 0,
+      "observed_token": "'Martin'",
+      "observed_log_probability_T1": -2.634798,
+      "observed_target_log_probability": -23.75,
+      "stop_probability_T1": 9.235497e-09,
+      "stop_target_probability": 0.0,
+      "top_next_tokens_printed": "[{'token': ''Okay'', 'probability': 0.7712075710296631}, {'token': ''Martin'', 'probability': 0.07173347473144531}, {'token': ''Step'', 'probability': 0.06330456584692001}, {'token': ''Answer'', 'probability': 0.020551983267068863}, {'token': ''To'', 'probability': 0.018137067556381226}]"
+    },
+    {
+      "context": "current_raw_prompt",
+      "response_position": 73,
+      "observed_token": "'<|endoftext|>'",
+      "observed_log_probability_T1": -19.572615,
+      "observed_target_log_probability": -185.938782,
+      "stop_probability_T1": 3.93274e-08,
+      "stop_target_probability": 0.0,
+      "top_next_tokens_printed": "[{'token': ''.'', 'probability': 0.3641769289970398}, {'token': ''\\n\\n'', 'probability': 0.321384996175766}, {'token': ''\\n'', 'probability': 0.28362128138542175}, {'token': ''\\n\\n\\n'', 'probability': 0.010997188277542591}, {'token': ''0'', 'probability': 0.010997188277542591}]"
+    },
+    {
+      "context": "nonthinking_chat",
+      "response_position": 0,
+      "observed_token": "'Martin'",
+      "observed_log_probability_T1": -3.431795,
+      "observed_target_log_probability": -32.5,
+      "stop_probability_T1": 1.018005e-13,
+      "stop_target_probability": 0.0,
+      "top_next_tokens_printed": "[{'token': ''Let'', 'probability': 0.8337720036506653}, {'token': ''To'', 'probability': 0.06844016909599304}, {'token': ''Step'', 'probability': 0.05330125615000725}, {'token': ''Martin'', 'probability': 0.03232884779572487}, {'token': ''We'', 'probability': 0.005617912393063307}]"
+    },
+    {
+      "context": "nonthinking_chat",
+      "response_position": 73,
+      "observed_token": "'<|endoftext|>'",
+      "observed_log_probability_T1": -19.666307,
+      "observed_target_log_probability": -190.564423,
+      "stop_probability_T1": 0.5299051,
+      "stop_target_probability": 0.7773,
+      "top_next_tokens_printed": "[{'token': ''<|im_end|>'', 'probability': 0.5299051403999329}, {'token': ''.'', 'probability': 0.46763962507247925}, {'token': ''0'', 'probability': 0.0014883942203596234}, {'token': ''####'', 'probability': 0.0002586441405583173}, {'token': ''\\n\\n'', 'probability': 0.00012217483890708536}]"
+    }
+  ]
+}

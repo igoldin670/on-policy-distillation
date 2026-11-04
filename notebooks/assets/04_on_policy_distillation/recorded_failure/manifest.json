@@ -1,0 +1,17 @@
+{
+  "status": "interrupted_with_degraded_generation",
+  "method": "legacy_shared_raw_prompt_forward_kl",
+  "full_trajectory_updates": 52,
+  "console_last_update": 61,
+  "trajectory_count": 416,
+  "teacher_probe_scope": "one early naturally ended response, two teacher contexts",
+  "new_recipe_validated_on_gpu": false,
+  "teacher_model_id": "Qwen/Qwen3-32B",
+  "teacher_revision": "9216db5781bf21249d130ec9da846c4624c16137",
+  "teacher_temperature": 0.1,
+  "student_model_id": "Qwen/Qwen3-0.6B-Base",
+  "checkpoint_weights_in_archive": false,
+  "response_limit": 256,
+  "accumulation_steps": 8,
+  "seed": 42
+}

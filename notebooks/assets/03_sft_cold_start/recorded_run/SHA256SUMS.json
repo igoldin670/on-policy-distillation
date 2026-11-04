@@ -1,0 +1,17 @@
+{
+  "after_validation.json": "c16c7b7b2a4c92fbea742c61bde61403f426627a25b21432be389c09e9a91435",
+  "before_validation.json": "679b2dcbbd9307579c0195526cde74966e7376d116e7f04459541b511db96086",
+  "checkpoint_SHA256SUMS.json": "aeb0d35d10927594848ec0dfbd741a2e1207e59ab72d9e4116eb0985b531be4f",
+  "configuration.json": "f0e64bd9dce84c2c3e3a53103284cc1ce70ab0736d6a838060461ec765e01e08",
+  "data_splits.json": "158f3bafa9933e75fdf0de5fe54c357a46114c378f2cdf1b0d0102c0571a5b62",
+  "final_test.json": "f6811053768dc629fc5c80a066a1950282c72f976ce36142b2b3d203e0ee6bb7",
+  "manifest.json": "aae6df8e8f74552d105d77eaf9c45b5ae80376621c23d6c849c1ec6e76c96cfd",
+  "observed_results.png": "c8d961304cb507a0e1f6713018f4f1857d28b01f2f2adb59ffca6947d604578f",
+  "protocol.json": "77729bd1f40ae13b6f816986a0cf640a108fd7d4d58047776ddd1e7cf7996e13",
+  "source/baseline.py": "330fc33d8b8cd508bee9b3c91fa7b069f4d06991a83e1f97e292644b5567fcf4",
+  "source/evaluation.py": "a317470bd0e2676f450d4f97b2a1bac981fac23981651cfae45b67210f58f4e8",
+  "source/notebook03_source.json": "e53ff84dc1e0ea53c3f1c69c2dd3dab5f0b1e0c5ca48d759644bbac5f0e31a1d",
+  "source/sft.py": "4c3277c108ffb7ed5d27c8338ed0dc388eb443dd0548987dfc00ce1207029d15",
+  "source/utils.py": "69480150d1649a5a9fddd814fdc0a60e0fa221193120c83237f3d4457ec13ed0",
+  "training_history.json": "bd6692f05a32407b7fab67214be7483366836fc8be0ef7904e38aa9924a86197"
+}

@@ -3,6 +3,25 @@
 from __future__ import annotations
 
 
+def teacher_prompt_token_ids(tokenizer, prompt: str) -> list[int]:
+    """Format the question for Qwen3, without retokenizing the student's response.
+
+    The pinned teacher template opens an assistant turn and inserts an empty
+    thinking block. Student response IDs are appended AFTER this prefix.
+    """
+    if not prompt or not tokenizer.chat_template:
+        raise ValueError("A question prompt and the pinned teacher chat template are required.")
+    ids = tokenizer.apply_chat_template(
+        [{"role": "user", "content": prompt}],
+        tokenize=True,
+        add_generation_prompt=True,
+        enable_thinking=False,
+    )
+    if not ids:
+        raise ValueError("The teacher prompt must contain tokens.")
+    return ids
+
+
 def response_prediction_logits(logits, complete_sequence_ids, prompt_length: int):
     """[1, L, V] -> [1, R, V], keeping response predictions only (no padding)."""
     import torch

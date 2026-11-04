@@ -20,7 +20,8 @@
 How do we teach a small language model using feedback on **the responses it actually writes**?
 
 In on-policy distillation, the student generates a response. A frozen teacher
-scores those same tokens after the same prefixes. The student then learns from
+scores possible next tokens after those exact response prefixes, using its own
+question context. The student then learns from
 that feedback. This project makes the boundaries visible: token alignment,
 probabilities, loss, gradients, evaluation, and the evidence behind each result.
 
@@ -43,8 +44,8 @@ and report, not an earlier notebook's live kernel variables.
 | :--- | :--- | :--- |
 | [**01 · One student trajectory**](notebooks/01_reverse_kl_demo.ipynb) | Token probabilities, tokenizer compatibility, frozen-teacher scoring, reverse KL, and one student update | Saved A100 outputs verify the seven mechanics checkpoints; no quality improvement established |
 | [**02 · Baseline evaluation**](notebooks/02_baseline_evaluation.ipynb) | Fixed questions, greedy generation, answer extraction, metrics, and failure analysis | Completed Colab generation outputs plus separately validated CPU replay |
-| [**03 · Supervised cold start**](notebooks/03_sft_cold_start.ipynb) | Response-only SFT, data isolation, gradient accumulation, paired validation, checkpoint export | Completed A100 SFT outputs; format learning is strong, reasoning results are mixed; stronger tokenizer reload checks added afterward |
-| [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Full-vocabulary forward KL, fresh student responses, continued-SFT control, paired evaluation, restart/export | Implemented; local checks are documented separately; real Qwen distillation remains unverified |
+| [**03 · Supervised cold start**](notebooks/03_sft_cold_start.ipynb) | Response-only SFT, data isolation, gradient accumulation, paired validation, checkpoint export | Completed A100 SFT; latest report and checkpoint integrity verified; mixed reasoning results |
+| [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Full-vocabulary forward KL, fresh student responses, continued-SFT control, paired evaluation, restart/export | Interrupted GPU run and teacher-context probe archived; corrected 32-update pilot ready for Colab qualification |
 
 Each notebook introduces the idea, walks through small examples and tensor shapes,
 checks assumptions, and ends with a plain-language recap. No notebook depends on
@@ -64,8 +65,10 @@ an earlier notebook's live kernel state. 04 reads 03's verified saved artifacts.
 | 02: strict-format numeric matches | **0 / 32** | None of the original responses used the requested `####` marker |
 | 02: exploratory prose numeric matches | **17 / 32 (53.125%)** | A broader, post-hoc extractor found matching numbers; this is not a training gain |
 | 02: prose-parsed responses / token-limit stops | **28 / 32** parsed; **2 / 32** budget stops | Format, arithmetic, extraction, and stopping failures are kept visible |
-| 03: paired validation after 256 reference examples | Format **0/64 → 59/64**; prose matches **31/64 → 35/64**; NLL **0.776 → 0.667** | A real A100 run; strong format learning, modest numeric gain, and visible regressions |
-| 04: post-distillation task performance | **Not yet measured** | Implementation and CPU tests cannot substitute for a real Qwen CUDA run |
+| 03: paired validation after 256 reference examples | Format **0/64 → 60/64**; prose matches **31/64 → 30/64**; NLL **0.776 → 0.667** | Latest verified A100 run; strong format learning, mixed reasoning, and visible regressions |
+| 04: interrupted raw-prompt run | **232/232 capped responses** during updates 24–52; validation NLL **0.667 → 0.969** | A real failure, despite decreasing fixed-prefix KL |
+| 04: teacher context probe | Boundary stopping mass **3.93 × 10⁻⁸ → 0.530** | One saved response, raw versus non-thinking chat; arithmetic quality remains a separate question |
+| 04: corrected full experiment | **Pending Colab qualification** | Local checks verify implementation; improved task performance remains unmeasured |
 
 The two 02 scores use the **same model responses**, with all questions retained
 in the denominator. Numeric agreement does not certify reasoning or units. The
@@ -102,13 +105,14 @@ rewritten to make its answers look better.
 | :--- | :--- | :--- |
 | 02 | `MODE = "replay"`: analyze the checksummed original responses | `MODE = "generate"`: generate a fresh baseline |
 | 03 | `MODE = "inspect"`: real tokenizer/data and target-mask checks | `MODE = "train"`: small full-parameter SFT run, evaluation, and export |
-| 04 | `MODE = "inspect"`: data isolation, shared tokenizer, masks, illustrative KL | `MODE = "train"`: A100 80GB; continued SFT and on-policy KD from the same checkpoint |
+| 04 | `MODE = "inspect"`: data isolation, shared tokenizer, masks, illustrative KL | `MODE = "train"`, `RUN_STAGE = "pilot"`: A100 80GB; 32-update qualification before full continuation |
 
 For 03, defaults are **256 practice / 64 validation examples**, one epoch,
 1,024-token complete sequences, microbatch size 1, and accumulation over eight
 microbatches. The notebook explains the response-only loss and makes optimizer
 steps visible. Reserved test questions are excluded from training and tuning.
-Checkpoint weights are large, so report and weight downloads have separate switches.
+Checkpoint weights are large. Packaging, checksum verification, and file transfer
+are separate steps; automatic multi-gigabyte browser downloads are avoided.
 
 ### Notebook 04: the checkpoint handoff
 
@@ -121,7 +125,9 @@ find them. Otherwise upload both ZIPs and set `SFT_REPORT_PATH` and
 04 defaults to inspection. Its fixed recipe uses **1,024 new practice questions**,
 **128 updates per arm**, a **256-token sampled-response budget**, and a
 **256-question primary test** excluding the previously inspected 32 questions.
-Teacher targets use temperature 0.1; student sampling uses temperature 1 without
+The teacher uses its pinned non-thinking chat context; the student retains its 03
+prompt and exact sampled response IDs. Teacher targets use temperature 0.1;
+student sampling uses temperature 1 without
 top-k/top-p filtering. No LoRA or quantization is used. The teacher revision is
 pinned and its full output vocabulary is retained.
 
@@ -129,10 +135,31 @@ All three 04 models are evaluated again under identical greedy settings, includi
 both models' recognized end-token IDs. This differs from 02/03's historical
 stopping rule. Those old scores remain context, not a paired 04 baseline.
 
-04 saves restart state every 32 updates. Set `RESUME_RUN_DIRECTORY` after an
-interruption to continue from a matching optimizer boundary. Reports and final
-weights are separate. A file created under `/content/` still needs to be downloaded
-using VS Code before the Colab session disappears.
+### Notebook 04 qualification and continuation
+
+1. Upload the verified 03 report and checkpoint ZIPs. Select the A100 80GB kernel,
+   set `MODE = "train"` and leave `RUN_STAGE = "pilot"`.
+2. Run in order. Inspect the starting student, supervised control, teacher
+   validation results, separate prompt offsets, and fresh sampled responses.
+3. The distillation pilot pauses after 32 updates. Snapshots and validation checks
+   occur every eight pilot updates. Review the pilot table and example responses.
+4. Download the small pilot report. For continuation on a replacement runtime,
+   also retain the run folder with its optimizer-state snapshots and control
+   checkpoint. The report alone contains no model or optimizer weights.
+5. Restart the notebook kernel to release loaded models. Set `RUN_STAGE = "full"`
+   and `RESUME_RUN_DIRECTORY` to the pilot's run folder, then run from the top.
+   The remaining updates retain the same scheduler horizon, question order, and RNG.
+6. Evaluate the fixed primary test only after full training completes. Download
+   the final report and checkpoints, then save the executed notebook.
+
+At least 24 capped responses in the latest 32 triggers a recovery pause. A
+reference-NLL increase above 25% triggers a review warning. These are documented
+engineering alarms. The pilot does not establish statistical improvement.
+A health-paused run needs investigation before a revised recipe starts again
+from the verified 03 checkpoint.
+
+See the [failure analysis](notebooks/assets/04_on_policy_distillation/INVESTIGATION.md)
+and [next-run checklist](notebooks/assets/04_on_policy_distillation/NEXT_RUN.md).
 
 ### Local validation
 
@@ -154,8 +181,8 @@ uv pip install -r requirements-opd.txt
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/validate_notebook03.py
 .venv/bin/python scripts/validate_notebook04.py
-.venv/bin/python -m ruff check src scripts tests notebooks/04_on_policy_distillation.ipynb
-.venv/bin/python -m ruff format --check src scripts tests notebooks/04_on_policy_distillation.ipynb
+.venv/bin/python -m ruff check src scripts tests notebooks/*.ipynb
+.venv/bin/python -m ruff format --check src scripts tests notebooks/*.ipynb
 ```
 
 **Do not install the CPU PyTorch build into Colab.** Its notebook setup preserves
@@ -205,15 +232,20 @@ explicitly different adaptation. It does not itself perform distillation.
 
 The project establishes working mechanics, an inspectable baseline, a completed
 small supervised cold start, and an implemented controlled distillation experiment.
-It does **not** establish a post-distillation quality gain. The 03 run also produced five validation token-limit stops and a displayed correct-to-incorrect answer regression. Its saved test score is 14/32 strict matches; broad reasoning improvement is not established. The teacher remains
-fixed in distillation; no large-scale training or multi-seed
-benchmark comparison has been completed. Stronger claims require untouched test
-data, frozen metrics, repeated runs, and actual trained-model evidence.
+The latest 03 run has four validation token-limit stops and a displayed
+correct-to-incorrect answer regression. Its saved historical-test score is 18/32
+strict matches. An earlier 03 run had different observed scores and remains in
+Git history. These small experiments do not establish broad reasoning improvement.
 
-04's arms have different objectives, response lengths, and compute costs. An
-off-policy KD arm would be needed to isolate the effect of student-generated
-prefixes alone. We use a shared plain prompt for exact token alignment, rather
-than the teacher's chat template, and have not separately measured its task accuracy.
+The first 04 run degraded while matching teacher probabilities under a raw prompt.
+A one-response context probe supported changing the teacher interface. The
+corrected experiment remains an educational GKD adaptation whose GPU training
+and resulting performance need qualification. All original response IDs are
+preserved, while teacher and student question wrappers differ explicitly.
+
+The arms differ in objectives, response lengths, and compute cost. An off-policy
+KD arm would help isolate the effect of student-generated prefixes. Multi-seed
+training and a larger untouched evaluation would strengthen later conclusions.
 
 - [On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes](https://arxiv.org/abs/2306.13649)
 - [GSM8K dataset and reference solutions](https://huggingface.co/datasets/openai/gsm8k), MIT licensed;

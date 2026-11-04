@@ -54,7 +54,7 @@ def sample_trajectory(
     if complete[:prompt_length] != prompt_token_ids or not 1 <= len(response) <= max_new_tokens:
         raise ValueError("Generated response or original prompt boundary is invalid.")
     ended = response[-1] in stop_token_ids
-    return {
+    trajectory = {
         "example_id": example["example_id"],
         "policy_step": policy_step,
         "prompt_token_ids": prompt_token_ids,
@@ -66,3 +66,12 @@ def sample_trajectory(
         "ended_with_eos": ended,
         "hit_token_limit": len(response) == max_new_tokens and not ended,
     }
+    # Teacher context is metadata only. Sampling above uses the student's
+    # original prompt, and the exact sampled response IDs are never rewritten.
+    if "teacher_prompt_token_ids" in example:
+        teacher_prompt = list(example["teacher_prompt_token_ids"])
+        if not teacher_prompt:
+            raise ValueError("Teacher context must be nonempty.")
+        trajectory["teacher_prompt_token_ids"] = teacher_prompt
+        trajectory["teacher_prompt_length"] = len(teacher_prompt)
+    return trajectory

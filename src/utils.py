@@ -21,10 +21,13 @@ def sha256_file(path: Path) -> str:
 
 
 def write_json(path: Path, value) -> None:
-    Path(path).write_text(
-        json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
-        encoding="utf-8",
-    )
+    """Publish complete JSON records, preserving the prior file on interruption."""
+    path = Path(path)
+    serialized = json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
+    with tempfile.TemporaryDirectory(prefix=".json-", dir=path.parent) as temporary:
+        staged = Path(temporary) / path.name
+        staged.write_text(serialized, encoding="utf-8")
+        staged.replace(path)
 
 
 def relative_member(name: str) -> Path:
@@ -68,6 +71,54 @@ def write_inventory(directory: Path) -> dict:
     }
     write_json(directory / "SHA256SUMS.json", inventory)
     return inventory
+
+
+def verified_zip(directory: Path, archive: Path) -> Path:
+    """Package a checksummed artifact atomically, or verify an existing archive.
+
+    Entry hashes are streamed, so verification does not hold model weights in
+    RAM. An interrupted packaging operation never becomes the final ZIP.
+    """
+    directory, archive = Path(directory), Path(archive)
+    inventory = verify_inventory(directory)
+
+    def check(path):
+        try:
+            with zipfile.ZipFile(path) as stream:
+                names = stream.namelist()
+                if len(names) != len(set(names)) or set(names) != set(inventory) | {
+                    "SHA256SUMS.json"
+                }:
+                    raise ValueError("ZIP files differ from the artifact inventory.")
+                if json.loads(stream.read("SHA256SUMS.json")) != inventory:
+                    raise ValueError("ZIP inventory differs from the saved artifact.")
+                for name, expected in inventory.items():
+                    with stream.open(name) as member:
+                        digest = hashlib.file_digest(member, "sha256").hexdigest()
+                    if digest != expected:
+                        raise ValueError(f"ZIP checksum mismatch: {name}")
+        except zipfile.BadZipFile as error:
+            raise ValueError(
+                f"Incomplete or damaged ZIP: {path}. Retain the source folder and retry packaging."
+            ) from error
+
+    if archive.exists():
+        check(archive)
+        return archive
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".archive-", dir=archive.parent) as temporary:
+        staged = Path(temporary) / "artifact.zip"
+        with zipfile.ZipFile(staged, "w", compression=zipfile.ZIP_DEFLATED) as stream:
+            for name in sorted(set(inventory) | {"SHA256SUMS.json"}):
+                stream.write(directory / name, name)
+        check(staged)
+        # Both paths are on the same filesystem. Publishing a hard link is
+        # atomic and cannot overwrite another export that finished meanwhile.
+        try:
+            archive.hardlink_to(staged)
+        except FileExistsError:
+            check(archive)
+    return archive
 
 
 def artifact_directory(path: Path, cache: Path, *, max_bytes=8 * 2**30) -> Path:

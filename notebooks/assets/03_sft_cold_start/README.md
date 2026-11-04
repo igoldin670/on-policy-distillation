@@ -9,3 +9,8 @@ Regenerate artwork with `python scripts/render_project_assets.py`. These diagram
 contain no fabricated training measurements. Real charts are created only in a
 completed training run and stored with that run under ignored `results/`.
 GSM8K is MIT licensed; its existing license copy is in the Notebook 02 assets.
+
+The latest A100 report is preserved under `recorded_run/`. The older
+`tokenizer_verification.json` retains the initial tokenizer-only investigation.
+The recovered real-checkpoint CPU check and current notebook QA are recorded in
+`validation_summary.json`.

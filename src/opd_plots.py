@@ -1,5 +1,6 @@
 """Notebook 04 diagrams and plots. Performance plots require actual run records."""
 
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -55,7 +56,7 @@ def render_diagrams(directory: Path):
         )
         for x, title, detail, color in [
             (0.03, "1. Sample", "Current student writes\none fresh response", BLUE),
-            (0.37, "2. Score", "Frozen teacher sees\nthe exact same prefixes", PURPLE),
+            (0.37, "2. Score", "Teacher chat context\nSame response prefixes", PURPLE),
             (0.71, "3. Learn", "Match next-token choices\nUpdate only the student", TEAL),
         ]:
             _panel(ax, x, 0.39, 0.26, 0.34, title, detail, color)
@@ -76,7 +77,7 @@ def render_diagrams(directory: Path):
         ax.text(
             0.5,
             0.16,
-            "Repeat with the updated student. Old rollouts are not reused.",
+            "Each update uses fresh responses from the current student.",
             ha="center",
             color=BLUE,
             fontsize=12,
@@ -84,7 +85,7 @@ def render_diagrams(directory: Path):
         ax.text(
             0.5,
             0.04,
-            "Teacher probabilities are targets, not correctness grades. No teacher-generated replacement answer.",
+            "Student prompt stays plain. Teacher prompt uses non-thinking chat. Response IDs stay unchanged.",
             ha="center",
             fontsize=10,
             color=SLATE,
@@ -92,31 +93,16 @@ def render_diagrams(directory: Path):
         _save(fig, directory, "on_policy_workflow")
 
         fig, ax = plt.subplots(figsize=(12, 4.5))
-        ax.set(xlim=(-2.6, 4.8), ylim=(-0.8, 2.8))
+        ax.set(xlim=(-3, 4.8), ylim=(-0.8, 2.8))
         ax.axis("off")
-        ax.text(
-            -2.5,
-            2.5,
-            "Same tokens. Same prefixes. One prediction shift.",
-            weight="bold",
-            fontsize=20,
-        )
-        for y, name, tokens in [
-            (
-                1.8,
-                "Complete sequence",
-                ["Prompt", "Last prompt", "Response 1", "Response 2", "EOS"],
-            ),
-            (
-                0.9,
-                "Logits predict",
-                ["Last prompt", "Response 1", "Response 2", "EOS", "unobserved"],
-            ),
+        ax.text(-2.9, 2.5, "Different prompts. Identical response IDs.", weight="bold", fontsize=20)
+        for y, name, context in [
+            (1.8, "Student input", "Plain context"),
+            (0.9, "Teacher input", "Chat context"),
         ]:
-            ax.text(-2.5, y, name, va="center", fontsize=10, weight="bold")
-            for x, token in enumerate(tokens):
-                active = x >= 2 if y > 1 else 1 <= x <= 3
-                color = BLUE if active else SLATE
+            ax.text(-2.9, y, name, va="center", fontsize=11, weight="bold")
+            for x, token in enumerate([context, "Last prompt", "Response 1", "Response 2", "EOS"]):
+                color = BLUE if x >= 2 else (SLATE if y > 1 else PURPLE)
                 ax.add_patch(
                     FancyBboxPatch(
                         (x - 0.43, y - 0.26),
@@ -128,20 +114,18 @@ def render_diagrams(directory: Path):
                         linewidth=1.6,
                     )
                 )
-                ax.text(
-                    x, y, token, ha="center", va="center", fontsize=10, weight="bold", color=color
-                )
+                ax.text(x, y, token, ha="center", va="center", fontsize=9, color=color)
         ax.text(
-            -2.5,
-            0.13,
-            "The response starts at input index P. Its predictions start at logits index P - 1.",
+            -2.9,
+            0.12,
+            r"First response uses student logits at $P_S-1$ and teacher logits at $P_T-1$.",
             color=BLUE,
             fontsize=11,
         )
         ax.text(
-            -2.5,
-            -0.32,
-            "Keep response positions only. Include a sampled EOS; do not invent one at a token limit.",
+            -2.9,
+            -0.34,
+            r"Slice each model independently. Both response tensors have shape $[1,R,V]$.",
             fontsize=11,
             color=SLATE,
         )
@@ -180,6 +164,61 @@ def render_diagrams(directory: Path):
                 arrowprops={"arrowstyle": "-|>", "color": color},
             )
         _save(fig, directory, "controlled_comparison")
+
+
+def plot_observed_failure(directory: Path):
+    """Render only the archived GPU records and the saved one-response probe."""
+    recorded = directory / "recorded_failure"
+    history = json.loads((recorded / "on_policy_history.json").read_text())
+    probe = json.loads((recorded / "teacher_probe.json").read_text())["rows"]
+    boundary_position = max(row["response_position"] for row in probe)
+    endings = [row for row in probe if row["response_position"] == boundary_position]
+    with plt.rc_context({**STYLE, "svg.fonttype": "path", "svg.hashsalt": "opd-failure"}):
+        fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
+        steps = [row["step"] for row in history]
+        axes[0].plot(
+            steps, [row["response_tokens"] / row["examples"] for row in history], color=BLUE
+        )
+        axes[0].axhline(256, color=SLATE, ls="--", lw=1, label="256-token budget")
+        axes[0].set(
+            title="Responses grow to the ceiling",
+            xlabel="Optimizer update",
+            ylabel="Mean response tokens",
+            ylim=(0, 280),
+        )
+        axes[0].legend(frameon=False, fontsize=8, loc="lower right")
+        axes[1].plot(
+            steps,
+            [100 * row["token_limit_stops"] / row["examples"] for row in history],
+            color=PURPLE,
+        )
+        axes[1].set(
+            title="Finishing behavior deteriorates",
+            xlabel="Optimizer update",
+            ylabel="Capped responses per group (%)",
+            ylim=(-3, 105),
+        )
+        probabilities = [row["stop_probability_T1"] for row in endings]
+        axes[2].bar(
+            ["Raw prompt", "Non-thinking\nchat"], probabilities, color=[SLATE, TEAL], width=0.55
+        )
+        axes[2].set(
+            yscale="log",
+            ylim=(1e-9, 2),
+            title="Teacher stopping mass changes",
+            ylabel="Combined stop probability, T = 1",
+        )
+        for index, probability in enumerate(probabilities):
+            axes[2].text(index, probability * 1.7, f"{probability:.3g}", ha="center", fontsize=10)
+        fig.text(
+            0.5,
+            -0.015,
+            "The first two panels show 52 logged updates. The last shows one response boundary. Accuracy requires separate checks.",
+            ha="center",
+            fontsize=9,
+            color=SLATE,
+        )
+        _save(fig, directory, "observed_failure")
 
 
 def plot_run(histories, evaluations, directory: Path):

@@ -20,7 +20,13 @@ from pathlib import Path
 from src.logprobs import response_prediction_logits
 from src.opd_loss import forward_kl_loss
 from src.sft import collate_examples, precision_context, response_loss_sum
-from src.utils import artifact_directory, verify_inventory, write_inventory, write_json
+from src.utils import (
+    artifact_directory,
+    verified_zip,
+    verify_inventory,
+    write_inventory,
+    write_json,
+)
 
 TEACHER_ID = "Qwen/Qwen3-32B"
 TEACHER_REVISION = "9216db5781bf21249d130ec9da846c4624c16137"
@@ -45,6 +51,12 @@ class OPDConfig:
     teacher_temperature: float = 0.1
     kl_chunk_size: int = 16
     diagnostic_examples: int = 8
+    teacher_context: str = "qwen3_nonthinking_v1"
+    pilot_updates: int = 32
+    pilot_check_interval: int = 8
+    cap_window_responses: int = 32
+    cap_pause_fraction: float = 0.75
+    nll_warning_ratio: float = 1.25
 
     def __post_init__(self):
         for name in (
@@ -58,6 +70,9 @@ class OPDConfig:
             "max_sequence_length",
             "kl_chunk_size",
             "diagnostic_examples",
+            "pilot_updates",
+            "pilot_check_interval",
+            "cap_window_responses",
         ):
             if type(getattr(self, name)) is not int or getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be a positive integer.")
@@ -70,6 +85,12 @@ class OPDConfig:
                 raise ValueError(f"{name} must be finite and positive.")
         if not math.isfinite(self.weight_decay) or self.weight_decay < 0:
             raise ValueError("Weight decay must be finite and nonnegative.")
+        if self.teacher_context != "qwen3_nonthinking_v1":
+            raise ValueError("The corrected experiment requires the non-thinking teacher context.")
+        if not 0 < self.cap_pause_fraction <= 1:
+            raise ValueError("Cap pause fraction must be in (0, 1].")
+        if not math.isfinite(self.nll_warning_ratio) or self.nll_warning_ratio <= 1:
+            raise ValueError("The NLL warning ratio must exceed one.")
 
     @property
     def optimizer_steps(self):
@@ -182,6 +203,7 @@ def cuda_preflight(root: Path) -> dict:
     if not torch.cuda.is_bf16_supported():
         raise RuntimeError("The fixed 32B-teacher recipe requires BF16 support.")
     return {
+        "kernel_pid": os.getpid(),
         "gpu": torch.cuda.get_device_name(0),
         "gpu_total_gib": total / 2**30,
         "gpu_free_gib_at_start": free / 2**30,
@@ -213,6 +235,18 @@ def load_teacher(device):
     import torch
     from transformers import AutoModelForCausalLM
 
+    if torch.device(device).type != "cuda":
+        raise RuntimeError("The real 32B teacher requires the Colab CUDA device.")
+    free, _ = torch.cuda.mem_get_info(device)
+    if free < TEACHER_WEIGHT_BYTES + 2 * 2**30:
+        raise RuntimeError(
+            f"Kernel PID {os.getpid()} has only {free / 2**30:.1f} GiB free. "
+            "Check nvidia-smi for other kernels or an already-loaded teacher before retrying."
+        )
+    print(
+        f"Kernel PID {os.getpid()}: loading frozen teacher ({free / 2**30:.1f} GiB free).",
+        flush=True,
+    )
     teacher = AutoModelForCausalLM.from_pretrained(
         TEACHER_ID,
         revision=TEACHER_REVISION,
@@ -228,7 +262,7 @@ def load_teacher(device):
     return teacher
 
 
-def trajectory_tensors(trajectory, device):
+def trajectory_tensors(trajectory, device, *, context="student"):
     import torch
 
     prompt, response = trajectory["prompt_token_ids"], trajectory["response_token_ids"]
@@ -236,23 +270,44 @@ def trajectory_tensors(trajectory, device):
         raise ValueError("Trajectory must preserve its exact prompt and sampled response IDs.")
     if trajectory["prompt_length"] != len(prompt) or trajectory["response_length"] != len(response):
         raise ValueError("Trajectory length metadata differs from its token IDs.")
+    if context == "teacher":
+        prompt = trajectory.get("teacher_prompt_token_ids")
+        if not prompt or trajectory.get("teacher_prompt_length") != len(prompt):
+            raise ValueError(
+                "Missing verified teacher context. Legacy raw-prompt rollouts need a new run."
+            )
+    elif context != "student":
+        raise ValueError("Context must be student or teacher.")
     ids = torch.tensor([prompt + response], dtype=torch.long, device=device)
     return ids, torch.ones_like(ids)
 
 
 def trajectory_kl(student, teacher, trajectory, device, dtype, config):
-    """Teacher and student see identical IDs, attention masks, and causal prefixes."""
+    """Model-specific prompts, followed by identical sampled response IDs/prefixes."""
     import torch
 
     complete_sequence_ids, attention_mask = trajectory_tensors(trajectory, device)
     prompt_length = trajectory["prompt_length"]
+    teacher_sequence_ids, teacher_attention_mask = trajectory_tensors(
+        trajectory, device, context="teacher"
+    )
+    teacher_prompt_length = trajectory["teacher_prompt_length"]
+    if (
+        max(complete_sequence_ids.shape[1], teacher_sequence_ids.shape[1])
+        > config.max_sequence_length
+    ):
+        raise ValueError("A student or teacher sequence exceeds the configured budget.")
+    if not torch.equal(
+        complete_sequence_ids[:, prompt_length:], teacher_sequence_ids[:, teacher_prompt_length:]
+    ):
+        raise ValueError("Teacher and student response tokens differ.")
     teacher.eval()
     with torch.no_grad(), precision_context(device, dtype):
         teacher_logits = teacher(
-            input_ids=complete_sequence_ids, attention_mask=attention_mask, use_cache=False
+            input_ids=teacher_sequence_ids, attention_mask=teacher_attention_mask, use_cache=False
         ).logits
         teacher_response_logits = response_prediction_logits(
-            teacher_logits, complete_sequence_ids, prompt_length
+            teacher_logits, teacher_sequence_ids, teacher_prompt_length
         ).contiguous()
     del teacher_logits
     with precision_context(device, dtype):
@@ -285,9 +340,34 @@ def backward_opd_group(student, teacher, trajectories, device, dtype, config, sc
     return {
         "loss": total_loss / len(trajectories),
         "response_tokens": sum(t["response_length"] for t in trajectories),
+        "response_lengths": [t["response_length"] for t in trajectories],
+        "response_limit_flags": [t["hit_token_limit"] for t in trajectories],
+        "eos_stops": sum(t["ended_with_eos"] for t in trajectories),
         "examples": len(trajectories),
         "token_limit_stops": sum(t["hit_token_limit"] for t in trajectories),
     }
+
+
+def training_health(history, config, starting_validation_nll):
+    """Engineering alarms on observed responses, independent of test answers.
+
+    Repeated truncation pauses training. Reference NLL is a separate warning
+    because it measures a different objective from the distillation KL.
+    """
+    flags = [flag for row in history for flag in row.get("response_limit_flags", [])]
+    recent = flags[-config.cap_window_responses :]
+    pause = len(recent) == config.cap_window_responses and (
+        sum(recent) / len(recent) >= config.cap_pause_fraction
+    )
+    validations = [row for row in history if "validation_reference_nll" in row]
+    warnings = []
+    if validations and validations[-1]["validation_reference_nll"] > (
+        starting_validation_nll * config.nll_warning_ratio
+    ):
+        warnings.append("Validation reference NLL rose more than the engineering review threshold.")
+    if pause:
+        warnings.append("Repeated token-limit stops reached the engineering pause threshold.")
+    return {"pause": pause, "warnings": warnings, "recent_responses": len(recent)}
 
 
 def backward_sft_group(student, examples, pad_token_id, device, dtype, scaler):
@@ -525,6 +605,12 @@ def validate_trajectory_log(path, examples, completed_steps, accumulation_steps)
             or row["complete_sequence_ids"] != prompt + row["response_token_ids"]
         ):
             raise ValueError("Rollout audit log changed a prompt or sampled response.")
+        if (
+            row.get("teacher_prompt_token_ids") != example.get("teacher_prompt_token_ids")
+            or not row.get("teacher_prompt_token_ids")
+            or row.get("teacher_prompt_length") != len(row["teacher_prompt_token_ids"])
+        ):
+            raise ValueError("Rollout audit log changed or omitted the teacher context.")
     return len(rows)
 
 
@@ -572,10 +658,12 @@ def new_run_directory(root):
     return directory
 
 
-def export_report(root, directory, manifest):
+def export_report(root, directory, manifest, *, report_name="report"):
     """Atomically archive evidence; safely reuse a completed report on re-export."""
     directory, root = Path(directory), Path(root)
-    report = directory / "report"
+    if not report_name or Path(report_name).name != report_name or report_name in {".", ".."}:
+        raise ValueError("Report name must be one directory name.")
+    report = directory / report_name
     if report.exists():
         verify_inventory(report)
         saved = json.loads((report / "manifest.json").read_text())
@@ -586,7 +674,7 @@ def export_report(root, directory, manifest):
             raise FileExistsError("A different experiment's report already exists here.")
         # Rerunning the export cell to request weight ZIPs must not overwrite the
         # completed evidence or fail simply because report.zip already exists.
-        return Path(shutil.make_archive(str(directory / "report"), "zip", root_dir=report))
+        return verified_zip(report, directory / f"{report_name}.zip")
     with tempfile.TemporaryDirectory(
         prefix=".report-", suffix=".incomplete", dir=directory
     ) as temporary:
@@ -624,4 +712,4 @@ def export_report(root, directory, manifest):
         write_inventory(staging)
         verify_inventory(staging)
         staging.rename(report)
-    return Path(shutil.make_archive(str(directory / "report"), "zip", root_dir=report))
+    return verified_zip(report, directory / f"{report_name}.zip")

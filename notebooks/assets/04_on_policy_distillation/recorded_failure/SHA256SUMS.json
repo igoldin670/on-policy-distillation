@@ -1,0 +1,9 @@
+{
+  "README.md": "757f5fbf67ebcb7e805b21e77f3a7769ad4bc47e736e616234c32294cd7fac57",
+  "manifest.json": "80e7529ae66069e4eaf7c6fd0b6b305abf0ea494b6dec3a335c58a7ef0ce3f48",
+  "notebook04_snapshot.json": "d46ba9beca5cc5a6c584b219928936c6fd7cac0ff68501ab98e877bc8b29159a",
+  "on_policy_history.json": "fb3e3fe5f643eba71e04da5c28cd5f692ccb7e927e8e83672d6a0422a4dc1844",
+  "teacher_probe.json": "b62f4a896ba002787f2155e9decfd9737be2891843542dacc8e4109bae06e62a",
+  "teacher_probe.txt": "bfa2d74053c1b68455ef8d3fbdeb3b5fed71a3fbfc57512e462fef5bc4760f8e",
+  "training_trajectories.jsonl": "37b995663d8c60cc77369fdccab0ed6f0347d7104bccfffe26b4b1ea9ff873b9"
+}

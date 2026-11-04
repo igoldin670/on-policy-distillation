@@ -1,108 +1,88 @@
-# Notebook 04 validation
+# Notebook 04 validation record
 
-**Status: implemented and locally validated. Real Qwen distillation is pending.**
+Reviewed on 2026-11-04. **The corrected experiment is locally validated and awaits
+a staged Qwen run on Colab.** The source notebook contains genuine CPU inspection
+outputs. The archived legacy experiment and teacher probe are actual user-run
+A100 evidence with separate provenance.
 
-Validation date: 2026-11-02. The source notebook contains actual **CPU inspection**
-outputs, explicitly labelled as such. They are not Qwen model-generation or
-training results. No local test substitutes for the A100 experiment.
+## Evidence boundaries
 
-## Passed checks
-
-| Check | What actually ran |
+| Evidence | Scope |
 | :--- | :--- |
-| Unit and integration regressions | **72 tests passed**, no failures, errors, or skips; includes the existing 41 tests |
-| Clean-kernel 04 inspection | All **15 code cells** executed sequentially without errors or stderr; real pinned tokenizer/data/configuration, no model weights |
-| Real source isolation | 1,024 new training questions, 64 prior validation questions, 256 new primary test questions, 32 separately reported historical test questions |
-| Tokenizer compatibility | Full token-to-ID mappings match; **2,180 text probes** encode/decode consistently; output heads configured for 151,936 columns |
-| Tensor boundaries | Prompt masking, response-only labels, padding, genuine EOS targets, and the `P - 1` causal prediction boundary |
-| Exact KL implementation | Chunked full-vocabulary forward KL and its student gradient match a dense reference; teacher gradients are absent |
-| Actual notebook training code | Both arms ran with tiny **randomly initialized** 32-token Qwen3 models; includes a partial accumulation group, checkpoint/tokenizer reload, and frozen-teacher checks |
-| Actual notebook final cells | Paired evaluation, changed-answer analysis, both plot exports, and checksummed report export ran with those tiny test models |
-| Restart behavior | Optimizer/scheduler/RNG reload reproduces the next CPU optimizer update; stale/missing/reordered rollout logs are rejected; interrupted finalization can be recovered |
-| Checkpoint/export behavior | Saved inference defaults retain both stop IDs; two owned restart snapshots are retained; unrelated directories survive; repeated report export preserves completed evidence |
-| Earlier notebook regressions | 02: clean 15-cell CPU replay; 03: clean 11-cell CPU inspection; saved notebooks 01, 02, and existing local 03 remain byte-identical |
-| Presentation | Notebook JSON, Python syntax, guidance comments, anchors, relative links, three PNG/SVG pairs, embedded-image HTML export, and **12 KaTeX-rendered equations** |
-| Code review | Ruff lint/format checks and `git diff --check`; no credential-token patterns found in intended text changes |
+| Interrupted raw-context run | 52 downloaded updates and 416 trajectories; later console output through update 61 |
+| User-run frozen-teacher probe | One response under two teacher contexts; strong stopping-mass contrast |
+| Corrected teacher scoring | Pinned non-thinking chat prefix; identical sampled response IDs; separate causal offsets |
+| Local regression suite | Exact KL/gradients, frozen teacher, both stop IDs, training, staging, recovery, and archives |
+| Clean 04 CPU inspection | Real pinned tokenizer/data/configuration; no teacher or student weights loaded |
+| Recovered real 03 student | CPU load, 676 tokenizer probes, finite `[1,16,151936]` logits; no training |
+| Corrected Qwen training | Pending Colab pilot and full-run qualification |
 
-Tiny random models test the implementation. Their generated text, losses, and
-zero-shot scores are not reported as pretrained-Qwen performance. Test artifacts
-are temporary; actual Qwen performance figures are created only in CUDA mode.
+The investigation and source records are in [INVESTIGATION.md](INVESTIGATION.md)
+and [recorded_failure](recorded_failure/README.md). The template change supports a
+new experimental hypothesis. One stopping probe does not establish improved accuracy.
 
-## What changed for reproducibility
+## Reproducibility and regression checks
 
-- Student and dataset revisions remain pinned to 02/03. The teacher is pinned to
-  `9216db5781bf21249d130ec9da846c4624c16137`.
-- Student sampling uses temperature 1, `top_k=0`, and `top_p=1`. 04 explicitly sets
-  `use_model_defaults=False`, preventing Transformers from replacing these values
-  with a model's stored sampling defaults. Paired evaluation does the same.
-- 04 recognizes both `151643` and `151645` as generation stops for all three arms.
-  The token meanings match; their default EOS roles differ. Historical 02/03
-  scores used a different stopping policy and are contextual comparisons only.
-- Both 04 training losses average within each response, then across responses.
-  Validation reference NLL retains the pooled-token definition from 03. These
-  quantities have different weighting and should not be conflated.
-- All eight trajectories for an update come from the unchanged current student.
-  They are discarded after that update. Incorrect/capped responses are retained;
-  capped responses receive no invented EOS.
-- Teacher parameters are frozen and excluded from the optimizer. Response-position
-  chunking retains the entire vocabulary; it is not a top-k approximation.
-- Reports record upstream SFT split evidence, model/checkpoint fingerprints,
-  code/protocol identity, raw responses, trajectories, environment, and observed
-  resource measurements. Weights and optimizer state are separate.
-- Shared checksum operations now stream large files rather than reading multi-GB
-  checkpoints into RAM. Existing evaluator semantics are unchanged by formatting.
+The experiment signature includes pinned model identities, actual checkpoint
+fingerprints, split identities, student evaluation policy, teacher-context version,
+chat-template fingerprint, and implementation code. Old raw-context snapshots are
+incompatible with the corrected experiment.
 
-## Upstream evidence and preservation
+Student sampling uses temperature 1, `top_k=0`, `top_p=1`, both stop IDs, and
+`use_model_defaults=False`. Response IDs are appended directly to the teacher's
+chat prefix. Each model's own `P - 1` shift yields `[1,R,V]` response logits.
+Full-vocabulary KL uses FP32 softmax and detached teacher targets at temperature 0.1.
+Both training objectives use a mean within each response, then across responses.
 
-The supplied Notebook 03 `report.zip` has **14 valid inventory hashes**. Its
-before-validation, after-validation, and final-test scores reproduce with the
-unchanged answer-checker logic. `cold_start_lineage.json` records its metadata,
-split indices, score aggregates, and expected checkpoint fingerprints.
+The actual notebook loop is exercised with tiny random CPU Qwen3 models. Tests
+cover the default 32-of-128 pilot boundary, partial groups, exact equality between
+paused/resumed and uninterrupted weights, trajectories, scheduler and RNG state,
+health-pause snapshots outside periodic save points, and blocked unsafe continuation.
+The teacher's end ID is tested through the actual Transformers generation entry point.
 
-That report contains **no model weights**. The actual user-run 03 checkpoint was
-not available locally during this review. 04 will verify the real checkpoint
-against the report on Colab before loading it. No claim is made that its weights
-were locally backed up or that its CUDA forward pass was rerun here.
+Pilot and full reports have separate immutable archive names. Weights stay outside
+reports. Export checks compare entry hashes with the source inventory and expose a
+final archive only after packaging completes. Corrupt existing ZIPs produce a clear
+error while preserving source files.
 
-An ignored backup of the pre-edit notebooks, README, and SFT helper is under
-`.cache/backups/pre_notebook04/`. Existing local 03 download-cell edits were
-preserved, along with its saved A100 outputs. No original 01/02 evidence changed.
+## Presentation and operational checks
 
-## Still needs the Colab run
+All notebooks have schema/syntax, guidance-comment, navigation, relative-asset,
+HTML-export, image, and equation checks. Updated diagrams explicitly distinguish
+question contexts from response prefixes. Historical model outputs are retained in
+01–03; 04's old errors and mixed-mode outputs are archived separately.
 
-The actual 32B teacher load, A100 memory headroom, mixed-precision training,
-real sampled trajectories, wall time, final checkpoint reload on CUDA, and
-generated-answer performance remain unverified. The preflight guard estimates
-resource needs; it is not an execution guarantee.
+The browser preview permission was declined. Offline HTML exports and direct PNG
+inspection were completed; live desktop/mobile GitHub layout remains unverified.
+CPU checks use PyTorch 2.10.0+cpu; the user-run GPU records report 2.11.0+cu130.
+Cross-hardware or cross-version bitwise identity is not claimed.
 
-Run 04 from the top in the VS Code Colab kernel with an almost-empty A100 80GB,
-`MODE = "train"`, and 03's matching report/checkpoint folders or ZIPs. Keep the
-fixed experiment unchanged when using the primary held-out test. Download both
-the small report and final weights, and save the executed notebook.
+## Next GPU acceptance checks
 
-This is one training seed and a custom subset. The bootstrap interval measures
-question-sampling uncertainty, not training-seed variability. The SFT comparison
-also changes the learning signal and compute cost, so it is not an isolated
-on-policy-versus-off-policy KD ablation. Teacher accuracy under the shared plain
-prompt has not been measured separately.
+Follow [NEXT_RUN.md](NEXT_RUN.md). Qualify teacher validation performance and response
+alignment, inspect the 32-update pilot and stop behavior, then explicitly continue
+its saved optimizer boundary. The primary exam stays gated until full completion.
+A health-paused recipe requires diagnosis and a fresh revised experiment.
+
+Observed accuracy improvement, mixed-precision memory headroom, timings for the
+corrected context, full CUDA checkpoint reload, and final held-out results remain
+unverified. Higher teacher stopping mass and lower KL cannot establish these outcomes.
 
 ## Reproduce local checks
 
-After following the CPU environment setup in the repository README:
-
 ```bash
-.venv/bin/python -m unittest discover -s tests -v
-.venv/bin/python scripts/validate_notebook02.py
-.venv/bin/python scripts/validate_notebook03.py
-.venv/bin/python scripts/validate_notebook04.py
-.venv/bin/python scripts/render_notebook04_assets.py
-.venv/bin/python -m ruff check src scripts tests notebooks/04_on_policy_distillation.ipynb
-.venv/bin/python -m ruff format --check src scripts tests notebooks/04_on_policy_distillation.ipynb
+python -m unittest discover -s tests -v
+python scripts/validate_notebook02.py
+python scripts/validate_notebook03.py
+python scripts/validate_notebook04.py
+python scripts/validate_notebook_series.py
+python scripts/render_notebook04_assets.py
+python -m ruff check src scripts tests notebooks/*.ipynb
+python -m ruff format --check src scripts tests notebooks/*.ipynb
 git diff --check
 ```
 
-Validators write separate executed notebook copies and HTML previews under ignored
-`results/notebook02_qa/`, `results/notebook03_qa/`, and `results/notebook04_qa/`.
-`--save-inspection` explicitly saves genuine inspection outputs to 04. The earlier
-notebooks' saved GPU outputs are preserved by the default validation commands.
-Exact local facts and verification scope are in `validation_summary.json`.
+For independent equation rendering, use `quickjs==1.19.4` in the QA environment and
+pass the official KaTeX bundle to `validate_notebook_series.py --katex-js PATH`.
+The recorded review used KaTeX 0.16.22. `validation_summary.json` records the exact
+checks and their limits. Local validators preserve source evidence by default.

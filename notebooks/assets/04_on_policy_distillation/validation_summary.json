@@ -1,19 +1,35 @@
 {
-  "validation_date": "2026-11-02",
-  "status": "implemented_and_cpu_validated_real_qwen_training_pending",
-  "environment": {
-    "python": "3.14.7",
-    "torch": "2.10.0+cpu",
-    "cuda_available": false,
-    "packages": {
-      "transformers": "4.57.6",
-      "datasets": "4.8.5",
-      "accelerate": "1.15.0",
-      "huggingface_hub": "0.36.2",
-      "numpy": "2.5.4",
-      "pandas": "3.1.0",
-      "matplotlib": "3.11.2"
-    }
+  "validation_date": "2026-11-04",
+  "status": "corrected_implementation_cpu_validated_staged_cuda_run_pending",
+  "unit_tests": {
+    "passed": 92,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "test_machinery": "Tiny random CPU models; saved data and checkpoint integrity tests."
+  },
+  "notebook02_replay": {
+    "execution_mode": "replay",
+    "fresh_model_inference": false,
+    "clean_kernel": true,
+    "code_cells_executed": 15,
+    "errors": 0,
+    "stderr_outputs": 0,
+    "rendered_figures": 4,
+    "html_export": "results/notebook02_qa/notebook02.html",
+    "replay_notebook": "results/notebook02_qa/notebook02_replay.ipynb",
+    "source_notebook_updated": false
+  },
+  "notebook03_inspection": {
+    "execution_mode": "inspect",
+    "clean_kernel": true,
+    "code_cells_executed": 11,
+    "errors": 0,
+    "stderr_outputs": 0,
+    "student_weights_loaded": false,
+    "real_student_training_performed": false,
+    "source_notebook_updated": false,
+    "html_export": "results/notebook03_qa/notebook03.html"
   },
   "notebook04_inspection": {
     "execution_mode": "inspect",
@@ -27,67 +43,100 @@
     "source_notebook_updated": true,
     "html_export": "results/notebook04_qa/notebook04.html"
   },
-  "real_source_checks": {
-    "mode": "inspect",
-    "split_counts": {
-      "train": 1024,
-      "validation": 64,
-      "primary_test": 256,
-      "historical_test": 32
-    },
-    "selection_exclusions": 326,
-    "tokenizer_checks": {
-      "identical_token_mapping": true,
-      "text_probes_checked": 2180,
-      "output_vocabulary_size": 151936,
-      "student_eos_token_id": 151643,
-      "teacher_eos_token_id": 151645
-    },
-    "stop_token_ids": [
-      151643,
-      151645
+  "series_presentation": {
+    "date": "2026-11-04",
+    "scope": "Offline validation. No notebook model execution or live browser layout check.",
+    "notebooks": [
+      {
+        "notebook": "01_reverse_kl_demo.ipynb",
+        "schema_and_syntax": "passed",
+        "guidance_comments": "passed",
+        "relative_links": "passed",
+        "html_export": "passed",
+        "equations": 1,
+        "equation_rendering": "passed"
+      },
+      {
+        "notebook": "02_baseline_evaluation.ipynb",
+        "schema_and_syntax": "passed",
+        "guidance_comments": "passed",
+        "relative_links": "passed",
+        "html_export": "passed",
+        "equations": 46,
+        "equation_rendering": "passed"
+      },
+      {
+        "notebook": "03_sft_cold_start.ipynb",
+        "schema_and_syntax": "passed",
+        "guidance_comments": "passed",
+        "relative_links": "passed",
+        "html_export": "passed",
+        "equations": 4,
+        "equation_rendering": "passed"
+      },
+      {
+        "notebook": "04_on_policy_distillation.ipynb",
+        "schema_and_syntax": "passed",
+        "guidance_comments": "passed",
+        "relative_links": "passed",
+        "html_export": "passed",
+        "equations": 21,
+        "equation_rendering": "passed"
+      }
     ],
-    "teacher_revision": "9216db5781bf21249d130ec9da846c4624c16137",
-    "maximum_selected_reference_length": 453,
-    "maximum_selected_prompt_length": 191,
-    "model_weights_loaded": false
+    "image_files_checked": 30,
+    "katex_version": "0.16.22"
   },
-  "regressions": {
-    "tests_run": 72,
-    "failures": 0,
-    "errors": 0,
-    "skipped": 0,
-    "training_test_models": "Tiny randomly initialized Qwen3 models with 32 output tokens; not pretrained Qwen."
+  "recovered_student_cpu": {
+    "date": "2026-11-04",
+    "execution": "recovered_trained_student_cpu_load_and_short_forward",
+    "device": "cpu",
+    "model_weights_verified_against_report": true,
+    "tokenizer_text_probes": 676,
+    "logits_shape": [
+      1,
+      16,
+      151936
+    ],
+    "all_logits_finite": true,
+    "elapsed_model_load_and_forward_seconds": 1.7891809760003525,
+    "cuda_execution_performed": false,
+    "training_performed": false,
+    "task_accuracy_evaluated": false
   },
-  "cpu_pipeline_checked": [
-    "both actual notebook training arms",
-    "partial accumulation group",
-    "checkpoint and tokenizer reload",
-    "optimizer/RNG resume and finalization recovery",
-    "actual notebook final evaluation and paired comparisons",
-    "training/performance plot rendering",
-    "actual notebook report export and repeated export"
+  "observed_legacy_run": {
+    "downloaded_updates": 52,
+    "downloaded_trajectories": 416,
+    "console_last_update": 61,
+    "cap_stops_updates_24_through_52": 232,
+    "teacher_probe_cases": 1,
+    "teacher_probe_user_run_cuda": true
+  },
+  "limits": [
+    "Corrected Qwen GPU training and measured accuracy improvement remain pending.",
+    "Live browser preview was declined; desktop/mobile GitHub layout unverified.",
+    "Local CPU PyTorch 2.10 differs from recorded Colab PyTorch 2.11."
   ],
-  "equations_rendered_with_katex": 12,
-  "notebook02_clean_kernel": {
-    "mode": "replay",
-    "cells_executed": 15,
-    "source_preserved": true
+  "local_environment": {
+    "python": "3.14.7",
+    "torch": "2.10.0+cpu",
+    "transformers": "4.57.6",
+    "quickjs": "1.19.4",
+    "katex": "0.16.22"
   },
-  "notebook03_clean_kernel": {
-    "mode": "inspect",
-    "cells_executed": 11,
-    "saved_a100_outputs_preserved": true
-  },
-  "upstream_report": {
-    "sha256": "942170822f03cb80d6353c8196e142372cef6a46a36295b1b4cd214b2624fae0",
-    "checksums_verified": 14,
-    "evaluations_rescored": 3,
-    "weights_in_report": false
-  },
-  "real_student_training_performed": false,
-  "real_teacher_weights_loaded": false,
-  "real_colab_checkpoint_verified_locally": false,
-  "notebooks_01_02_03_byte_preserved": true,
-  "git_delivery": "Local dev changes only. No commit, push, merge, or main change."
+  "regression_scenarios": [
+    "Separate model prompt offsets with identical response IDs",
+    "Actual teacher-alignment notebook cell with random CPU models",
+    "Actual 32-of-128 pilot boundary with random CPU models",
+    "Paused/resumed weights, RNG, schedule and rollouts equal uninterrupted CPU run",
+    "Early cap-rate pause saves a nonperiodic recovery boundary",
+    "Teacher EOS recognized by actual Transformers generation",
+    "Atomic JSON and concurrent/interrupted checksummed ZIP packaging"
+  ],
+  "pinned_teacher_context_check": {
+    "nonthinking_assistant_suffix_verified": true,
+    "template_sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8",
+    "teacher_weights_loaded": false,
+    "tokenizer_revision": "9216db5781bf21249d130ec9da846c4624c16137"
+  }
 }
