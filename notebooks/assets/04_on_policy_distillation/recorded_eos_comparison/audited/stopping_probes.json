@@ -1,0 +1,727 @@
+{
+  "scope": "Frozen forward passes and detached logit gradients; no weight updates.",
+  "rows": [
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/3370",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 5338,
+      "observed_next_token": "'First'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 4.296864986419678,
+      "semantic_stop_kl_nats": 4.296864986419678,
+      "student_eos_probabilities": {
+        "151643": 1.9863827915855836e-08,
+        "151645": 7.77414319984987e-13
+      },
+      "student_stop_log_probability": -17.73432731628418,
+      "student_stop_probability": 1.986458464386942e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 3.0797702916022206e-15,
+        "151645": 1.121806332527757e-16
+      },
+      "teacher_T1_stop_log_probability": -33.378143310546875,
+      "teacher_T1_stop_probability": 3.1919534527189482e-15,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -333.125,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 1.9863827915855836e-08,
+        "151645": 7.77414319984987e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 1.9863827915855836e-08,
+        "151645": 7.77414319984987e-13
+      },
+      "student_predicting_position": 72,
+      "teacher_predicting_position": 84
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/3370",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 85,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "'ree watermelons to find the number of customers who bought two watermelons: 7 customers + 3 customers + 21 customers + 4 watermelons sold = 33 customers\\n#### 33'",
+      "raw_token_kl_nats": 35.3750114440918,
+      "semantic_stop_kl_nats": 1.2516346032498404e-05,
+      "student_eos_probabilities": {
+        "151643": 0.9999874830245972,
+        "151645": 4.3333895885108665e-16
+      },
+      "student_stop_log_probability": -1.2516897186287679e-05,
+      "student_stop_probability": 0.9999874830245972,
+      "teacher_T1_eos_probabilities": {
+        "151643": 2.1676234496226243e-07,
+        "151645": 0.9098597764968872
+      },
+      "teacher_T1_stop_log_probability": -0.09446451812982559,
+      "teacher_T1_stop_probability": 0.9098600149154663,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 1.0
+      },
+      "teacher_target_stop_log_probability": 0.0,
+      "teacher_target_stop_probability": 1.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.9999874830245972,
+        "151645": -1.0
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": -1.2516975402832031e-05,
+        "151645": -4.9498487855173176e-21
+      },
+      "student_predicting_position": 157,
+      "teacher_predicting_position": 169
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/4852",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 2679,
+      "observed_next_token": "'If'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 7.169650077819824,
+      "semantic_stop_kl_nats": 7.169650077819824,
+      "student_eos_probabilities": {
+        "151643": 1.0655911708568055e-08,
+        "151645": 2.7137466536084065e-13
+      },
+      "student_stop_log_probability": -18.357126235961914,
+      "student_stop_probability": 1.0656175497558706e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 5.086535508655281e-14,
+        "151645": 7.968681621069932e-16
+      },
+      "teacher_T1_stop_log_probability": -30.59404945373535,
+      "teacher_T1_stop_probability": 5.16622301308025e-14,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -305.625,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 1.0655911708568055e-08,
+        "151645": 2.7137466536084065e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 1.0655911708568055e-08,
+        "151645": 2.7137466536084065e-13
+      },
+      "student_predicting_position": 71,
+      "teacher_predicting_position": 83
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/4852",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 98,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "'hs = $120.\\nThe total bill is discounted for 20% of $120, which is 20%/100*120 = $2.40\\nYour final bill, after the discount, is $120 - $2.40 = $117.60.\\n#### 117.6'",
+      "raw_token_kl_nats": 7.34572696685791,
+      "semantic_stop_kl_nats": 0.24020014703273773,
+      "student_eos_probabilities": {
+        "151643": 0.5620416402816772,
+        "151645": 7.817360243834136e-15
+      },
+      "student_stop_log_probability": -0.5761793851852417,
+      "student_stop_probability": 0.5620416402816772,
+      "teacher_T1_eos_probabilities": {
+        "151643": 3.236345635926341e-10,
+        "151645": 0.4687635898590088
+      },
+      "teacher_T1_stop_log_probability": -0.7576566934585571,
+      "teacher_T1_stop_probability": 0.4687635898590088,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.22270014882087708
+      },
+      "teacher_target_stop_log_probability": -1.5019290447235107,
+      "teacher_target_stop_probability": 0.22270014882087708,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.5620416402816772,
+        "151645": -0.22270014882087708
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 0.33934149146080017,
+        "151645": 4.7198539293493574e-15
+      },
+      "student_predicting_position": 169,
+      "teacher_predicting_position": 181
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/98",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 1519,
+      "observed_next_token": "'He'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 3.8847625255584717,
+      "semantic_stop_kl_nats": 3.8847625255584717,
+      "student_eos_probabilities": {
+        "151643": 4.099713279970274e-08,
+        "151645": 5.416595449080075e-13
+      },
+      "student_stop_log_probability": -17.009750366210938,
+      "student_stop_probability": 4.0997679917609275e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 1.0132597750211678e-14,
+        "151645": 4.451952760604991e-16
+      },
+      "teacher_T1_stop_log_probability": -32.18001937866211,
+      "teacher_T1_stop_probability": 1.0577794879156749e-14,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -320.625,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 4.099713279970274e-08,
+        "151645": 5.416595449080075e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 4.099713279970274e-08,
+        "151645": 5.416595449080075e-13
+      },
+      "student_predicting_position": 108,
+      "teacher_predicting_position": 120
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/98",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 97,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "'bby, because it was 5 less.\\nHe gave away a total of 4+8+4 =16 gumballs.\\nWith the remaining, the number of gumballs he had initially to find is 16+6 = 22\\n#### 22'",
+      "raw_token_kl_nats": 35.87501525878906,
+      "semantic_stop_kl_nats": 1.3470558769768104e-05,
+      "student_eos_probabilities": {
+        "151643": 0.9999865293502808,
+        "151645": 2.6283236476931887e-16
+      },
+      "student_stop_log_probability": -1.3470558769768104e-05,
+      "student_stop_probability": 0.9999865293502808,
+      "teacher_T1_eos_probabilities": {
+        "151643": 6.066861715225969e-07,
+        "151645": 0.99724942445755
+      },
+      "teacher_T1_stop_log_probability": -0.0027537525165826082,
+      "teacher_T1_stop_probability": 0.9972500205039978,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 1.0
+      },
+      "teacher_target_stop_log_probability": 0.0,
+      "teacher_target_stop_probability": 1.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.9999865293502808,
+        "151645": -1.0
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": -1.3470649719238281e-05,
+        "151645": -3.99693671985623e-21
+      },
+      "student_predicting_position": 205,
+      "teacher_predicting_position": 217
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/102",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 7941,
+      "observed_next_token": "'She'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 0.9811739921569824,
+      "semantic_stop_kl_nats": 0.9811739921569824,
+      "student_eos_probabilities": {
+        "151643": 1.2866040677295132e-08,
+        "151645": 1.532944452799223e-12
+      },
+      "student_stop_log_probability": -18.168556213378906,
+      "student_stop_probability": 1.2867563015106498e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 4.2634429312155865e-15,
+        "151645": 2.5859090022550216e-15
+      },
+      "teacher_T1_stop_log_probability": -32.6146240234375,
+      "teacher_T1_stop_probability": 6.84934049852582e-15,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -329.9932861328125,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 1.2866040677295132e-08,
+        "151645": 1.5329445612194403e-12
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 1.2866040677295132e-08,
+        "151645": 1.5329445612194403e-12
+      },
+      "student_predicting_position": 92,
+      "teacher_predicting_position": 104
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/102",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 46,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "\"She needs 10ml for each wheel , so she's got 2 wheels and she needs 30ml and she needs an extra 5ml so that's 35ml in total.\\n#### 35\"",
+      "raw_token_kl_nats": 33.40707015991211,
+      "semantic_stop_kl_nats": 0.0008185109472833574,
+      "student_eos_probabilities": {
+        "151643": 0.9991818070411682,
+        "151645": 3.100942938910026e-15
+      },
+      "student_stop_log_probability": -0.0008185135084204376,
+      "student_stop_probability": 0.9991818070411682,
+      "teacher_T1_eos_probabilities": {
+        "151643": 1.7801194474031945e-07,
+        "151645": 0.9013016223907471
+      },
+      "teacher_T1_stop_log_probability": -0.10391507297754288,
+      "teacher_T1_stop_probability": 0.9013018608093262,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 1.0
+      },
+      "teacher_target_stop_log_probability": 0.0,
+      "teacher_target_stop_probability": 1.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.9991818070411682,
+        "151645": -1.0
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": -0.0008181929588317871,
+        "151645": -2.5442752153151046e-18
+      },
+      "student_predicting_position": 138,
+      "teacher_predicting_position": 150
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/1951",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 44,
+      "observed_next_token": "'M'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 6.563838481903076,
+      "semantic_stop_kl_nats": 6.563838481903076,
+      "student_eos_probabilities": {
+        "151643": 2.078905936286901e-08,
+        "151645": 2.85609345418783e-13
+      },
+      "student_stop_log_probability": -17.688825607299805,
+      "student_stop_probability": 2.0789338250892797e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 6.2498990934022145e-15,
+        "151645": 1.1447089122814313e-16
+      },
+      "teacher_T1_stop_log_probability": -32.68806076049805,
+      "teacher_T1_stop_probability": 6.364372631608318e-15,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -326.875,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 2.078905936286901e-08,
+        "151645": 2.85609345418783e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 2.078905936286901e-08,
+        "151645": 2.85609345418783e-13
+      },
+      "student_predicting_position": 107,
+      "teacher_predicting_position": 119
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/1951",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 127,
+      "boundaries": [
+        "before_last_observed_token"
+      ],
+      "observed_next_token_id": 220,
+      "observed_next_token": "' '",
+      "response_prefix_tail": "' that when combined, these equal 10*8 = 80 chips\\nTherefore 90-80 = 10 chips remain for the ninth day.\\nMarnie orders some chips for the tenth day, which will use'",
+      "raw_token_kl_nats": 0.5925126075744629,
+      "semantic_stop_kl_nats": 0.5925126075744629,
+      "student_eos_probabilities": {
+        "151643": 2.461038661749626e-07,
+        "151645": 2.8919948033556686e-12
+      },
+      "student_stop_log_probability": -15.217500686645508,
+      "student_stop_probability": 2.461066799241962e-07,
+      "teacher_T1_eos_probabilities": {
+        "151643": 5.116144730088479e-10,
+        "151645": 1.9008783436191834e-09
+      },
+      "teacher_T1_stop_log_probability": -19.842605590820312,
+      "teacher_T1_stop_probability": 2.412491983960763e-09,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -198.75,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 2.461038661749626e-07,
+        "151645": 2.8919948033556686e-12
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 2.461038661749626e-07,
+        "151645": 2.8919948033556686e-12
+      },
+      "student_predicting_position": 234,
+      "teacher_predicting_position": 246
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/1951",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 128,
+      "boundaries": [
+        "after_truncation"
+      ],
+      "observed_next_token_id": null,
+      "observed_next_token": null,
+      "response_prefix_tail": "'that when combined, these equal 10*8 = 80 chips\\nTherefore 90-80 = 10 chips remain for the ninth day.\\nMarnie orders some chips for the tenth day, which will use '",
+      "raw_token_kl_nats": 0.3122960925102234,
+      "semantic_stop_kl_nats": 0.3122960925102234,
+      "student_eos_probabilities": {
+        "151643": 2.172883400985981e-10,
+        "151645": 1.2880716187668034e-13
+      },
+      "student_stop_log_probability": -22.249202728271484,
+      "student_stop_probability": 2.174172647473327e-10,
+      "teacher_T1_eos_probabilities": {
+        "151643": 1.6144224845859867e-11,
+        "151645": 3.142888449492176e-10
+      },
+      "teacher_T1_stop_log_probability": -21.830617904663086,
+      "teacher_T1_stop_probability": 3.304327644837457e-10,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -218.125,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 2.172883400985981e-10,
+        "151645": 1.2880716187668034e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 2.172883400985981e-10,
+        "151645": 1.2880716187668034e-13
+      },
+      "student_predicting_position": 235,
+      "teacher_predicting_position": 247
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/6532",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 785,
+      "observed_next_token": "'The'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 5.424449920654297,
+      "semantic_stop_kl_nats": 5.424449920654297,
+      "student_eos_probabilities": {
+        "151643": 8.341397972344566e-08,
+        "151645": 8.189937443503492e-13
+      },
+      "student_stop_log_probability": -16.299440383911133,
+      "student_stop_probability": 8.341477553130972e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 2.905652716656969e-15,
+        "151645": 1.237376169595624e-16
+      },
+      "teacher_T1_stop_log_probability": -33.430416107177734,
+      "teacher_T1_stop_probability": 3.0293870778336403e-15,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -334.375,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 8.341397972344566e-08,
+        "151645": 8.189937443503492e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 8.341397972344566e-08,
+        "151645": 8.189937443503492e-13
+      },
+      "student_predicting_position": 73,
+      "teacher_predicting_position": 85
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/6532",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 69,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "' less than 40 years, so he is 40 - 10 = 30 years old now.\\nBecause they are the same age now, 30 years from now they will each be 30 + 30 = 60 years old.\\n#### 60'",
+      "raw_token_kl_nats": 36.7500114440918,
+      "semantic_stop_kl_nats": 1.1801649634435307e-05,
+      "student_eos_probabilities": {
+        "151643": 0.9999881982803345,
+        "151645": 1.0956524697456065e-16
+      },
+      "student_stop_log_probability": -1.1801649634435307e-05,
+      "student_stop_probability": 0.9999881982803345,
+      "teacher_T1_eos_probabilities": {
+        "151643": 2.0563327041145385e-08,
+        "151645": 0.9878180027008057
+      },
+      "teacher_T1_stop_log_probability": -0.01225677877664566,
+      "teacher_T1_stop_probability": 0.9878180027008057,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 1.0
+      },
+      "teacher_target_stop_log_probability": 0.0,
+      "teacher_target_stop_probability": 1.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.9999881982803345,
+        "151645": -1.0
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": -1.1801719665527344e-05,
+        "151645": -1.2506970861801778e-21
+      },
+      "student_predicting_position": 142,
+      "teacher_predicting_position": 154
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/5823",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 785,
+      "observed_next_token": "'The'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 6.8302226066589355,
+      "semantic_stop_kl_nats": 6.8302226066589355,
+      "student_eos_probabilities": {
+        "151643": 2.317294800491254e-08,
+        "151645": 5.855541203823866e-13
+      },
+      "student_stop_log_probability": -17.58025550842285,
+      "student_stop_probability": 2.3173521768171668e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 1.165655029097823e-13,
+        "151645": 3.865934180717406e-15
+      },
+      "teacher_T1_stop_log_probability": -29.747695922851562,
+      "teacher_T1_stop_probability": 1.2043141549115954e-13,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -293.75,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 2.317294800491254e-08,
+        "151645": 5.855541203823866e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 2.317294800491254e-08,
+        "151645": 5.855541203823866e-13
+      },
+      "student_predicting_position": 69,
+      "teacher_predicting_position": 81
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/5823",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 76,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "'nute, and each drop contains 0.05 mL, so the total in a minute is 10 drops/min*0.05 mL/drop= 0.5 mL/min\\nThe faucet drips 0.5 mL/min*60min/hour= 3 mL/hour\\n#### 3'",
+      "raw_token_kl_nats": 8.751581192016602,
+      "semantic_stop_kl_nats": 8.751579284667969,
+      "student_eos_probabilities": {
+        "151643": 0.9984201192855835,
+        "151645": 1.3671593730431395e-14
+      },
+      "student_stop_log_probability": -0.0015811334596946836,
+      "student_stop_probability": 0.9984201192855835,
+      "teacher_T1_eos_probabilities": {
+        "151643": 2.9509477528222305e-08,
+        "151645": 0.14035864174365997
+      },
+      "teacher_T1_stop_log_probability": -1.9635541439056396,
+      "teacher_T1_stop_probability": 0.14035867154598236,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 8.764248349280024e-08
+      },
+      "teacher_target_stop_log_probability": -16.25,
+      "teacher_target_stop_probability": 8.764248349280024e-08,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.9984200596809387,
+        "151645": -8.764246928194552e-08
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 0.998420000076294,
+        "151645": 1.36715920363655e-14
+      },
+      "student_predicting_position": 145,
+      "teacher_predicting_position": 157
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/930",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 0,
+      "boundaries": [
+        "first_response_prediction"
+      ],
+      "observed_next_token_id": 785,
+      "observed_next_token": "'The'",
+      "response_prefix_tail": "''",
+      "raw_token_kl_nats": 4.908052921295166,
+      "semantic_stop_kl_nats": 4.908052921295166,
+      "student_eos_probabilities": {
+        "151643": 2.0140110024158275e-08,
+        "151645": 3.932611614826387e-13
+      },
+      "student_stop_log_probability": -17.72053337097168,
+      "student_stop_probability": 2.0140495493592425e-08,
+      "teacher_T1_eos_probabilities": {
+        "151643": 2.6108586118262812e-14,
+        "151645": 4.829602717775676e-15
+      },
+      "teacher_T1_stop_log_probability": -31.10678482055664,
+      "teacher_T1_stop_probability": 3.093819688285149e-14,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 0.0
+      },
+      "teacher_target_stop_log_probability": -310.625,
+      "teacher_target_stop_probability": 0.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 2.0140110024158275e-08,
+        "151645": 3.932611614826387e-13
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": 2.0140110024158275e-08,
+        "151645": 3.932611614826387e-13
+      },
+      "student_predicting_position": 67,
+      "teacher_predicting_position": 79
+    },
+    {
+      "checkpoint": "starting_03",
+      "example_id": "gsm8k/train/930",
+      "probe_group": "fresh_starting_validation",
+      "response_prefix_length": 115,
+      "boundaries": [
+        "before_observed_eos",
+        "after_first_final_answer_line"
+      ],
+      "observed_next_token_id": 151643,
+      "observed_next_token": "'<|endoftext|>'",
+      "response_prefix_tail": "'s from the two men.\\nIf a man or woman bought 30 apples from the store, 60 apples are bought from it.\\nThe total number of apples is then 70 + 140 = 210.\\n#### 210'",
+      "raw_token_kl_nats": 36.04688262939453,
+      "semantic_stop_kl_nats": 6.437280717364047e-06,
+      "student_eos_probabilities": {
+        "151643": 0.9999935626983643,
+        "151645": 2.2132872973570342e-16
+      },
+      "student_stop_log_probability": -6.437280717364047e-06,
+      "student_stop_probability": 0.9999935626983643,
+      "teacher_T1_eos_probabilities": {
+        "151643": 1.3327831283049818e-08,
+        "151645": 0.9916247725486755
+      },
+      "teacher_T1_stop_log_probability": -0.00841051060706377,
+      "teacher_T1_stop_probability": 0.9916247725486755,
+      "teacher_target_eos_probabilities": {
+        "151643": 0.0,
+        "151645": 1.0
+      },
+      "teacher_target_stop_log_probability": 0.0,
+      "teacher_target_stop_probability": 1.0,
+      "raw_student_eos_logit_gradients": {
+        "151643": 0.9999935626983643,
+        "151645": -1.0
+      },
+      "grouped_student_eos_logit_gradients": {
+        "151643": -6.4373016357421875e-06,
+        "151645": -1.6808310047077522e-21
+      },
+      "student_predicting_position": 182,
+      "teacher_predicting_position": 194
+    }
+  ],
+  "probe_identity": "8301bb2ba6b8dc4af8fe57e61127783561f9896f3a9a4b8cbe23a9766d829e87"
+}

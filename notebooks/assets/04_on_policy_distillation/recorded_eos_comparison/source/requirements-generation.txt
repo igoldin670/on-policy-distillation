@@ -1,0 +1,7 @@
+# Optional fresh inference: install into the existing Colab GPU runtime.
+# Preserve Colab's working PyTorch/CUDA installation; do not replace it here.
+# These Hugging Face versions match the recorded A100 environment.
+transformers==4.57.6
+datasets==4.8.5
+accelerate==1.15.0
+huggingface_hub==0.36.2

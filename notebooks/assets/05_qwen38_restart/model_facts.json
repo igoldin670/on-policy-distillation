@@ -1,0 +1,16 @@
+{
+  "student": {
+    "hidden_size": 1024,
+    "layers": 24,
+    "linear_layers": 18,
+    "full_attention_layers": 6,
+    "output_columns": 248320
+  },
+  "teacher": {
+    "hidden_size": 5120,
+    "layers": 64,
+    "linear_layers": 48,
+    "full_attention_layers": 16,
+    "output_columns": 248320
+  }
+}

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="684pt" height="263.88pt" viewBox="0 0 684 263.88" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 263.88
+L 684 263.88
+L 684 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 47.376 213.021
+L 301.824 213.021
+Q 311.868 213.021 311.868 209.2788
+L 311.868 79.5492
+Q 311.868 75.807 301.824 75.807
+L 47.376 75.807
+Q 37.332 75.807 37.332 79.5492
+L 37.332 209.2788
+Q 37.332 213.021 47.376 213.021
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #2563eb; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 382.176 213.021
+L 636.624 213.021
+Q 646.668 213.021 646.668 209.2788
+L 646.668 79.5492
+Q 646.668 75.807 636.624 75.807
+L 382.176 75.807
+Q 372.132 75.807 372.132 79.5492
+L 372.132 209.2788
+Q 372.132 213.021 382.176 213.021
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #7c3aed; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 68.8032 163.87344
+L 280.3968 163.87344
+Q 290.4408 163.87344 290.4408 160.13124
+L 290.4408 121.21236
+Q 290.4408 117.47016 280.3968 117.47016
+L 68.8032 117.47016
+Q 58.7592 117.47016 58.7592 121.21236
+L 58.7592 160.13124
+Q 58.7592 163.87344 68.8032 163.87344
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #2563eb; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 68.8032 201.29544
+L 280.3968 201.29544
+Q 290.4408 201.29544 290.4408 197.55324
+L 290.4408 171.10836
+Q 290.4408 167.36616 280.3968 167.36616
+L 68.8032 167.36616
+Q 58.7592 167.36616 58.7592 171.10836
+L 58.7592 197.55324
+Q 58.7592 201.29544 68.8032 201.29544
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #7c3aed; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 403.6032 183.83184
+L 615.1968 183.83184
+Q 625.2408 183.83184 625.2408 180.08964
+L 625.2408 121.21236
+Q 625.2408 117.47016 615.1968 117.47016
+L 403.6032 117.47016
+Q 393.5592 117.47016 393.5592 121.21236
+L 393.5592 180.08964
+Q 393.5592 183.83184 403.6032 183.83184
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #7c3aed; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #14253d" x="20.592" y="37.365675" transform="rotate(-0 20.592 37.365675)">Teacher sharding preserves separate GPU memories</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #64748b" x="20.592" y="62.959481" transform="rotate(-0 20.592 62.959481)">Illustrative placement. The loader calculates the actual layer map for your allocation.</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="174.6" y="97.0128" transform="rotate(-0 174.6 97.0128)">Logical GPU 0</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7c3aed" x="509.4" y="97.0128" transform="rotate(-0 509.4 97.0128)">Logical GPU 1</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="174.6" y="131.784306" transform="rotate(-0 174.6 131.784306)">FP32 student</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #14253d" x="174.6" y="152.199642" transform="rotate(-0 174.6 152.199642)">Trainable in a future pilot</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7c3aed" x="174.6" y="178.936026" transform="rotate(-0 174.6 178.936026)">BF16 teacher layers</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #14253d" x="174.6" y="193.239102" transform="rotate(-0 174.6 193.239102)">Frozen weights</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7c3aed" x="509.4" y="136.175154" transform="rotate(-0 509.4 136.175154)">Remaining teacher layers</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #14253d" x="509.4" y="166.370106" transform="rotate(-0 509.4 166.370106)">Frozen BF16 weights</text>
+   </g>
+   <g id="patch_7">
+    <path d="M 313.518296 149.4036
+Q 341.997459 149.4036 368.911375 149.4036
+" style="fill: none; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+    <path d="M 364.511375 147.2036
+L 368.911375 149.4036
+L 364.511375 151.6036
+z
+" style="fill: #64748b; stroke: #64748b; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #64748b" x="342" y="234.2268" transform="rotate(-0 342 234.2268)">Memory reservations cover working tensors. Peak VRAM is measured during GPU qualification.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p04bc65e49e">
+   <rect x="7.2" y="7.2" width="669.6" height="249.48"/>
+  </clipPath>
+ </defs>
+</svg>

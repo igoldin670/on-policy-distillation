@@ -1,0 +1,12 @@
+{
+  "audit_summary.json": "49111444bab65b99d1088d7356fc4af97a4d50bb094c6f7af96315f788fc84bd",
+  "eos_comparison_gates.json": "287dc93afdbad766515ed38a13ca064f6b053412944afd6a853d3d0dada8d213",
+  "historical_source_match.json": "2a5d112d978627667519786b25817ed32bf116f2edb3f91b4c24017d237868f7",
+  "raw_token_history.json": "e4b8c8653c7e46e66936dc432b1f7b6d249f4d2938bed85f9f0da3952f5f4c8b",
+  "semantic_stop_history.json": "875386190e68b76cab7dd5db1f9d9c0590d690d9b18c70b8200c45a5d7456dbd",
+  "source_SHA256SUMS.json": "743a33d7c07b0a0365f25d6f27fe5c3d30856d710e3221e03c290ecd12723914",
+  "source_collection.json": "9828420608a4a7f52ff5830361b6f5d26442631d9ccd4593f289048be455bea2",
+  "starting_sft_fixed_diagnostics.json": "1da1875a21d32ee1fe2bf89707e11affc182835b934522f9c7a84dbb37e4efb9",
+  "stopping_probes.json": "55a3b7ec455461fb079def72c71b330958426fb6eb21508e257c70b320181156",
+  "validation_responses.json": "bbf4fb146545346ef6b79e1ad2a888ad1be2d078efe91ec5cb6f88eafd1edffd"
+}

@@ -1,0 +1,4 @@
+# Historical models for notebooks 01-04 and their recorded checkpoints.
+# Keep these identities fixed when reproducing or resuming that experiment.
+student_model_id: Qwen/Qwen3-0.6B-Base
+teacher_model_id: Qwen/Qwen3-32B

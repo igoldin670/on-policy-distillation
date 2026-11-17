@@ -1,0 +1,18 @@
+{
+  "all_matched": true,
+  "files": {
+    "src/baseline.py": true,
+    "src/baseline_plots.py": true,
+    "src/data.py": true,
+    "src/evaluation.py": true,
+    "src/generation.py": true,
+    "src/logprobs.py": true,
+    "src/opd.py": true,
+    "src/opd_diagnostics.py": true,
+    "src/opd_experiment.py": true,
+    "src/opd_loss.py": true,
+    "src/opd_plots.py": true,
+    "src/sft.py": true,
+    "src/utils.py": true
+  }
+}

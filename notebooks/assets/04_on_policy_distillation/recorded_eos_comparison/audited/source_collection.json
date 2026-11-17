@@ -1,0 +1,17 @@
+{
+  "source_directory": "/cache/home/igg11/on-policy-distillation/results/on_policy_distillation_20261116T022121085005Z",
+  "layout": "eos_comparison",
+  "verified_snapshot_steps": {
+    "eos_comparison/raw_token": {
+      "resume/on_policy/step_0016": 16,
+      "resume/on_policy/step_0018": 18
+    },
+    "eos_comparison/semantic_stop": {
+      "resume/on_policy/step_0024": 24,
+      "resume/on_policy/step_0032": 32
+    }
+  },
+  "verified_final_checkpoints": {},
+  "weights_in_archive": false,
+  "scope": "Retained snapshot inventories were checked against source tensor files."
+}

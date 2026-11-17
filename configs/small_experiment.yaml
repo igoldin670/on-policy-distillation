@@ -1,3 +1,18 @@
-# Model choices for the small on-policy distillation experiment.
-student_model_id: Qwen/Qwen3-0.6B-Base
-teacher_model_id: Qwen/Qwen3-32B
+# Next experiment: new models, new baseline, and a fresh supervised checkpoint.
+# Notebook 05 verifies this pair. Historical notebooks 01-04 retain their models.
+profile: qwen38
+student_model_id: Qwen/Qwen3.5-0.8B-Base
+student_revision: dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68
+teacher_model_id: Qwen/Qwen3.8-27B
+teacher_revision: 37561816e66b5b9153b1b64c10968c18c1e6f4a0
+model_type: qwen3_5_text
+output_vocab_size: 248320
+tokenizer_vocab_size: 248077
+eos_token_ids: [248044, 248046]
+# AutoTokenizer reads tokenizer.json AND tokenizer_config.json for both models.
+# Resolved token mappings match; compare the full padded heads, as in 04.
+vocabulary_mode: full_head
+teacher_weight_bytes: 55562855904
+# Reserve space for the FP32 student, optimizer, activations, and score tensors.
+student_gpu_reserve_gib: 20
+other_gpu_reserve_gib: 4

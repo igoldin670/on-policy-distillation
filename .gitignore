@@ -28,3 +28,6 @@ results/*
 # Operating-system files
 .DS_Store
 Thumbs.db
+
+# User-transferred input archives and extracted checkpoints
+artifacts/

@@ -1,0 +1,800 @@
+[
+  {
+    "step": 1,
+    "loss": 1.3176183626055717,
+    "response_tokens": 1054,
+    "response_lengths": [
+      126,
+      105,
+      255,
+      112,
+      62,
+      169,
+      154,
+      71
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 15.348283767700195,
+    "learning_rate": 0.0,
+    "update_seconds": 30.029446044994984,
+    "peak_allocated_gpu_gib_so_far": 40.726545333862305,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.726545333862305
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "loss": 1.7751841694116592,
+    "response_tokens": 515,
+    "response_lengths": [
+      107,
+      48,
+      55,
+      54,
+      38,
+      61,
+      116,
+      36
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 27.540122985839844,
+    "learning_rate": 3.846153846153847e-07,
+    "update_seconds": 15.079948506958317,
+    "peak_allocated_gpu_gib_so_far": 40.726545333862305,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.726545333862305
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "loss": 1.3238857313990593,
+    "response_tokens": 709,
+    "response_lengths": [
+      45,
+      72,
+      198,
+      44,
+      47,
+      82,
+      95,
+      126
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 21.215633392333984,
+    "learning_rate": 7.692307692307694e-07,
+    "update_seconds": 20.01417241501622,
+    "peak_allocated_gpu_gib_so_far": 40.726545333862305,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.726545333862305
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "loss": 1.3179473727941513,
+    "response_tokens": 961,
+    "response_lengths": [
+      178,
+      137,
+      56,
+      31,
+      129,
+      112,
+      62,
+      256
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ],
+    "eos_stops": 7,
+    "examples": 8,
+    "token_limit_stops": 1,
+    "grad_norm_before_clipping": 14.718562126159668,
+    "learning_rate": 1.153846153846154e-06,
+    "update_seconds": 26.058915266010445,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 5,
+    "loss": 1.6856382936239243,
+    "response_tokens": 549,
+    "response_lengths": [
+      143,
+      78,
+      45,
+      64,
+      76,
+      26,
+      77,
+      40
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 22.197994232177734,
+    "learning_rate": 1.5384615384615387e-06,
+    "update_seconds": 15.831512442964595,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 6,
+    "loss": 1.49174315482378,
+    "response_tokens": 671,
+    "response_lengths": [
+      43,
+      51,
+      87,
+      71,
+      152,
+      96,
+      127,
+      44
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 17.0753116607666,
+    "learning_rate": 1.9230769230769234e-06,
+    "update_seconds": 18.812305463012308,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 7,
+    "loss": 1.1206019297242165,
+    "response_tokens": 838,
+    "response_lengths": [
+      65,
+      87,
+      170,
+      128,
+      111,
+      72,
+      112,
+      93
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 10.913269996643066,
+    "learning_rate": 2.307692307692308e-06,
+    "update_seconds": 23.083744127943646,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 8,
+    "loss": 1.0249100103974342,
+    "response_tokens": 1311,
+    "response_lengths": [
+      149,
+      106,
+      50,
+      142,
+      256,
+      206,
+      146,
+      256
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ],
+    "eos_stops": 6,
+    "examples": 8,
+    "token_limit_stops": 2,
+    "grad_norm_before_clipping": 10.527198791503906,
+    "learning_rate": 2.6923076923076923e-06,
+    "update_seconds": 34.3642041850253,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ],
+    "validation_reference_nll": 0.6792501543320023,
+    "fixed_validation_kl": 1.0077070817351341,
+    "fixed_raw_token_kl": 1.0077070817351341,
+    "fixed_semantic_stop_kl": 0.80646613240242,
+    "generated_validation": {
+      "stage": "on_policy",
+      "split": "validation",
+      "questions": 64,
+      "strict_accuracy": 0.265625,
+      "format_compliance": 0.625,
+      "prose_numeric_accuracy": 0.25,
+      "prose_parse_rate": 0.578125,
+      "token_limit_stops": 5
+    }
+  },
+  {
+    "step": 9,
+    "loss": 1.2020321749150753,
+    "response_tokens": 917,
+    "response_lengths": [
+      85,
+      161,
+      112,
+      115,
+      146,
+      152,
+      74,
+      72
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 8,
+    "examples": 8,
+    "token_limit_stops": 0,
+    "grad_norm_before_clipping": 10.814425468444824,
+    "learning_rate": 3.0769230769230774e-06,
+    "update_seconds": 24.552963555033784,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 10,
+    "loss": 1.124639667570591,
+    "response_tokens": 1286,
+    "response_lengths": [
+      86,
+      233,
+      127,
+      39,
+      256,
+      114,
+      256,
+      175
+    ],
+    "response_limit_flags": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ],
+    "eos_stops": 6,
+    "examples": 8,
+    "token_limit_stops": 2,
+    "grad_norm_before_clipping": 10.374507904052734,
+    "learning_rate": 3.4615384615384617e-06,
+    "update_seconds": 33.44694536202587,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 11,
+    "loss": 1.0577130317687988,
+    "response_tokens": 987,
+    "response_lengths": [
+      124,
+      256,
+      130,
+      54,
+      256,
+      60,
+      42,
+      65
+    ],
+    "response_limit_flags": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 6,
+    "examples": 8,
+    "token_limit_stops": 2,
+    "grad_norm_before_clipping": 10.389874458312988,
+    "learning_rate": 3.846153846153847e-06,
+    "update_seconds": 26.33186790102627,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 12,
+    "loss": 1.2742018848657608,
+    "response_tokens": 1429,
+    "response_lengths": [
+      213,
+      256,
+      244,
+      256,
+      173,
+      86,
+      136,
+      65
+    ],
+    "response_limit_flags": [
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "eos_stops": 6,
+    "examples": 8,
+    "token_limit_stops": 2,
+    "grad_norm_before_clipping": 10.006912231445312,
+    "learning_rate": 4.230769230769231e-06,
+    "update_seconds": 36.91800773498835,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 13,
+    "loss": 0.9316631034016609,
+    "response_tokens": 1426,
+    "response_lengths": [
+      114,
+      256,
+      109,
+      256,
+      124,
+      121,
+      256,
+      190
+    ],
+    "response_limit_flags": [
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ],
+    "eos_stops": 5,
+    "examples": 8,
+    "token_limit_stops": 3,
+    "grad_norm_before_clipping": 8.210195541381836,
+    "learning_rate": 4.615384615384616e-06,
+    "update_seconds": 36.79258208198007,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.54358434677124
+      }
+    ]
+  },
+  {
+    "step": 14,
+    "loss": 0.9282654151320457,
+    "response_tokens": 1772,
+    "response_lengths": [
+      256,
+      256,
+      256,
+      116,
+      256,
+      256,
+      200,
+      176
+    ],
+    "response_limit_flags": [
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false
+    ],
+    "eos_stops": 3,
+    "examples": 8,
+    "token_limit_stops": 5,
+    "grad_norm_before_clipping": 8.326329231262207,
+    "learning_rate": 5e-06,
+    "update_seconds": 45.41077442403184,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.551673412322998
+      }
+    ]
+  },
+  {
+    "step": 15,
+    "loss": 0.844466969370842,
+    "response_tokens": 1878,
+    "response_lengths": [
+      214,
+      256,
+      256,
+      128,
+      256,
+      256,
+      256,
+      256
+    ],
+    "response_limit_flags": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true
+    ],
+    "eos_stops": 2,
+    "examples": 8,
+    "token_limit_stops": 6,
+    "grad_norm_before_clipping": 7.872171878814697,
+    "learning_rate": 4.9565217391304355e-06,
+    "update_seconds": 47.77531833801186,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.551673412322998
+      }
+    ]
+  },
+  {
+    "step": 16,
+    "loss": 1.0131490156054497,
+    "response_tokens": 1755,
+    "response_lengths": [
+      256,
+      139,
+      256,
+      256,
+      80,
+      256,
+      256,
+      256
+    ],
+    "response_limit_flags": [
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true
+    ],
+    "eos_stops": 2,
+    "examples": 8,
+    "token_limit_stops": 6,
+    "grad_norm_before_clipping": 7.3325066566467285,
+    "learning_rate": 4.91304347826087e-06,
+    "update_seconds": 44.733656461990904,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.551673412322998
+      }
+    ],
+    "validation_reference_nll": 0.8340414857367937,
+    "fixed_validation_kl": 0.8316309005022049,
+    "fixed_raw_token_kl": 0.8316309005022049,
+    "fixed_semantic_stop_kl": 0.7237919867038727,
+    "generated_validation": {
+      "stage": "on_policy",
+      "split": "validation",
+      "questions": 64,
+      "strict_accuracy": 0.0,
+      "format_compliance": 0.0,
+      "prose_numeric_accuracy": 0.0,
+      "prose_parse_rate": 0.0,
+      "token_limit_stops": 42
+    }
+  },
+  {
+    "step": 17,
+    "loss": 0.9741270020604134,
+    "response_tokens": 1856,
+    "response_lengths": [
+      256,
+      256,
+      232,
+      256,
+      256,
+      217,
+      256,
+      127
+    ],
+    "response_limit_flags": [
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ],
+    "eos_stops": 3,
+    "examples": 8,
+    "token_limit_stops": 5,
+    "grad_norm_before_clipping": 7.095301628112793,
+    "learning_rate": 4.869565217391305e-06,
+    "update_seconds": 47.38613194198115,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.551673412322998
+      }
+    ]
+  },
+  {
+    "step": 18,
+    "loss": 0.8237527534365654,
+    "response_tokens": 2018,
+    "response_lengths": [
+      256,
+      256,
+      256,
+      256,
+      256,
+      226,
+      256,
+      256
+    ],
+    "response_limit_flags": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ],
+    "eos_stops": 1,
+    "examples": 8,
+    "token_limit_stops": 7,
+    "grad_norm_before_clipping": 6.535702705383301,
+    "learning_rate": 4.826086956521739e-06,
+    "update_seconds": 50.9363956329762,
+    "peak_allocated_gpu_gib_so_far": 40.72813606262207,
+    "gpu_memory": [
+      {
+        "index": 0,
+        "peak_allocated_gib": 40.72813606262207
+      },
+      {
+        "index": 1,
+        "peak_allocated_gib": 31.551673412322998
+      }
+    ],
+    "validation_reference_nll": 0.8638182919934584,
+    "fixed_validation_kl": 0.809534102678299,
+    "fixed_raw_token_kl": 0.809534102678299,
+    "fixed_semantic_stop_kl": 0.714300312101841,
+    "generated_validation": {
+      "stage": "on_policy",
+      "split": "validation",
+      "questions": 64,
+      "strict_accuracy": 0.015625,
+      "format_compliance": 0.015625,
+      "prose_numeric_accuracy": 0.0,
+      "prose_parse_rate": 0.0,
+      "token_limit_stops": 53
+    }
+  }
+]

@@ -289,3 +289,121 @@ def plot_run(histories, evaluations, directory: Path):
             color=SLATE,
         )
         _save(fig, directory, "primary_test_comparison")
+
+
+def render_eos_diagram(directory: Path):
+    """A probability example, separate from all measured experimental evidence."""
+    with plt.rc_context({**STYLE, "svg.fonttype": "path", "svg.hashsalt": "opd04-eos"}):
+        fig, ax = plt.subplots(figsize=(12, 5.5))
+        ax.set(xlim=(0, 1), ylim=(0, 1))
+        ax.axis("off")
+        ax.text(
+            0.03, 0.94, "Two endings. One decision to stop.", fontsize=21, weight="bold", color=NAVY
+        )
+        ax.text(0.03, 0.86, "Illustrative probabilities only", fontsize=11, color=SLATE)
+        _panel(
+            ax,
+            0.04,
+            0.40,
+            0.32,
+            0.34,
+            "Student",
+            "endoftext    79%\nim_end          1%\nContinue      20%",
+            BLUE,
+        )
+        _panel(
+            ax,
+            0.64,
+            0.40,
+            0.32,
+            0.34,
+            "Teacher",
+            "endoftext      1%\nim_end        79%\nContinue      20%",
+            PURPLE,
+        )
+        ax.text(
+            0.5,
+            0.57,
+            "Raw-token loss\nsees different\nending choices",
+            ha="center",
+            va="center",
+            fontsize=11,
+            color=SLATE,
+        )
+        _panel(
+            ax, 0.26, 0.06, 0.48, 0.22, "Grouped STOP", "Both assign 80% to ending the answer", TEAL
+        )
+        for x in (0.20, 0.80):
+            ax.annotate(
+                "",
+                xy=(0.5, 0.30),
+                xytext=(x, 0.39),
+                arrowprops={"arrowstyle": "-|>", "lw": 1.8, "color": TEAL},
+            )
+        _save(fig, directory, "eos_alignment")
+
+
+def plot_eos_comparison(results, starting_nll, directory):
+    """Only recorded pilot histories produce these diagnostics."""
+    with plt.rc_context(STYLE):
+        fig, axes = plt.subplots(2, 2, figsize=(12, 7.5))
+        colors = {"raw_token": PURPLE, "semantic_stop": TEAL}
+        for mode, result in results.items():
+            history = result["history"]
+            if not history:
+                continue
+            color = colors[mode]
+            label = mode.replace("_", " ")
+            axes[0, 0].plot(
+                [r["step"] for r in history],
+                [r["token_limit_stops"] / r["examples"] for r in history],
+                color=color,
+                label=label,
+            )
+            checked = [r for r in history if "validation_reference_nll" in r]
+            axes[0, 1].plot(
+                [r["step"] for r in checked],
+                [r["validation_reference_nll"] for r in checked],
+                "o-",
+                color=color,
+                label=label,
+            )
+            generated = [r for r in history if "generated_validation" in r]
+            axes[1, 0].plot(
+                [r["step"] for r in generated],
+                [r["generated_validation"]["strict_accuracy"] for r in generated],
+                "o-",
+                color=color,
+                label=label,
+            )
+            for key, style, metric in (
+                ("fixed_raw_token_kl", "-", "raw KL"),
+                ("fixed_semantic_stop_kl", "--", "grouped KL"),
+            ):
+                records = [r for r in history if key in r]
+                axes[1, 1].plot(
+                    [r["step"] for r in records],
+                    [r[key] for r in records],
+                    style,
+                    color=color,
+                    label=f"{label}, {metric}",
+                )
+        axes[0, 0].set(
+            title="Training responses reaching the token limit",
+            ylabel="Fraction capped",
+            ylim=(0, 1.05),
+        )
+        axes[0, 1].set(title="Reference-token validation loss", ylabel="Nats per target token")
+        axes[0, 1].axhline(starting_nll, color=SLATE, linestyle=":", label="Starting student")
+        axes[1, 0].set(
+            title="Generated validation answers", ylabel="Strict numeric accuracy", ylim=(0, 1.05)
+        )
+        axes[1, 1].set(
+            title="Both KL definitions on fixed prefixes", ylabel="Nats per response token"
+        )
+        for axis in axes.flat:
+            axis.set_xlabel("Completed optimizer updates")
+            axis.legend(fontsize=8)
+        fig.suptitle("Controlled EOS comparison · one training seed", fontsize=17, color=NAVY)
+        fig.tight_layout()
+        _save(fig, Path(directory), "eos_comparison_diagnostics")

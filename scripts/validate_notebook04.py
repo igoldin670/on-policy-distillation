@@ -20,7 +20,7 @@ from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 
 
-def validate(root: Path, *, save_inspection=False):
+def validate(root: Path, *, save_inspection=False, allow_offline_cache_warnings=False):
     path = root / "notebooks/04_on_policy_distillation.ipynb"
     notebook = nbformat.read(path, as_version=4)
     nbformat.validate(notebook)
@@ -100,8 +100,24 @@ def validate(root: Path, *, save_inspection=False):
                 raise ValueError(f"Error output in {cell.id}.")
             if output.output_type == "stream" and output.name == "stderr" and output.text.strip():
                 stderr.append({"cell": cell.id, "text": output.text})
-    if stderr:
-        raise ValueError(f"Review unexpected stderr: {stderr}")
+    unexpected_stderr = []
+    for entry in stderr:
+        # Offline Hugging Face data loading reports its cache fallback. Keep the
+        # text in the QA record and accept only these two reviewed message forms.
+        lines = entry["text"].strip().splitlines()
+        reviewed_cache_notice = allow_offline_cache_warnings and all(
+            line.startswith(
+                (
+                    "Using the latest cached version of the dataset since ",
+                    "Found the latest cached dataset configuration ",
+                )
+            )
+            for line in lines
+        )
+        if not reviewed_cache_notice:
+            unexpected_stderr.append(entry)
+    if unexpected_stderr:
+        raise ValueError(f"Review unexpected stderr: {unexpected_stderr}")
     destination = root / "results/notebook04_qa"
     destination.mkdir(parents=True, exist_ok=True)
     relocated = copy.deepcopy(notebook)
@@ -135,7 +151,9 @@ def validate(root: Path, *, save_inspection=False):
         "clean_kernel": True,
         "code_cells_executed": len(code_cells),
         "errors": 0,
-        "stderr_outputs": 0,
+        "stderr_outputs": len(stderr),
+        "reviewed_offline_cache_notices": stderr,
+        "unexpected_stderr_outputs": 0,
         "real_student_weights_loaded": False,
         "teacher_weights_loaded": False,
         "real_qwen_training_performed": False,
@@ -153,10 +171,19 @@ if __name__ == "__main__":
         action="store_true",
         help="Save actual inspection outputs to 04; never pretend these are GPU results.",
     )
+    parser.add_argument(
+        "--allow-offline-cache-warnings",
+        action="store_true",
+        help="Record and allow only the reviewed Hugging Face cached-dataset notices.",
+    )
     args = parser.parse_args()
     print(
         json.dumps(
-            validate(Path(__file__).resolve().parents[1], save_inspection=args.save_inspection),
+            validate(
+                Path(__file__).resolve().parents[1],
+                save_inspection=args.save_inspection,
+                allow_offline_cache_warnings=args.allow_offline_cache_warnings,
+            ),
             indent=2,
         )
     )

@@ -1,0 +1,37 @@
+{
+  "source": "User-pasted Amarel terminal output on November 16, 2026",
+  "artifact_audit_status": "Collected archive checksums and frozen-checker replay completed locally",
+  "run_id": "on_policy_distillation_20261116T022121085005Z",
+  "questions": 64,
+  "starting": {
+    "step": 0,
+    "strict_correct": 33,
+    "format_compliant": 61,
+    "token_limit_stops": 3,
+    "reference_nll": 0.6676512348477289
+  },
+  "raw_token": {
+    "step": 18,
+    "status": "health_paused",
+    "strict_correct": 1,
+    "format_compliant": 1,
+    "token_limit_stops": 53,
+    "reference_nll": 0.8638182919934584,
+    "latest_training_capped": 24,
+    "training_window": 32
+  },
+  "semantic_stop": {
+    "step": 32,
+    "status": "pilot_complete",
+    "strict_correct": 23,
+    "format_compliant": 34,
+    "token_limit_stops": 4,
+    "reference_nll": 0.963979733522468,
+    "latest_training_capped": 19,
+    "training_window": 32
+  },
+  "matched_step": 18,
+  "reported_matched_cap_reduction": 0.34375,
+  "ready_for_full_run": false,
+  "source_archive_sha256": "b1dbdd2b6ec9588cf244aa6301b3139b4c25e2d48144dae6fcf55d181d7d2b6d"
+}

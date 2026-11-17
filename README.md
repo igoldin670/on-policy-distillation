@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>A guided language-model distillation project, from one trajectory to a controlled training experiment.</strong><br>
-  PyTorch · Hugging Face · Qwen3 · Google Colab
+  PyTorch · Hugging Face · Qwen · Colab / SLURM
 </p>
 
 <p align="center">
@@ -12,6 +12,7 @@
   <a href="notebooks/02_baseline_evaluation.ipynb">Inspect the baseline</a> ·
   <a href="notebooks/03_sft_cold_start.ipynb">Build the supervised start</a> ·
   <a href="notebooks/04_on_policy_distillation.ipynb">Run on-policy distillation</a> ·
+  <a href="notebooks/05_qwen38_restart.ipynb">Verify the new models</a> ·
   <a href="https://arxiv.org/abs/2306.13649">Read the GKD paper</a>
 </p>
 
@@ -30,9 +31,16 @@ not a reproduction of its models, training scale, or published benchmark scores.
 The aim is an inspectable experiment with explanations an early-career ML engineer
 can follow, rather than a claim of state-of-the-art performance.
 
-| Student | Teacher | Working environment |
-| :--- | :--- | :--- |
-| `Qwen/Qwen3-0.6B-Base` | `Qwen/Qwen3-32B` | Colab A100 80GB for 01/04; 03 trains only the small student |
+| Experiment | Student | Teacher | Status |
+| :--- | :--- | :--- | :--- |
+| **New model profile** | `Qwen/Qwen3.5-0.8B-Base` | `Qwen/Qwen3.8-27B` | Pinned model upgrade; start with [05](notebooks/05_qwen38_restart.ipynb) |
+| Historical 01-04 | `Qwen/Qwen3-0.6B-Base` | `Qwen/Qwen3-32B` | Original baseline, SFT checkpoint, and distillation evidence |
+
+The active profile in `configs/small_experiment.yaml` selects the new models.
+Notebook 05 verifies their resolved tokenizers and provides a bounded real-model
+scoring check. New-model training remains pending. Historical notebooks retain
+their original identities; 04 reads `configs/qwen3_legacy.yaml`. An old 03 checkpoint
+cannot initialize the new student. See the [new-model run guide](notebooks/assets/05_qwen38_restart/RUN.md).
 
 The teacher is loaded in 01 and in 04's CUDA experiment. **Notebook 03 only trains
 the student** using existing GSM8K reference solutions. 04 reads its saved checkpoint
@@ -45,7 +53,8 @@ and report, not an earlier notebook's live kernel variables.
 | [**01 · One student trajectory**](notebooks/01_reverse_kl_demo.ipynb) | Token probabilities, tokenizer compatibility, frozen-teacher scoring, reverse KL, and one student update | Saved A100 outputs verify the seven mechanics checkpoints; no quality improvement established |
 | [**02 · Baseline evaluation**](notebooks/02_baseline_evaluation.ipynb) | Fixed questions, greedy generation, answer extraction, metrics, and failure analysis | Completed Colab generation outputs plus separately validated CPU replay |
 | [**03 · Supervised cold start**](notebooks/03_sft_cold_start.ipynb) | Response-only SFT, data isolation, gradient accumulation, paired validation, checkpoint export | Completed A100 SFT; latest report and checkpoint integrity verified; mixed reasoning results |
-| [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Full-vocabulary forward KL, fresh student responses, continued-SFT control, paired evaluation, restart/export | Interrupted GPU run and teacher-context probe archived; corrected 32-update pilot ready for Colab qualification |
+| [**04 · On-policy distillation**](notebooks/04_on_policy_distillation.ipynb) | Full-vocabulary forward KL, fresh student responses, EOS interpretation, paired evaluation, recovery | Audited Amarel comparison with 400 trajectories. Raw-token arm paused at 18 updates, grouped-stop reached 32, both failed quality gates |
+| [**05 · Qwen3.8 model restart**](notebooks/05_qwen38_restart.ipynb) | Pinned new models, tokenizer identity, text-only loading, and causal scoring | Actual tokenizer/configuration checks and tiny-model CPU tests; real pretrained GPU scoring and new baseline/SFT remain pending |
 
 Each notebook introduces the idea, walks through small examples and tensor shapes,
 checks assumptions, and ends with a plain-language recap. No notebook depends on
@@ -68,7 +77,8 @@ an earlier notebook's live kernel state. 04 reads 03's verified saved artifacts.
 | 03: paired validation after 256 reference examples | Format **0/64 → 60/64**; prose matches **31/64 → 30/64**; NLL **0.776 → 0.667** | Latest verified A100 run; strong format learning, mixed reasoning, and visible regressions |
 | 04: interrupted raw-prompt run | **232/232 capped responses** during updates 24–52; validation NLL **0.667 → 0.969** | A real failure, despite decreasing fixed-prefix KL |
 | 04: teacher context probe | Boundary stopping mass **3.93 × 10⁻⁸ → 0.530** | One saved response, raw versus non-thinking chat; arithmetic quality remains a separate question |
-| 04: corrected full experiment | **Pending Colab qualification** | Local checks verify implementation; improved task performance remains unmeasured |
+| 04: latest EOS comparison | Starting strict **33/64**; raw-token **1/64** at update 18; grouped-stop **23/64** at update 32 | Downloaded records passed checksum and checker replay. Grouping helped stopping. Accuracy declined in both arms by update 8 |
+| 05: new model pair | Same resolved token IDs and BPE; **248,320-column** output heads | Verified with pinned tokenizer/configuration files; no new-model accuracy or training gain established |
 
 The two 02 scores use the **same model responses**, with all questions retained
 in the denominator. Numeric agreement does not certify reasoning or units. The
@@ -88,6 +98,13 @@ rewritten to make its answers look better.
 
 ## Start here
 
+For the **new models**, begin with [Notebook 05](notebooks/05_qwen38_restart.ipynb)
+and its [Amarel run guide](notebooks/assets/05_qwen38_restart/RUN.md).
+Use `requirements-qwen38.txt` in a separate user environment. Its first mode loads
+only tokenizer/configuration files. After a successful GPU scoring check, a fresh
+baseline and supervised checkpoint must be built before new distillation training.
+The instructions below describe the historical Qwen3 notebook sequence.
+
 ### In Colab or a VS Code Colab kernel
 
 1. Open [02](notebooks/02_baseline_evaluation.ipynb) to inspect evaluation, or
@@ -105,7 +122,7 @@ rewritten to make its answers look better.
 | :--- | :--- | :--- |
 | 02 | `MODE = "replay"`: analyze the checksummed original responses | `MODE = "generate"`: generate a fresh baseline |
 | 03 | `MODE = "inspect"`: real tokenizer/data and target-mask checks | `MODE = "train"`: small full-parameter SFT run, evaluation, and export |
-| 04 | `MODE = "inspect"`: data isolation, shared tokenizer, masks, illustrative KL | `MODE = "train"`, `RUN_STAGE = "pilot"`: A100 80GB; 32-update qualification before full continuation |
+| 04 | `MODE = "inspect"`: data isolation, shared tokenizer, masks, illustrative KL | `MODE = "train"`, `RUN_STAGE = "eos_comparison"`: historical paired pilots on one 80GB or two 40GB+ GPUs |
 
 For 03, defaults are **256 practice / 64 validation examples**, one epoch,
 1,024-token complete sequences, microbatch size 1, and accumulation over eight
@@ -135,26 +152,36 @@ All three 04 models are evaluated again under identical greedy settings, includi
 both models' recognized end-token IDs. This differs from 02/03's historical
 stopping rule. Those old scores remain context, not a paired 04 baseline.
 
-### Notebook 04 qualification and continuation
+### Notebook 04 results and guarded reproduction
+
+The completed comparison failed its acceptance gates. Its [audited records](notebooks/assets/04_on_policy_distillation/recorded_eos_comparison/README.md)
+include measured learning curves and decoded validation answers. Both arms first
+lost strict accuracy at update 8. Grouped stopping reduced termination failures,
+while arithmetic accuracy still declined. New model qualification now begins in 05.
+
+The steps below describe a fresh historical-model reproduction. A revised safety
+policy creates a new experiment signature. Old snapshots preserve their recipe.
+
 
 1. Upload the verified 03 report and checkpoint ZIPs. Select the A100 80GB kernel,
-   set `MODE = "train"` and leave `RUN_STAGE = "pilot"`.
-2. Run in order. Inspect the starting student, supervised control, teacher
-   validation results, separate prompt offsets, and fresh sampled responses.
-3. The distillation pilot pauses after 32 updates. Snapshots and validation checks
+   set `MODE = "train"` and `RUN_STAGE = "eos_comparison"`.
+2. Run in order. Inspect the starting student, teacher validation results, separate prompt
+   offsets, and fresh sampled responses. A later full stage prepares its SFT control.
+3. Each comparison arm runs up to 32 updates, with earlier safety pauses. Snapshots and validation checks
    occur every eight pilot updates. Review the pilot table and example responses.
-4. Download the small pilot report. For continuation on a replacement runtime,
+4. Download the small pilot report. For evaluation recovery on a replacement runtime,
    also retain the run folder with its optimizer-state snapshots and control
    checkpoint. The report alone contains no model or optimizer weights.
-5. Restart the notebook kernel to release loaded models. Set `RUN_STAGE = "full"`
-   and `RESUME_RUN_DIRECTORY` to the pilot's run folder, then run from the top.
-   The remaining updates retain the same scheduler horizon, question order, and RNG.
+5. Review the gates and examples. Full continuation requires a passing comparison.
+   Failed or quality-paused pilots require a reviewed new experiment.
 6. Evaluate the fixed primary test only after full training completes. Download
    the final report and checkpoints, then save the executed notebook.
 
-At least 24 capped responses in the latest 32 triggers a recovery pause. A
-reference-NLL increase above 25% triggers a review warning. These are documented
-engineering alarms. The pilot does not establish statistical improvement.
+The revised policy pauses above eight capped responses in the latest 32, above
+110% of starting reference NLL, or after a strict-accuracy drop exceeding five
+percentage points. It checks validation every eight pilot updates, retains the last
+acceptable checkpoint, and automatically packages pause reports. These thresholds
+are engineering choices. GPU validation of the revised safeguards remains pending.
 A health-paused run needs investigation before a revised recipe starts again
 from the verified 03 checkpoint.
 

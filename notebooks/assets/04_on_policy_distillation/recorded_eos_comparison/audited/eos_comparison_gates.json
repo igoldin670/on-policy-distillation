@@ -1,0 +1,20 @@
+{
+  "ready_for_full_run": false,
+  "status": "review_required",
+  "gates": {
+    "completed_pilot": true,
+    "finite_updates": true,
+    "final_cap_rate_at_most_25_percent": false,
+    "nll_within_10_percent": false,
+    "strict_validation_at_least_50_percent": false,
+    "meaningful_matched_cap_reduction": true
+  },
+  "common_update": 18,
+  "cap_rate_reduction": 0.34375,
+  "scope": "Engineering gates on one seed; held-out quality evaluation remains pending.",
+  "arm_signatures": {
+    "raw_token": "a45f7985cea5aa6ceff48a00c328781e8e5472eea13bcec657e564c64de3c7ce",
+    "semantic_stop": "a0612af2afc21ce4fb6bd9e77b7e9fcb01e3a5f7c01db5ba3f9084b90cd402b3"
+  },
+  "initial_rollout_groups_identical": true
+}

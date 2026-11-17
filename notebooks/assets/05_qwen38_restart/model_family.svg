@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="684pt" height="263.88pt" viewBox="0 0 684 263.88" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 263.88
+L 684 263.88
+L 684 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 38.6712 198.80064
+L 297.1368 198.80064
+Q 307.1808 198.80064 307.1808 195.05844
+L 307.1808 91.27476
+Q 307.1808 87.53256 297.1368 87.53256
+L 38.6712 87.53256
+Q 28.6272 87.53256 28.6272 91.27476
+L 28.6272 195.05844
+Q 28.6272 198.80064 38.6712 198.80064
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #2563eb; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 380.1672 198.80064
+L 638.6328 198.80064
+Q 648.6768 198.80064 648.6768 195.05844
+L 648.6768 91.27476
+Q 648.6768 87.53256 638.6328 87.53256
+L 380.1672 87.53256
+Q 370.1232 87.53256 370.1232 91.27476
+L 370.1232 195.05844
+Q 370.1232 198.80064 380.1672 198.80064
+z
+" clip-path="url(#p04bc65e49e)" style="fill: #f8fafc; stroke: #7c3aed; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #14253d" x="20.592" y="37.365675" transform="rotate(-0 20.592 37.365675)">Two models from the same architecture family</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #64748b" x="20.592" y="62.959481" transform="rotate(-0 20.592 62.959481)">Text-only loading selects the language model from each published checkpoint.</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563eb" x="167.904" y="116.116513" transform="rotate(-0 167.904 116.116513)">Qwen3.5-0.8B-Base</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(101.873805 155.01605)">Student · 24 decoder layers</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(81.603922 169.236363)">18 linear-attention + 6 full-attention</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(109.824859 182.051714)">Hidden dimension 1,024</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7c3aed" x="509.4" y="116.116513" transform="rotate(-0 509.4 116.116513)">Qwen3.8-27B</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(443.64293 155.01605)">Teacher · 64 decoder layers</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(420.077734 169.236363)">48 linear-attention + 16 full-attention</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; fill: #14253d" transform="translate(451.320859 182.051714)">Hidden dimension 5,120</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #64748b" x="342" y="229.2372" transform="rotate(-0 342 229.2372)">Both use pretrained text weights. Future training updates the student.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p04bc65e49e">
+   <rect x="7.2" y="7.2" width="669.6" height="249.48"/>
+  </clipPath>
+ </defs>
+</svg>

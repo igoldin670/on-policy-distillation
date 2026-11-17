@@ -1,0 +1,14 @@
+# Install in a NEW user environment. Keep the existing CUDA-enabled torch wheel.
+# Qwen3.5/Qwen3.8 require a newer architecture implementation than the old run.
+-c constraints-qwen38.txt
+transformers==5.3.0
+huggingface_hub==1.5.0
+tokenizers==0.22.2
+accelerate==1.15.0
+datasets==4.8.5
+PyYAML==6.0.3
+pandas==2.3.3
+matplotlib==3.10.8
+bottleneck==1.5.0
+ipykernel==7.1.0
+jupyterlab==4.5.0

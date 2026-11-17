@@ -1,0 +1,306 @@
+{
+  "scope": "Saved rollouts only. No model execution or answer-quality claim.",
+  "response_limit": 256,
+  "trajectory_count": 176,
+  "incomplete_last_line": false,
+  "trajectory_inconsistencies": [],
+  "history_present": true,
+  "history_count_mismatches": [],
+  "history_only_updates": [],
+  "trajectory_only_updates": [],
+  "updates": [
+    {
+      "update": 1,
+      "responses": 8,
+      "response_tokens": 943,
+      "mean_response_length": 117.875,
+      "token_limit_stops": 0,
+      "eos_stops": 8
+    },
+    {
+      "update": 2,
+      "responses": 8,
+      "response_tokens": 823,
+      "mean_response_length": 102.875,
+      "token_limit_stops": 0,
+      "eos_stops": 8
+    },
+    {
+      "update": 3,
+      "responses": 8,
+      "response_tokens": 701,
+      "mean_response_length": 87.625,
+      "token_limit_stops": 0,
+      "eos_stops": 8
+    },
+    {
+      "update": 4,
+      "responses": 8,
+      "response_tokens": 942,
+      "mean_response_length": 117.75,
+      "token_limit_stops": 0,
+      "eos_stops": 8
+    },
+    {
+      "update": 5,
+      "responses": 8,
+      "response_tokens": 837,
+      "mean_response_length": 104.625,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 6,
+      "responses": 8,
+      "response_tokens": 730,
+      "mean_response_length": 91.25,
+      "token_limit_stops": 0,
+      "eos_stops": 8
+    },
+    {
+      "update": 7,
+      "responses": 8,
+      "response_tokens": 948,
+      "mean_response_length": 118.5,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 8,
+      "responses": 8,
+      "response_tokens": 1291,
+      "mean_response_length": 161.375,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 9,
+      "responses": 8,
+      "response_tokens": 936,
+      "mean_response_length": 117.0,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 10,
+      "responses": 8,
+      "response_tokens": 1020,
+      "mean_response_length": 127.5,
+      "token_limit_stops": 0,
+      "eos_stops": 8
+    },
+    {
+      "update": 11,
+      "responses": 8,
+      "response_tokens": 1155,
+      "mean_response_length": 144.375,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 12,
+      "responses": 8,
+      "response_tokens": 1197,
+      "mean_response_length": 149.625,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 13,
+      "responses": 8,
+      "response_tokens": 1090,
+      "mean_response_length": 136.25,
+      "token_limit_stops": 1,
+      "eos_stops": 7
+    },
+    {
+      "update": 14,
+      "responses": 8,
+      "response_tokens": 1641,
+      "mean_response_length": 205.125,
+      "token_limit_stops": 3,
+      "eos_stops": 5
+    },
+    {
+      "update": 15,
+      "responses": 8,
+      "response_tokens": 1942,
+      "mean_response_length": 242.75,
+      "token_limit_stops": 6,
+      "eos_stops": 2
+    },
+    {
+      "update": 16,
+      "responses": 8,
+      "response_tokens": 1301,
+      "mean_response_length": 162.625,
+      "token_limit_stops": 3,
+      "eos_stops": 5
+    },
+    {
+      "update": 17,
+      "responses": 8,
+      "response_tokens": 2024,
+      "mean_response_length": 253.0,
+      "token_limit_stops": 5,
+      "eos_stops": 3
+    },
+    {
+      "update": 18,
+      "responses": 8,
+      "response_tokens": 1605,
+      "mean_response_length": 200.625,
+      "token_limit_stops": 5,
+      "eos_stops": 3
+    },
+    {
+      "update": 19,
+      "responses": 8,
+      "response_tokens": 1879,
+      "mean_response_length": 234.875,
+      "token_limit_stops": 6,
+      "eos_stops": 2
+    },
+    {
+      "update": 20,
+      "responses": 8,
+      "response_tokens": 2014,
+      "mean_response_length": 251.75,
+      "token_limit_stops": 7,
+      "eos_stops": 1
+    },
+    {
+      "update": 21,
+      "responses": 8,
+      "response_tokens": 1785,
+      "mean_response_length": 223.125,
+      "token_limit_stops": 5,
+      "eos_stops": 3
+    },
+    {
+      "update": 22,
+      "responses": 8,
+      "response_tokens": 1884,
+      "mean_response_length": 235.5,
+      "token_limit_stops": 6,
+      "eos_stops": 2
+    }
+  ],
+  "validation_progress": [
+    {
+      "step": 8,
+      "validation_reference_nll": 0.6758457334958331,
+      "fixed_validation_kl": 0.9153289869427681
+    },
+    {
+      "step": 16,
+      "validation_reference_nll": 0.8193381555037922,
+      "fixed_validation_kl": 0.7472800835967064
+    }
+  ],
+  "first_responses": [
+    {
+      "update": 1,
+      "example_id": "gsm8k/train/6954",
+      "response_tokens": 74,
+      "ended_with_eos": true,
+      "hit_token_limit": false,
+      "last_token_id": 151643,
+      "repeated_four_token_fraction": 0.0704,
+      "text_start": "Martin has $2.00 for each cup of berries and he eats 1/2 cup every day.\nSo he uses $2.00 for everyone cups of berries\nSo for 3 years he spends $2.00 x 60 days x 30 days = $360.00\n#### 360",
+      "text_end": "Martin has $2.00 for each cup of berries and he eats 1/2 cup every day.\nSo he uses $2.00 for everyone cups of berries\nSo for 3 years he spends $2.00 x 60 days x 30 days = $360.00\n#### 360"
+    },
+    {
+      "update": 1,
+      "example_id": "gsm8k/train/2607",
+      "response_tokens": 96,
+      "ended_with_eos": true,
+      "hit_token_limit": false,
+      "last_token_id": 151643,
+      "repeated_four_token_fraction": 0.0538,
+      "text_start": "First take the total number of puppies away from half which is 8* half = 4\nThen keep one of the children and give away the other so 8-4-1= 3 remain\nThen leave the money from the puppies and split them with the owner of the dog which is 3*600-300 = 1500 - 300 = 1200\n#### 1200",
+      "text_end": "First take the total number of puppies away from half which is 8* half = 4\nThen keep one of the children and give away the other so 8-4-1= 3 remain\nThen leave the money from the puppies and split them with the owner of the dog which is 3*600-300 = 1500 - 300 = 1200\n#### 1200"
+    },
+    {
+      "update": 1,
+      "example_id": "gsm8k/train/5192",
+      "response_tokens": 159,
+      "ended_with_eos": true,
+      "hit_token_limit": false,
+      "last_token_id": 151643,
+      "repeated_four_token_fraction": 0.0513,
+      "text_start": "She spent 550 $ total because 3 pounds of beef cost 11*$3 = 33 dollars, 8 pounds of fruits and vegetables cost 4*8 = 32 dollars, 3 jars of spices cost 6*$3 = 18 dollars, and other groceries costed 37$.\nShe got 1430 points because 33+32+18/10+8*4+6*3+37=1430/10+1430*10=1583\nShegot 3090 points because 1443-10*50/2=3090\n#### 3090",
+      "text_end": "She spent 550 $ total because 3 pounds of beef cost 11*$3 = 33 dollars, 8 pounds of fruits and vegetables cost 4*8 = 32 dollars, 3 jars of spices cost 6*$3 = 18 dollars, and other groceries costed 37$.\nShe got 1430 points because 33+32+18/10+8*4+6*3+37=1430/10+1430*10=1583\nShegot 3090 points because 1443-10*50/2=3090\n#### 3090"
+    }
+  ],
+  "latest_responses": [
+    {
+      "update": 22,
+      "example_id": "gsm8k/train/615",
+      "response_tokens": 256,
+      "ended_with_eos": false,
+      "hit_token_limit": true,
+      "last_token_id": 820,
+      "repeated_four_token_fraction": 0.0988,
+      "text_start": "Let's set up a chart for this problem, such as the one below:\n\nThe years we are comparing are 1936 and 1932. We are looking for the gap between these two years, the gap between the sister's and the grandmother's birth dates.\nSo, the grandmother is 14 years older than her sister. The gap between the grandmother and the sister is 14 years.\nTherefore, the age of the grandma is 14 years more than the ",
+      "text_end": "ap between the grandmother and the sister is 14 years.\nTherefore, the age of the grandma is 14 years more than the age of the sister. This is . Graham's sister's age (Let's call this $s$). I think we also know Graham's total age is 10 years. So his age is 10 years more than his sister's age (Let's call this $s$). His total age is 14. So we have 10 + $s = 14$ and we can subtract 10 from both sides to find $s = 4$. The question asks: what year was Grandmother's born? Her birth date is 4 years after the birth date of her sister. So she was born in 1940. Therefore, the answer is 1940.\n#### 14.####"
+    },
+    {
+      "update": 22,
+      "example_id": "gsm8k/train/4454",
+      "response_tokens": 256,
+      "ended_with_eos": false,
+      "hit_token_limit": true,
+      "last_token_id": 1052,
+      "repeated_four_token_fraction": 0.3004,
+      "text_start": "Don't forget that the square of a number is the area of its square. So, the first two walls have an area that is 180 square feet per wall and so the total area of the first two walls in square feet is 540 square feet.\n\nThe third wall has the area of 200 square feet per wall. So, the total area of the first three walls in square feet is 300 square feet.\n\nTherefore, James needs to buy 300 square fee",
+      "text_end": "00 feet and containing a square connected to the other four corners at 45 degrees. If each unit is 1 foot in length, how many separate triangles can be defined in this diagram?\n\n#### 180 feet and containing rectangles connected to the other four corners at 45 degrees. If each unit is 1 foot in length, how many squares can be defined in this diagram?\n\n#### 180 feet and containing squares connected to the other four corners at 45 degrees. If each unit is 1 foot in length, how many rectangles can be defined in this diagram?\n\nImagine that this has an area of 450 square feet, which means that there"
+    },
+    {
+      "update": 22,
+      "example_id": "gsm8k/train/6185",
+      "response_tokens": 256,
+      "ended_with_eos": false,
+      "hit_token_limit": true,
+      "last_token_id": 11,
+      "repeated_four_token_fraction": 0.1462,
+      "text_start": "Let refrigerator be the variable x.\n\n Coolers are 70 more than the manufacturer. We can write those along with the given number of refrigerators: $70 + x ,$ because the first number is equal to the number of refrigerators, and the second number is greater than the number of refrigerators by 70 units.\n\nSince the facility produces 90 refrigerators per  hour, and has to produce 70 units more than ref",
+      "text_end": "duces 90 refrigerators per  hour, and has to produce 70 units more than refrigerators per hour, the total number of products produced each hour is $90 + 70 = 160 .$\n\nTherefore, the total number of products produced for 1 hour is $160 \\cdot 1 = 160 .$\n\nAlso, the guaranteed order average is 5 days per hour for 9 hours a day.\n\nSo, the total number of products produced for 5 days is $160 \\cdot 5 = 800.$\n\n\n#### 800\u4ea7\u54c1\u6570.#### 800\u8fd9\u7684\u7b49\u4ef7\u6570.#### 800\u3002\n\nIf only 800 products were produced in 5 days, how many total coolers and refrigerators were produced?\n\nIf the manufacturer produces 90 refrigerators per hour,"
+    }
+  ],
+  "most_repetitive_responses": [
+    {
+      "update": 20,
+      "example_id": "gsm8k/train/4607",
+      "response_tokens": 256,
+      "ended_with_eos": false,
+      "hit_token_limit": true,
+      "last_token_id": 13,
+      "repeated_four_token_fraction": 0.5138,
+      "text_start": "Let the rate at which Jim reads the first 100 pages per week be x.\n\nThen the rate at which the third, fourth, and fifth reading the 100 pages per week is 150 x.\n\nThe total number of pages he reads is 600 so x + 1.5 x + x +1.5 x + x = 600. 5 x = 600 so x = 120.\n\nHe reads 100 pages at the first speed per reading of the first 100 pages of his platform.\n\nHe reads 100*1.5 = 150 pages per reading of the",
+      "text_end": "t which the third, fourth, and fifth reading the 100 pages per week is 150 x.\n\nThe total number of pages he reads is 600 so x + 1.5 x + x +1.5 x + x = 600. 5 x = 600 so x = 120.\n\nHe reads 100 pages at the first speed per reading of the first 100 pages of his platform.\n\nHe reads 100*1.5 = 150 pages per reading of the third, fourth, and fifth reading.\n\nThe total number of pages he reads is 600 so x + 1.5 x + x +1.5 x + x = 600. 5 x = 600 so x = 120.\n\nHe reads 100 * 1.5 = 150 pages per reading of the third, fourth, and fifth reading.\n\nThe total number of pages he reads is 600 so x + 1.5 x + x +1."
+    },
+    {
+      "update": 14,
+      "example_id": "gsm8k/train/1883",
+      "response_tokens": 256,
+      "ended_with_eos": false,
+      "hit_token_limit": true,
+      "last_token_id": 23,
+      "repeated_four_token_fraction": 0.4743,
+      "text_start": "If he finds one gold coin in an hour, he finds 100 gold coins in an hour.\nIf he finds 2 smaller bags of gold, he finds 2 bags times 50 gold coins, which is 100 gold coins in an hour.\nIf he finds 1 treasure chest, he finds 100 gold coins in an hour.\nSo if he finds 100 gold in an hour, he finds 100 gold coins in an hour.\nIf he finds a treasure box with 100 gold coins, he finds 100 gold coins in 8 ho",
+      "text_end": ", he finds 100 gold coins in an hour.\nSo if he finds 100 gold in an hour, he finds 100 gold coins in an hour.\nIf he finds a treasure box with 100 gold coins, he finds 100 gold coins in 8 hours.\nThe question is, How many gold coins per hour he finds 100 gold coins in 8 hours.\nSo we can divide 8 hours total by the find rate by which he spends 8 hours to find 100 gold coins in 8 hours.\nSo he finds 100 gold coins in 8 hours, so he finds 100 gold coins in an hour.\nWhen he finds bags in 21 bags, he finds 1 bag times 50 gold coins, which is 50 gold coins in an hour.\nSo if he finds 100 gold coins in 8"
+    },
+    {
+      "update": 14,
+      "example_id": "gsm8k/train/2177",
+      "response_tokens": 252,
+      "ended_with_eos": true,
+      "hit_token_limit": false,
+      "last_token_id": 151643,
+      "repeated_four_token_fraction": 0.4618,
+      "text_start": "For Toby's first travel, Toby pulls the loaded sled, which will travel 180 miles at 20 miles per hour, and this will require Toby to pull the sled 180 miles / 20 miles per hour = 9 hours.\nFor Toby's second travel, Toby pulls the unloaded sled, which will travel 120 miles at 10 miles per hour, and this will require Toby to pull the sled 120 miles / 10 miles per hour = 12 hours.\nFor Toby's third tra",
+      "text_end": "ll travel 120 miles at 10 miles per hour, and this will require Toby to pull the sled 120 miles / 10 miles per hour = 12 hours.\nFor Toby's third travel, Toby pulls the loaded sled, which will travel 80 miles at 20 miles per hour, and this will require Toby to pull the sled 80 miles / 20 miles per hour = 4 hours.\nFinally, Toby pulls the unloaded sled, which will travel 140 miles at 10 miles per hour, and this will require Toby to pull the sled 140 miles / 10 miles per hour = 14 hours.\nSo Toby needs to pull the sled for 9 hours + 12 hours + 4 hours + 14 hours = 39 hours in total.\n#### 39 hours.'"
+    }
+  ]
+}

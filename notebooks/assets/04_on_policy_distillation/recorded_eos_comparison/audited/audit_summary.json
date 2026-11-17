@@ -1,0 +1,501 @@
+{
+  "source_files_verified": 69,
+  "baseline_nll": 0.6676512348477289,
+  "baseline_nll_source": "Saved Notebook 04 starting-validation stdout",
+  "baseline_accuracy": 0.515625,
+  "safety_policy": {
+    "version": 2,
+    "max_nll_ratio": 1.1,
+    "max_accuracy_drop": 0.05,
+    "max_cap_fraction": 0.25,
+    "response_window": 32
+  },
+  "scope": "Artifact and frozen-checker replay. Saved model NLL/KL values are read from the GPU history.",
+  "arms": {
+    "raw_token": {
+      "updates": 18,
+      "trajectories": 144,
+      "trajectory_integrity": "passed",
+      "frozen_checker_replay": "passed",
+      "gradient_clipped_updates": 18,
+      "first_guarded_pause_replay": {
+        "step": 8,
+        "reasons": [
+          {
+            "metric": "strict_accuracy",
+            "observed": 0.265625,
+            "limit": 0.465625
+          }
+        ]
+      },
+      "validation_boundaries": [
+        {
+          "step": 8,
+          "strict_correct": 17,
+          "improved_question_ids": [
+            "gsm8k/train/5823"
+          ],
+          "regressed_question_ids": [
+            "gsm8k/train/102",
+            "gsm8k/train/1951",
+            "gsm8k/train/3431",
+            "gsm8k/train/6344",
+            "gsm8k/train/2578",
+            "gsm8k/train/1849",
+            "gsm8k/train/5812",
+            "gsm8k/train/3711",
+            "gsm8k/train/6046",
+            "gsm8k/train/3541",
+            "gsm8k/train/4589",
+            "gsm8k/train/6756",
+            "gsm8k/train/1736",
+            "gsm8k/train/3543",
+            "gsm8k/train/5298",
+            "gsm8k/train/1573",
+            "gsm8k/train/4040"
+          ],
+          "validation_reference_nll": 0.6792501543320023,
+          "validation_token_limit_stops": 5
+        },
+        {
+          "step": 16,
+          "strict_correct": 0,
+          "improved_question_ids": [],
+          "regressed_question_ids": [
+            "gsm8k/train/102",
+            "gsm8k/train/1951",
+            "gsm8k/train/6534",
+            "gsm8k/train/3431",
+            "gsm8k/train/6198",
+            "gsm8k/train/6344",
+            "gsm8k/train/2375",
+            "gsm8k/train/2578",
+            "gsm8k/train/5942",
+            "gsm8k/train/1849",
+            "gsm8k/train/3459",
+            "gsm8k/train/5812",
+            "gsm8k/train/3711",
+            "gsm8k/train/6046",
+            "gsm8k/train/3541",
+            "gsm8k/train/6801",
+            "gsm8k/train/1775",
+            "gsm8k/train/4589",
+            "gsm8k/train/5235",
+            "gsm8k/train/992",
+            "gsm8k/train/6756",
+            "gsm8k/train/5551",
+            "gsm8k/train/3489",
+            "gsm8k/train/1736",
+            "gsm8k/train/3356",
+            "gsm8k/train/3543",
+            "gsm8k/train/5298",
+            "gsm8k/train/4275",
+            "gsm8k/train/139",
+            "gsm8k/train/6188",
+            "gsm8k/train/1573",
+            "gsm8k/train/4040",
+            "gsm8k/train/4650"
+          ],
+          "validation_reference_nll": 0.8340414857367937,
+          "validation_token_limit_stops": 42
+        },
+        {
+          "step": 18,
+          "strict_correct": 1,
+          "improved_question_ids": [],
+          "regressed_question_ids": [
+            "gsm8k/train/102",
+            "gsm8k/train/1951",
+            "gsm8k/train/6534",
+            "gsm8k/train/3431",
+            "gsm8k/train/6198",
+            "gsm8k/train/6344",
+            "gsm8k/train/2375",
+            "gsm8k/train/2578",
+            "gsm8k/train/5942",
+            "gsm8k/train/1849",
+            "gsm8k/train/3459",
+            "gsm8k/train/5812",
+            "gsm8k/train/3711",
+            "gsm8k/train/6046",
+            "gsm8k/train/3541",
+            "gsm8k/train/6801",
+            "gsm8k/train/1775",
+            "gsm8k/train/4589",
+            "gsm8k/train/5235",
+            "gsm8k/train/992",
+            "gsm8k/train/6756",
+            "gsm8k/train/3489",
+            "gsm8k/train/1736",
+            "gsm8k/train/3356",
+            "gsm8k/train/3543",
+            "gsm8k/train/5298",
+            "gsm8k/train/4275",
+            "gsm8k/train/139",
+            "gsm8k/train/6188",
+            "gsm8k/train/1573",
+            "gsm8k/train/4040",
+            "gsm8k/train/4650"
+          ],
+          "validation_reference_nll": 0.8638182919934584,
+          "validation_token_limit_stops": 53
+        }
+      ],
+      "first_responses": [
+        {
+          "update": 1,
+          "example_id": "gsm8k/train/6954",
+          "response_tokens": 126,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.1301,
+          "text_start": "Martin has $2.00 for each cup of berries and he eats 1/2 cup every day.\nSo he uses $2.00 for everyone cups of berries\nSo for 30 days he will be eating 1/2 cup berries x 30 days = 15 cups\nNow he will roll up the 1 $2.00 for every 1 cup of berries which means he will need to count $2.00 for 15 cups of berries x $2.00 / cup = $30.00 for berries.\n#### 30",
+          "text_end": "Martin has $2.00 for each cup of berries and he eats 1/2 cup every day.\nSo he uses $2.00 for everyone cups of berries\nSo for 30 days he will be eating 1/2 cup berries x 30 days = 15 cups\nNow he will roll up the 1 $2.00 for every 1 cup of berries which means he will need to count $2.00 for 15 cups of berries x $2.00 / cup = $30.00 for berries.\n#### 30"
+        },
+        {
+          "update": 1,
+          "example_id": "gsm8k/train/2607",
+          "response_tokens": 105,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.0686,
+          "text_start": "He loses 4 puppies because half of 8 is 4 and he gives away Kate's litter.\nThe pet show can buy 2 puppies so he sells 6 puppies because 8-4=4 and he keeps 4.\nHe gains $3600 because 6*600=3600\nThis is 600 because the stud cost him 300\n3600-600=3000\n#### 3000",
+          "text_end": "He loses 4 puppies because half of 8 is 4 and he gives away Kate's litter.\nThe pet show can buy 2 puppies so he sells 6 puppies because 8-4=4 and he keeps 4.\nHe gains $3600 because 6*600=3600\nThis is 600 because the stud cost him 300\n3600-600=3000\n#### 3000"
+        },
+        {
+          "update": 1,
+          "example_id": "gsm8k/train/5192",
+          "response_tokens": 255,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.1071,
+          "text_start": "She puts 3*11=33 dollars into her shopping cart for the beef\nShe puts 8*4=32 dollars into her shopping cart for the fruits and vegetables\nShe puts 3*6=18 dollars into her shopping cart for the spices\nSo she spent 33+32+18+37=144 dollars total\nAlready she gets 144/10=14 bonus points\nFor each pound of beef she can help, she gets 11-10*1=1 point with every $10 she has one.\nSo for the 3 pounds of beef",
+          "text_end": "he fruits and vegetables\nShe puts 3*6=18 dollars into her shopping cart for the spices\nSo she spent 33+32+18+37=144 dollars total\nAlready she gets 144/10=14 bonus points\nFor each pound of beef she can help, she gets 11-10*1=1 point with every $10 she has one.\nSo for the 3 pounds of beef, she gets a total of 3*1=3 points worth of beef.\nFor the 8 pounds of fruit, she gets 8*1=8 points worth of fruit.\nFor the 3 jars of spices she gets 3*0.5=1.5 points worth of spices.\nSo she gets a total of 8+3+1.5=12.5 points\nSo for her junk grocery shopping gratified, she gets 144/10+12.5*50=660 points\n#### 660"
+        }
+      ],
+      "latest_responses": [
+        {
+          "update": 18,
+          "example_id": "gsm8k/train/3614",
+          "response_tokens": 226,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.2466,
+          "text_start": "The distance between Robin's house and the city center is 500 meters. He leaves the house to go to the city center for the first 200 meters. So as per the information, he goes 200 meters to go to the city center. The distance is 500 meters, so in 200 meters he needs to return and take a total of 300 meters. Since he is back to his house, 300 meters is the distance he walks from the city center to ",
+          "text_end": "e information, he goes 200 meters to go to the city center. The distance is 500 meters, so in 200 meters he needs to return and take a total of 300 meters. Since he is back to his house, 300 meters is the distance he walks from the city center to his house.\nSo as per the information, he travels 200 meters to the city center, then returns to his house, which is the total distance he walks twice, 300 meters one time, so 200 meters + 300 meters = 500 meters.\nSo in total, the amount he walks is 500 meters.\nSo Robin's total distance is 200 meters + 300 meters + 200 meters = 500.\n#### 500 meters.'.'"
+        },
+        {
+          "update": 18,
+          "example_id": "gsm8k/train/6111",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 624,
+          "repeated_four_token_fraction": 0.2925,
+          "text_start": "Let x be the total number of gallons Tara uses on her route for the two days. The total cost of the gas = 3 dollars per gallon * x gallons + 3.5 dollars per gallon * x gallons + 4 dollars per gallon * x gallons + 4.5 dollars per gallon * x gallons.\n\nTotal cost of the gas = (3 dollars per gallon * x gallons) + (3.5 dollars per gallon * x gallons) + (4 dollars per gallon * x gallons) + ( 4.5 dollars",
+          "text_end": " of the gas = (3 dollars per gallon * x gallons) + (3.5 dollars per gallon * x gallons) + (4 dollars per gallon * x gallons) + ( 4.5 dollars per gallon * x gallons).\n= 3x + 3.5x + 4x + 4.5x\n= 11x.\nTotal cost of the gas = x gallons * (11 dollars per gallon).\n= 11x dollars.\n\nThus, Tara will purchase 12 gallons of gas, and she will enter the problem with 11 gallons of gas in the tank, because the total gas used is x gallons. For the total gallons she will be using, we write 12 gallons.\n\nThis means that x = 12 gallons.\n\nTotal cost of the gas = 11x dollars.\nTotal cost of the gas = 11 * 12 gallons.\n"
+        },
+        {
+          "update": 18,
+          "example_id": "gsm8k/train/5221",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 1182,
+          "repeated_four_token_fraction": 0.0158,
+          "text_start": "When the chef has 60 eggs, he has to put 10 eggs in the fridge so now all the eggs are coming to play.\nIf he uses the rest, we know that we have made 5 eggs to make one cake and the total amount of eggs is 55 because the total of the available eggs and the eggs he put in the fridge is 10 + 55 = 65. This tells us that the total number of cakes is 65/5 = 13 cakes.\nThe final answer is 13 cakes.\n#### ",
+          "text_end": "idge is 10 + 55 = 65. This tells us that the total number of cakes is 65/5 = 13 cakes.\nThe final answer is 13 cakes.\n#### 13 cakes'.\nTina sends one sheet motor for shipping using Erick's recent mailing. Randy receives the sheet and sends it back to increase the number up the bottom of the box. If 12 x 15 = 180 units, 23 x 22 = 508 units, and 77 x 77 = 5918 units, what is total mass of the box?\n\nLots of times the question is not a die to be declared but one to be expressed in math in a single line. To find the total masses of the box you will need to add up the mass for the sender and send back"
+        }
+      ],
+      "most_repetitive_responses": [
+        {
+          "update": 18,
+          "example_id": "gsm8k/train/6309",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 18,
+          "repeated_four_token_fraction": 0.6047,
+          "text_start": "Let's consider the new price of Maddox is x. Theroy sold his cameras for $23 more than the new price of Maddox, and with the new price of Maddox, the new price of Theo is given by $23+28 = $23+28 = $51.\n\nLet's consider the new price of Maddox is $28. Theroy sold his cameras at $23 less than the new price of Maddox, and with the new price of Maddox, the new price of Theo is given by $23+28 +20 = $2",
+          "text_end": "Theo is given by $23+28 = $23+28 = $51.\n\nLet's consider the new price of Maddox is $28. Theroy sold his cameras at $23 less than the new price of Maddox, and with the new price of Maddox, the new price of Theo is given by $23+28 +20 = $23+28 +20 = $71.\n\nMaddox sold his cameras for $28 more than the new price of Maddox, and with the new price of Maddox, the new price of Theo is given by $28+28 +20 = $28+28 +20 = $76.\nThe new price of Maddox is $28. Theo sold his cameras at $23 less than the new price of Maddox, and with the new price of Maddox, the new price of Theo is given by $23+28 +20 = $23"
+        },
+        {
+          "update": 14,
+          "example_id": "gsm8k/train/3894",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 6819,
+          "repeated_four_token_fraction": 0.5296,
+          "text_start": "He drives 50 miles to work (5 days of work) and travels back home so each round trip is 100 miles.\nEach round trip is 100/25 = 4 gallons of gas.\nHe drives 50 miles to work 5 days a week and travels back home so each round trip is 100 miles.\nIf he drives 50 miles per day he drives 5x4=200 miles one round trip per week.\nEach round trip is 100 miles.\nEach round trip is 10 0/200 = 4 gallons of gas.\nHe",
+          "text_end": "home so each round trip is 100 miles.\nIf he drives 50 miles per day he drives 5x4=200 miles one round trip per week.\nEach round trip is 100 miles.\nEach round trip is 10 0/200 = 4 gallons of gas.\nHe drives 50 miles to work (5 days of work) and travels back home so each round trip is 100 miles.\nHe drives 50 miles to work (5 days of work) and travels back home so each round trip is 100 miles.\nIf he drives 50 miles per day he drives 5x4=200 miles one round trip per week.\nEach round trip is 10 gallons of gas.\nSo, when he fills up, he buys 2.6 gallons of gas per week because 4 x5 = 20 gallons of gas"
+        },
+        {
+          "update": 13,
+          "example_id": "gsm8k/train/3538",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 429,
+          "repeated_four_token_fraction": 0.502,
+          "text_start": "Let x be the distance between the first and the second day.\nLet y be the distance between the second and the third day.\nLet z be the distance between the third and the fourth day.\nHence, x + y + z + 135 + (135 + y + z + 135) = 450 miles\nx + y + z + 450 = 450 miles\nx + y + z = 0 miles\nCarrie drove 159 miles the third day, 189 miles the fourth day.\nHence, x + 159 + y = 0 miles\nWe know that x + 159 +",
+          "text_end": "nd day.\nLet y be the distance between the second and the third day.\nLet z be the distance between the third and the fourth day.\nHence, x + y + z + 135 + (135 + y + z + 135) = 450 miles\nx + y + z + 450 = 450 miles\nx + y + z = 0 miles\nCarrie drove 159 miles the third day, 189 miles the fourth day.\nHence, x + 159 + y = 0 miles\nWe know that x + 159 + y + z = 0 miles.\nWe know that x + y + z + 450 = 450 miles\nWe know that x + 159 + y + z = 0 miles.\nWe know that x + 159 + y = 0 miles\nTherefore, y = 0 miles.\ny + z = 0 miles\nWe know that x + 159 + y = 0 miles.\nWe know that y + z = 0 miles.\nWe know that"
+        }
+      ]
+    },
+    "semantic_stop": {
+      "updates": 32,
+      "trajectories": 256,
+      "trajectory_integrity": "passed",
+      "frozen_checker_replay": "passed",
+      "gradient_clipped_updates": 32,
+      "first_guarded_pause_replay": {
+        "step": 8,
+        "reasons": [
+          {
+            "metric": "strict_accuracy",
+            "observed": 0.453125,
+            "limit": 0.465625
+          }
+        ]
+      },
+      "validation_boundaries": [
+        {
+          "step": 8,
+          "strict_correct": 29,
+          "improved_question_ids": [
+            "gsm8k/train/98",
+            "gsm8k/train/5823",
+            "gsm8k/train/989",
+            "gsm8k/train/6031",
+            "gsm8k/train/5383"
+          ],
+          "regressed_question_ids": [
+            "gsm8k/train/1951",
+            "gsm8k/train/6344",
+            "gsm8k/train/1849",
+            "gsm8k/train/3711",
+            "gsm8k/train/6046",
+            "gsm8k/train/6801",
+            "gsm8k/train/5298",
+            "gsm8k/train/139",
+            "gsm8k/train/6188"
+          ],
+          "validation_reference_nll": 0.673062390744297,
+          "validation_token_limit_stops": 8
+        },
+        {
+          "step": 16,
+          "strict_correct": 14,
+          "improved_question_ids": [
+            "gsm8k/train/4852",
+            "gsm8k/train/4921",
+            "gsm8k/train/5383"
+          ],
+          "regressed_question_ids": [
+            "gsm8k/train/1951",
+            "gsm8k/train/3431",
+            "gsm8k/train/6198",
+            "gsm8k/train/6344",
+            "gsm8k/train/2375",
+            "gsm8k/train/2578",
+            "gsm8k/train/1849",
+            "gsm8k/train/3459",
+            "gsm8k/train/5812",
+            "gsm8k/train/3711",
+            "gsm8k/train/4589",
+            "gsm8k/train/5235",
+            "gsm8k/train/992",
+            "gsm8k/train/3489",
+            "gsm8k/train/1736",
+            "gsm8k/train/5298",
+            "gsm8k/train/4275",
+            "gsm8k/train/139",
+            "gsm8k/train/6188",
+            "gsm8k/train/1573",
+            "gsm8k/train/4040",
+            "gsm8k/train/4650"
+          ],
+          "validation_reference_nll": 0.7686279115799728,
+          "validation_token_limit_stops": 31
+        },
+        {
+          "step": 24,
+          "strict_correct": 23,
+          "improved_question_ids": [
+            "gsm8k/train/4852",
+            "gsm8k/train/5823",
+            "gsm8k/train/3065"
+          ],
+          "regressed_question_ids": [
+            "gsm8k/train/102",
+            "gsm8k/train/1951",
+            "gsm8k/train/3431",
+            "gsm8k/train/6198",
+            "gsm8k/train/6344",
+            "gsm8k/train/5942",
+            "gsm8k/train/5812",
+            "gsm8k/train/3711",
+            "gsm8k/train/5551",
+            "gsm8k/train/3489",
+            "gsm8k/train/5298",
+            "gsm8k/train/4275",
+            "gsm8k/train/4650"
+          ],
+          "validation_reference_nll": 0.8754136220306994,
+          "validation_token_limit_stops": 9
+        },
+        {
+          "step": 32,
+          "strict_correct": 23,
+          "improved_question_ids": [
+            "gsm8k/train/4852",
+            "gsm8k/train/5823",
+            "gsm8k/train/989",
+            "gsm8k/train/5656",
+            "gsm8k/train/1653",
+            "gsm8k/train/2895",
+            "gsm8k/train/6666",
+            "gsm8k/train/6031",
+            "gsm8k/train/801",
+            "gsm8k/train/5383"
+          ],
+          "regressed_question_ids": [
+            "gsm8k/train/1951",
+            "gsm8k/train/6534",
+            "gsm8k/train/3431",
+            "gsm8k/train/6198",
+            "gsm8k/train/6344",
+            "gsm8k/train/2375",
+            "gsm8k/train/1849",
+            "gsm8k/train/3711",
+            "gsm8k/train/6046",
+            "gsm8k/train/6801",
+            "gsm8k/train/1775",
+            "gsm8k/train/4589",
+            "gsm8k/train/5235",
+            "gsm8k/train/6756",
+            "gsm8k/train/1736",
+            "gsm8k/train/3356",
+            "gsm8k/train/4275",
+            "gsm8k/train/6188",
+            "gsm8k/train/1573",
+            "gsm8k/train/4650"
+          ],
+          "validation_reference_nll": 0.963979733522468,
+          "validation_token_limit_stops": 4
+        }
+      ],
+      "first_responses": [
+        {
+          "update": 1,
+          "example_id": "gsm8k/train/6954",
+          "response_tokens": 126,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.1301,
+          "text_start": "Martin has $2.00 for each cup of berries and he eats 1/2 cup every day.\nSo he uses $2.00 for everyone cups of berries\nSo for 30 days he will be eating 1/2 cup berries x 30 days = 15 cups\nNow he will roll up the 1 $2.00 for every 1 cup of berries which means he will need to count $2.00 for 15 cups of berries x $2.00 / cup = $30.00 for berries.\n#### 30",
+          "text_end": "Martin has $2.00 for each cup of berries and he eats 1/2 cup every day.\nSo he uses $2.00 for everyone cups of berries\nSo for 30 days he will be eating 1/2 cup berries x 30 days = 15 cups\nNow he will roll up the 1 $2.00 for every 1 cup of berries which means he will need to count $2.00 for 15 cups of berries x $2.00 / cup = $30.00 for berries.\n#### 30"
+        },
+        {
+          "update": 1,
+          "example_id": "gsm8k/train/2607",
+          "response_tokens": 105,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.0686,
+          "text_start": "He loses 4 puppies because half of 8 is 4 and he gives away Kate's litter.\nThe pet show can buy 2 puppies so he sells 6 puppies because 8-4=4 and he keeps 4.\nHe gains $3600 because 6*600=3600\nThis is 600 because the stud cost him 300\n3600-600=3000\n#### 3000",
+          "text_end": "He loses 4 puppies because half of 8 is 4 and he gives away Kate's litter.\nThe pet show can buy 2 puppies so he sells 6 puppies because 8-4=4 and he keeps 4.\nHe gains $3600 because 6*600=3600\nThis is 600 because the stud cost him 300\n3600-600=3000\n#### 3000"
+        },
+        {
+          "update": 1,
+          "example_id": "gsm8k/train/5192",
+          "response_tokens": 255,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.1071,
+          "text_start": "She puts 3*11=33 dollars into her shopping cart for the beef\nShe puts 8*4=32 dollars into her shopping cart for the fruits and vegetables\nShe puts 3*6=18 dollars into her shopping cart for the spices\nSo she spent 33+32+18+37=144 dollars total\nAlready she gets 144/10=14 bonus points\nFor each pound of beef she can help, she gets 11-10*1=1 point with every $10 she has one.\nSo for the 3 pounds of beef",
+          "text_end": "he fruits and vegetables\nShe puts 3*6=18 dollars into her shopping cart for the spices\nSo she spent 33+32+18+37=144 dollars total\nAlready she gets 144/10=14 bonus points\nFor each pound of beef she can help, she gets 11-10*1=1 point with every $10 she has one.\nSo for the 3 pounds of beef, she gets a total of 3*1=3 points worth of beef.\nFor the 8 pounds of fruit, she gets 8*1=8 points worth of fruit.\nFor the 3 jars of spices she gets 3*0.5=1.5 points worth of spices.\nSo she gets a total of 8+3+1.5=12.5 points\nSo for her junk grocery shopping gratified, she gets 144/10+12.5*50=660 points\n#### 660"
+        }
+      ],
+      "latest_responses": [
+        {
+          "update": 32,
+          "example_id": "gsm8k/train/824",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 28276,
+          "repeated_four_token_fraction": 0.2292,
+          "text_start": "**Given:**  \n- **Available classrooms**: 15  \n- **Total desks per classroom:**\n\nThe problem states:\n\n- **One-third of the classrooms have 30 desks in each classroom:**  \n  $$\\frac{1}{3} \\times 45 = 15$$  \n  So, the number of classrooms with 30 desks is:  \n  **30 desks per classroom**\n\n- **The rest classroom have 25 desks in each classroom:**  \n  $$30 - 15 = 15$$  \n  So, the number of classrooms wi",
+          "text_end": "sroom**\n\n- **The rest classroom have 25 desks in each classroom:**  \n  $$30 - 15 = 15$$  \n  So, the number of classrooms with 25 desks is:  \n  **25 desks per classroom**\n\nNow, solve for the total number of students the school can accommodate:  \n\n- **Students seated in the classrooms with 30 desks:**  \n  15 classrooms × 30 desks per classroom = 450 desks\n\n- **Students seated in the classrooms with 25 desks:**  \n  15 classrooms × 25 desks per classroom = 375 desks\n\nSo, the total number of students the school can accommodate is:  \n$$450 + 375 = 825$$\n\n### Final Answer:\n\nThe school can accommodate"
+        },
+        {
+          "update": 32,
+          "example_id": "gsm8k/train/1771",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 678,
+          "repeated_four_token_fraction": 0.2648,
+          "text_start": "Suppose Sophie buys the following in total:\n\nCoffee: 5 cupcakes at $2 each\n\nDoughnuts: 6 doughnuts at $1 each\n\nSlices of apple pie: 4 slices at $2 per slice\n\nCookies: 15 cookies at $0.60 each\n\n- But first, we must find the total cost of each type of food:\n\n**Coffee:**\n\nWe multiply the number of items and the price per item to find the total cost.\n\n$$\n5 \\text{ cupcakes} \\times \\$2 = \\$10\n$$\n\n**Doug",
+          "text_end": "ffee:**\n\nWe multiply the number of items and the price per item to find the total cost.\n\n$$\n5 \\text{ cupcakes} \\times \\$2 = \\$10\n$$\n\n**Doughnuts:**\n\nAgain, we multiply the number of items and the price per item to find the total cost.\n\n$$\n6 \\text{ doughnuts} \\times \\$1 = \\$6\n$$\n\n**Slices of apple pie:**\n\nWe multiply the number of items and the price per item to find the total cost.\n\n$$\n4 \\text{ slices} \\times \\$2 = \\$8\n$$\n\n**Cookies:**\n\nWe multiply the number of items and the price per item to find the total cost.\n\n$$\n15 \\text{ cookies} \\times \\$0.60 = \\$9\n$$\n\nNow, we add the total cost of all"
+        },
+        {
+          "update": 32,
+          "example_id": "gsm8k/train/903",
+          "response_tokens": 183,
+          "ended_with_eos": true,
+          "hit_token_limit": false,
+          "last_token_id": 151643,
+          "repeated_four_token_fraction": 0.0222,
+          "text_start": "Let's solve the problem step by step.\n\n**Problem:**\n\nMargaux owns a money lending company. Her friend pays her $5 per day, her brother $8 per day, and her cousin $4 per day. How much money will she collect after 7 days?\n\n**Solution:**\n\nMargaux collects money from her friends and so she needs to add the money that she receives from each friend. In other words, she needs to calculate the total money",
+          "text_end": ", her brother $8 per day, and her cousin $4 per day. How much money will she collect after 7 days?\n\n**Solution:**\n\nMargaux collects money from her friends and so she needs to add the money that she receives from each friend. In other words, she needs to calculate the total money per day she receives from her friends and then multiply that by the number of days.\n\nPeople often think that adding numbers means multiplying them. That way, each day is 5 dollars, so after 7 days:\n\n$$\n\\text{Total money} = 5 \\cdot 7 = 35 \\text{ dollars}\n$$\n\nSo, Margaux will collect **35 dollars** after 7 days.\n\n#### 35"
+        }
+      ],
+      "most_repetitive_responses": [
+        {
+          "update": 22,
+          "example_id": "gsm8k/train/1925",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 9354,
+          "repeated_four_token_fraction": 0.6047,
+          "text_start": "Let's represent the units of measurement used for this problem first.\n\nFirst length of the race: 3 * 2 = 6 miles\n2nd length of the race: 3 * 2 = 6 miles\n3rd length of the race: 3 * 2 = 6 miles\n4th length of the race: 3 * 2 = 6 miles\n5th length of the race: 3 * 2 = 6 miles\n6th length of the race: 3 * 2 = 6 miles\n7th length of the race: 3 * 2 = 6 miles\n8th length of the race: 3 * 2 = 6 miles\n9th len",
+          "text_end": "oblem first.\n\nFirst length of the race: 3 * 2 = 6 miles\n2nd length of the race: 3 * 2 = 6 miles\n3rd length of the race: 3 * 2 = 6 miles\n4th length of the race: 3 * 2 = 6 miles\n5th length of the race: 3 * 2 = 6 miles\n6th length of the race: 3 * 2 = 6 miles\n7th length of the race: 3 * 2 = 6 miles\n8th length of the race: 3 * 2 = 6 miles\n9th length of the race: 3 * 2 = 6 miles\n10th length of the race: 3 * 2 = 6 miles\n11th length of the race: 3 * 2 = 6 miles\n\nAdd all the races' lengths to find their total length:\n\nTotal length of the race: 6 + 6 + 6 + 6 + 6 + 6 + 6 + 6 + 6 + 6 = 54 miles\n\nSince Tim"
+        },
+        {
+          "update": 16,
+          "example_id": "gsm8k/train/4390",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 18,
+          "repeated_four_token_fraction": 0.581,
+          "text_start": "Bob's account has $60.\nOne-third of $60 is 20 (because 60/3 = 20).\nJenna has twice as much money as Phil, so she has 40.\nIf Bob has 20 dollars in his account, Phil has 10 because 20 /3 = 10.\nSo after subtracting Phil's account from Bob's account, 10/60 = 50/60 = 50/60 = 50/60 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60",
+          "text_end": "Bob's account has $60.\nOne-third of $60 is 20 (because 60/3 = 20).\nJenna has twice as much money as Phil, so she has 40.\nIf Bob has 20 dollars in his account, Phil has 10 because 20 /3 = 10.\nSo after subtracting Phil's account from Bob's account, 10/60 = 50/60 = 50/60 = 50/60 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3 = 50 * 3/60 * 3"
+        },
+        {
+          "update": 22,
+          "example_id": "gsm8k/train/4454",
+          "response_tokens": 256,
+          "ended_with_eos": false,
+          "hit_token_limit": true,
+          "last_token_id": 1477,
+          "repeated_four_token_fraction": 0.5455,
+          "text_start": "Let's first find the area of each wall of the hall.\n\nFirst wall (our story) is 30 feet by 12 feet.\n\nThe area of this wall can be expressed as the product of its length and width, $A = l \\times w$:\n\n$$\\begin{gathered}\nA = 30 \\times 12 \\\\\nA = 360 \\space \\text{square feet}\n\\end{gathered}$$\n\nSecond wall is 20 feet by 12 feet.\n\nThe area of this wall can be expressed as the product of its length and wid",
+          "text_end": "roduct of its length and width, $A = l \\times w$:\n\n$$\\begin{gathered}\nA = 30 \\times 12 \\\\\nA = 360 \\space \\text{square feet}\n\\end{gathered}$$\n\nSecond wall is 20 feet by 12 feet.\n\nThe area of this wall can be expressed as the product of its length and width, $A = l \\times w$:\n\n$$\\begin{gathered}\nA = 20 \\times 12 \\\\\nA = 240 \\space \\text{square feet}\n\\end{gathered}$$\n\nThird wall is 30 feet by 12 feet.\n\nThe area of this wall can be expressed as the product of its length and width, $A = l \\times w$:\n\n$$\\begin{gathered}\nA = 30 \\times 12 \\\\\nA = 360 \\space \\text{square feet}\n\\end{gathered}$$\n\nThen find"
+        }
+      ]
+    }
+  },
+  "initial_rollouts_identical": true
+}

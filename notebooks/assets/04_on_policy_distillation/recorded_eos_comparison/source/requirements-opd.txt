@@ -1,0 +1,3 @@
+# Notebook 04. Preserve Colab's existing CUDA-enabled PyTorch installation.
+-r requirements-sft.txt
+PyYAML==6.0.3

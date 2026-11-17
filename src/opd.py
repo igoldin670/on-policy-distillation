@@ -52,6 +52,8 @@ class OPDConfig:
     kl_chunk_size: int = 16
     diagnostic_examples: int = 8
     teacher_context: str = "qwen3_nonthinking_v1"
+    eos_loss_mode: str = "raw_token"
+    eos_token_ids: tuple[int, ...] = (151643, 151645)
     pilot_updates: int = 32
     pilot_check_interval: int = 8
     cap_window_responses: int = 32
@@ -87,6 +89,14 @@ class OPDConfig:
             raise ValueError("Weight decay must be finite and nonnegative.")
         if self.teacher_context != "qwen3_nonthinking_v1":
             raise ValueError("The corrected experiment requires the non-thinking teacher context.")
+        if self.eos_loss_mode not in {"raw_token", "semantic_stop"}:
+            raise ValueError("Choose raw_token or semantic_stop EOS loss.")
+        if (
+            len(self.eos_token_ids) < 2
+            or len(set(self.eos_token_ids)) != len(self.eos_token_ids)
+            or any(type(token_id) is not int or token_id < 0 for token_id in self.eos_token_ids)
+        ):
+            raise ValueError("The EOS interpretation requires distinct nonnegative token IDs.")
         if not 0 < self.cap_pause_fraction <= 1:
             raise ValueError("Cap pause fraction must be in (0, 1].")
         if not math.isfinite(self.nll_warning_ratio) or self.nll_warning_ratio <= 1:
@@ -176,20 +186,76 @@ def resolve_cold_start(root: Path, *, report_path=None, checkpoint_path=None):
     return report_directory, checkpoint_directory, evidence
 
 
-def cuda_preflight(root: Path) -> dict:
-    """Fail early for the chosen unquantized 32B teacher; never change models silently."""
+def teacher_memory_limits(device="cuda:0"):
+    """Reserve student/working memory before planning frozen BF16 teacher layers.
+
+    GPU IDs are SLURM/CUDA-visible logical IDs. Never change CUDA_VISIBLE_DEVICES.
+    Budgets estimate weight placement only; the smoke test must measure execution.
+    """
     import torch
 
-    if not torch.cuda.is_available():
+    device = torch.device(device)
+    if device.type != "cuda" or not torch.cuda.is_available():
+        raise RuntimeError("Training requires an allocated CUDA GPU. Use inspect mode on CPU.")
+    primary = device.index if device.index is not None else torch.cuda.current_device()
+    free, total = torch.cuda.mem_get_info(primary)
+    if total >= 75 * 2**30 and free >= 73 * 2**30:
+        return {primary: free - 12 * 2**30}
+    if primary != 0 or torch.cuda.device_count() != 2:
+        raise RuntimeError("Use one almost-empty 80GB GPU or two almost-empty 40GB GPUs.")
+    memory = [torch.cuda.mem_get_info(index) for index in range(2)]
+    if any(total < 38 * 2**30 or free < 37.5 * 2**30 for free, total in memory):
         raise RuntimeError(
-            "Training needs the Colab CUDA kernel. Local inspection uses no weights."
+            "Two-GPU mode needs two almost-empty 40GB GPUs. "
+            "Restart kernels holding models and inspect nvidia-smi inside the allocation."
         )
-    free, total = torch.cuda.mem_get_info()
-    if total < 75 * 2**30 or free < 73 * 2**30:
+    # GPU 0 also holds the FP32 student, gradients, Adam states, and KL workspace.
+    # GPU 1 holds more teacher layers. The cards' memory remains separate.
+    return {0: memory[0][0] - 12 * 2**30, 1: memory[1][0] - 3 * 2**30}
+
+
+def plan_teacher_device_map(model_config, memory_limits):
+    """Plan with empty tensors, before downloading or allocating teacher weights."""
+    import torch
+    from accelerate import infer_auto_device_map, init_empty_weights
+    from transformers import AutoModelForCausalLM
+
+    with init_empty_weights():
+        skeleton = AutoModelForCausalLM.from_config(model_config)
+        skeleton.tie_weights()
+    device_map = infer_auto_device_map(
+        skeleton,
+        max_memory=memory_limits,
+        no_split_module_classes=skeleton._no_split_modules,
+        dtype=torch.bfloat16,
+    )
+    if not set(device_map.values()).issubset(memory_limits):
         raise RuntimeError(
-            f"This unquantized 32B-teacher experiment needs an almost-empty A100 80GB. "
-            f"Available: {free / 2**30:.1f}/{total / 2**30:.1f} GiB. "
-            "Restart the kernel to release earlier models. A100 40GB/L4 are insufficient for this recipe."
+            "BF16 teacher layers do not fit the reserved GPU weight budgets. "
+            "CPU/disk offload was rejected. No teacher weights were loaded."
+        )
+    return device_map
+
+
+def cuda_preflight(root: Path) -> dict:
+    """Check the one-80GB/two-40GB layouts, BF16 support, and artifact storage."""
+    import torch
+
+    memory_limits = teacher_memory_limits()
+    gpus = []
+    for index in memory_limits:
+        free, total = torch.cuda.mem_get_info(index)
+        with torch.cuda.device(index):
+            if not torch.cuda.is_bf16_supported():
+                raise RuntimeError("The fixed teacher recipe requires BF16 on every used GPU.")
+        gpus.append(
+            {
+                "index": index,
+                "name": torch.cuda.get_device_name(index),
+                "total_gib": total / 2**30,
+                "free_gib": free / 2**30,
+                "teacher_weight_budget_gib": memory_limits[index] / 2**30,
+            }
         )
     cache = Path(os.environ.get("HF_HOME", Path.home() / ".cache/huggingface"))
     blobs = cache / "hub/models--Qwen--Qwen3-32B/blobs"
@@ -200,13 +266,14 @@ def cuda_preflight(root: Path) -> dict:
         raise RuntimeError(
             f"Need about {required_disk / 2**30:.0f} GiB free disk for teacher/cache/exports; have {disk_free / 2**30:.0f}."
         )
-    if not torch.cuda.is_bf16_supported():
-        raise RuntimeError("The fixed 32B-teacher recipe requires BF16 support.")
     return {
         "kernel_pid": os.getpid(),
-        "gpu": torch.cuda.get_device_name(0),
-        "gpu_total_gib": total / 2**30,
-        "gpu_free_gib_at_start": free / 2**30,
+        "gpu": gpus[0]["name"],
+        "gpu_total_gib": gpus[0]["total_gib"],
+        "gpu_free_gib_at_start": gpus[0]["free_gib"],
+        "gpus": gpus,
+        "teacher_layout": "single_gpu" if len(gpus) == 1 else "two_gpu_bf16",
+        "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
         "bf16_supported": True,
         "disk_free_gib_at_start": disk_free / 2**30,
         "memory_estimate_is_not_an_execution_guarantee": True,
@@ -232,27 +299,20 @@ def load_student(checkpoint_directory: Path, device):
 
 
 def load_teacher(device):
+    """Frozen inference can span GPUs; the trainable student stays on GPU 0."""
     import torch
-    from transformers import AutoModelForCausalLM
+    from transformers import AutoConfig, AutoModelForCausalLM
 
-    if torch.device(device).type != "cuda":
-        raise RuntimeError("The real 32B teacher requires the Colab CUDA device.")
-    free, _ = torch.cuda.mem_get_info(device)
-    if free < TEACHER_WEIGHT_BYTES + 2 * 2**30:
-        raise RuntimeError(
-            f"Kernel PID {os.getpid()} has only {free / 2**30:.1f} GiB free. "
-            "Check nvidia-smi for other kernels or an already-loaded teacher before retrying."
-        )
-    print(
-        f"Kernel PID {os.getpid()}: loading frozen teacher ({free / 2**30:.1f} GiB free).",
-        flush=True,
-    )
+    memory_limits = teacher_memory_limits(device)
+    model_config = AutoConfig.from_pretrained(TEACHER_ID, revision=TEACHER_REVISION, token=False)
+    device_map = plan_teacher_device_map(model_config, memory_limits)
+    print(f"Kernel PID {os.getpid()}: frozen BF16 teacher device map {device_map}", flush=True)
     teacher = AutoModelForCausalLM.from_pretrained(
         TEACHER_ID,
         revision=TEACHER_REVISION,
         token=False,
         dtype=torch.bfloat16,
-        device_map={"": str(device)},
+        device_map=device_map,
         low_cpu_mem_usage=True,
         attn_implementation="sdpa",
     )
@@ -282,7 +342,7 @@ def trajectory_tensors(trajectory, device, *, context="student"):
     return ids, torch.ones_like(ids)
 
 
-def trajectory_kl(student, teacher, trajectory, device, dtype, config):
+def trajectory_response_logits(student, teacher, trajectory, device, dtype, config):
     """Model-specific prompts, followed by identical sampled response IDs/prefixes."""
     import torch
 
@@ -306,9 +366,13 @@ def trajectory_kl(student, teacher, trajectory, device, dtype, config):
         teacher_logits = teacher(
             input_ids=teacher_sequence_ids, attention_mask=teacher_attention_mask, use_cache=False
         ).logits
-        teacher_response_logits = response_prediction_logits(
-            teacher_logits, teacher_sequence_ids, teacher_prompt_length
-        ).contiguous()
+        # Accelerate dispatches the frozen teacher's layers across the visible
+        # GPUs. Only aligned response scores are needed on the student's device.
+        teacher_response_logits = (
+            response_prediction_logits(teacher_logits, teacher_sequence_ids, teacher_prompt_length)
+            .to(device, copy=True)
+            .contiguous()
+        )
     del teacher_logits
     with precision_context(device, dtype):
         student_logits = student(
@@ -317,21 +381,41 @@ def trajectory_kl(student, teacher, trajectory, device, dtype, config):
         student_response_logits = response_prediction_logits(
             student_logits, complete_sequence_ids, prompt_length
         )
-        loss = forward_kl_loss(
-            student_response_logits,
-            teacher_response_logits,
-            teacher_temperature=config.teacher_temperature,
-            chunk_size=config.kl_chunk_size,
-        )
-    return loss
+    return student_response_logits, teacher_response_logits
 
 
-def backward_opd_group(student, teacher, trajectories, device, dtype, config, scaler, policy_step):
+def trajectory_kl(student, teacher, trajectory, device, dtype, config):
+    student_logits, teacher_logits = trajectory_response_logits(
+        student, teacher, trajectory, device, dtype, config
+    )
+    return forward_kl_loss(
+        student_logits,
+        teacher_logits,
+        teacher_temperature=config.teacher_temperature,
+        chunk_size=config.kl_chunk_size,
+        eos_token_ids=config.eos_token_ids if config.eos_loss_mode == "semantic_stop" else None,
+    )
+
+
+def backward_opd_group(
+    student,
+    teacher,
+    trajectories,
+    device,
+    dtype,
+    config,
+    scaler,
+    policy_step,
+    *,
+    before_trajectory=None,
+):
     """Mean of response means: long responses do not outweigh short responses."""
     if not trajectories or any(t["policy_step"] != policy_step for t in trajectories):
         raise ValueError("Rollouts must come from the current, unchanged student policy.")
     total_loss = 0.0
     for trajectory in trajectories:
+        if before_trajectory is not None:
+            before_trajectory()
         loss = trajectory_kl(student, teacher, trajectory, device, dtype, config)
         scaler.scale(loss / len(trajectories)).backward()
         total_loss += float(loss.detach())
@@ -348,12 +432,25 @@ def backward_opd_group(student, teacher, trajectories, device, dtype, config, sc
     }
 
 
-def training_health(history, config, starting_validation_nll):
+def training_health(
+    history,
+    config,
+    starting_validation_nll,
+    *,
+    safety_policy=None,
+    baseline_accuracy=None,
+):
     """Engineering alarms on observed responses, independent of test answers.
 
     Repeated truncation pauses training. Reference NLL is a separate warning
     because it measures a different objective from the distillation KL.
     """
+    if safety_policy is not None:
+        from src.training_safety import assess_training_safety
+
+        return assess_training_safety(
+            history, starting_validation_nll, baseline_accuracy, safety_policy
+        )
     flags = [flag for row in history for flag in row.get("response_limit_flags", [])]
     recent = flags[-config.cap_window_responses :]
     pause = len(recent) == config.cap_window_responses and (
@@ -404,6 +501,9 @@ def optimizer_update(student, optimizer, scheduler, scaler, max_grad_norm):
     )
     learning_rate = optimizer.param_groups[0]["lr"]
     scaler.step(optimizer)
+    from src.training_safety import assert_finite_parameters
+
+    assert_finite_parameters(student)
     scaler.update()
     scheduler.step()
     optimizer.zero_grad(set_to_none=True)
@@ -411,6 +511,7 @@ def optimizer_update(student, optimizer, scheduler, scaler, max_grad_norm):
 
 
 def fixed_trajectory_diagnostics(student, teacher, trajectories, device, dtype, config):
+    """Report both objectives on the same frozen prefixes for either training arm."""
     import torch
 
     if not trajectories:
@@ -421,18 +522,36 @@ def fixed_trajectory_diagnostics(student, teacher, trajectories, device, dtype, 
     try:
         with torch.no_grad():
             for trajectory in trajectories:
-                loss = trajectory_kl(student, teacher, trajectory, device, dtype, config)
+                student_logits, teacher_logits = trajectory_response_logits(
+                    student, teacher, trajectory, device, dtype, config
+                )
+                losses = {
+                    mode: float(
+                        forward_kl_loss(
+                            student_logits,
+                            teacher_logits,
+                            teacher_temperature=config.teacher_temperature,
+                            chunk_size=config.kl_chunk_size,
+                            eos_token_ids=config.eos_token_ids if mode == "semantic_stop" else None,
+                        )
+                    )
+                    for mode in ("raw_token", "semantic_stop")
+                }
                 rows.append(
                     {
                         "example_id": trajectory["example_id"],
-                        "forward_kl_nats": float(loss),
                         "response_tokens": trajectory["response_length"],
+                        "forward_kl_nats": losses[config.eos_loss_mode],
+                        "raw_token_kl_nats": losses["raw_token"],
+                        "semantic_stop_kl_nats": losses["semantic_stop"],
                     }
                 )
     finally:
         student.train(was_training)
     return {
         "mean_forward_kl_nats": sum(r["forward_kl_nats"] for r in rows) / len(rows),
+        "mean_raw_token_kl_nats": sum(r["raw_token_kl_nats"] for r in rows) / len(rows),
+        "mean_semantic_stop_kl_nats": sum(r["semantic_stop_kl_nats"] for r in rows) / len(rows),
         "rows": rows,
     }
 
@@ -472,7 +591,19 @@ def _cpu_tree(value):
 
 
 def save_resume(
-    directory, student, tokenizer, optimizer, scheduler, scaler, *, arm, step, signature, history
+    directory,
+    student,
+    tokenizer,
+    optimizer,
+    scheduler,
+    scaler,
+    *,
+    arm,
+    step,
+    signature,
+    history,
+    config=None,
+    training_safety_policy=None,
 ):
     """Save only at an optimizer boundary. Keep the two most recent OWNED snapshots."""
     import torch
@@ -508,6 +639,10 @@ def save_resume(
                 "signature": signature,
                 "history": history,
                 "optimizer_boundary": True,
+                "configuration": asdict(config) if config is not None else None,
+                "training_safety_policy": asdict(training_safety_policy)
+                if training_safety_policy is not None
+                else None,
             },
         )
         write_inventory(staging)
@@ -520,8 +655,12 @@ def save_resume(
             metadata = json.loads(record.read_text())
             if metadata.get("signature") == signature and metadata.get("arm") == arm:
                 owned.append(candidate)
+    from src.training_safety import protected_checkpoint
+
+    protected = protected_checkpoint(directory, signature)
     for candidate in owned[:-2]:
-        shutil.rmtree(candidate)
+        if candidate.resolve() != protected:
+            shutil.rmtree(candidate)
     return destination
 
 
@@ -682,6 +821,14 @@ def export_report(root, directory, manifest, *, report_name="report"):
         for pattern in ("*.json", "*.jsonl", "*.png", "*.svg"):
             for source in sorted(directory.glob(pattern)):
                 shutil.copyfile(source, staging / source.name)
+        # Comparison arms have independent evidence directories. Their model and
+        # optimizer tensors remain outside the small report archive.
+        comparison = directory / "eos_comparison"
+        for source in sorted(comparison.glob("*/*")):
+            if source.is_file() and source.suffix in {".json", ".jsonl"}:
+                target = staging / source.relative_to(directory)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, target)
         sources = staging / "source"
         sources.mkdir()
         for source in sorted((root / "src").glob("*.py")):

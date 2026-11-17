@@ -1,0 +1,43 @@
+{
+  "models": {
+    "student": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "sha256": {
+        "config.json": "b90b86f35c8e6925ef74ee04d0e758f0a845c83a42089ad82bbaa948de9b4204",
+        "tokenizer_config.json": "e611fbccc7c29ef3b1cafb1cb7ea548d189968632901d678fd62be68c47885de",
+        "tokenizer.json": "fe000e3ed39ed12b8d2481d527d44f93c65d37e87645d2dcc80d1bf9d50d2927",
+        "model.safetensors.index.json": "ce9a885efdf27d3664fdef5d512ad365216f1074051ef840c7cd8e5431495d0a"
+      }
+    },
+    "teacher": {
+      "model_id": "Qwen/Qwen3.8-27B",
+      "revision": "37561816e66b5b9153b1b64c10968c18c1e6f4a0",
+      "sha256": {
+        "config.json": "191e0af232104ed8b65258cf3fb2b842e288008baca7633c11b82a1ac7203aab",
+        "tokenizer_config.json": "207c03c41a06a9c3b0cc527d8a56115159c1eac6b59a4ffae85b646e773d074e",
+        "tokenizer.json": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+        "generation_config.json": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e",
+        "chat_template.jinja": "af16f654968d47d09a6c604e00370b12dbc21f76456f59c9e98b82e84d9f6375",
+        "model.safetensors.index.json": "77042094076611b69791a610065f28b7013b8c621795fa86ddccc8bac7d1b9df"
+      }
+    }
+  },
+  "transformers_version": "5.3.0",
+  "verification": {
+    "status": "identical_tokenizers_verified",
+    "full_tokenizers_identical": true,
+    "tokenizer_vocab_size": 248077,
+    "output_head_size": 248320,
+    "text_probes_checked": 1008,
+    "eos_token_ids": [
+      248044,
+      248046
+    ],
+    "vocabulary_mode": "full_head",
+    "scope": "Identical resolved IDs and BPE; not a quality or training result.",
+    "nonthinking_teacher_prompt_tokens": 20
+  },
+  "real_qwen_weights_loaded": false,
+  "training_performed": false
+}

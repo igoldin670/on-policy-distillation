@@ -82,6 +82,11 @@ from src.utils import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def tiny_config(**overrides):
+    # Toy models have a 32-token vocabulary with ending IDs 1 and 5.
+    return OPDConfig(**({"eos_token_ids": (1, 5)} | overrides))
+
+
 def tiny_model(seed=42):
     with torch.random.fork_rng():
         torch.manual_seed(seed)
@@ -318,7 +323,7 @@ class TrainingTests(unittest.TestCase):
         scaler = torch.amp.GradScaler("cuda", enabled=False)
         with patch.object(teacher, "forward", wraps=teacher.forward) as teacher_forward:
             metrics = backward_opd_group(
-                student, teacher, [trajectory()], "cpu", None, OPDConfig(), scaler, 0
+                student, teacher, [trajectory()], "cpu", None, tiny_config(), scaler, 0
             )
             self.assertEqual(
                 teacher_forward.call_args.kwargs["input_ids"].tolist(), [[6, 2, 3, 4, 1]]
@@ -341,7 +346,7 @@ class TrainingTests(unittest.TestCase):
             tiny_model(77).requires_grad_(False).eval(),
         )
         trajectories = [trajectory(), trajectory(1, (4, 1))]
-        config = OPDConfig()
+        config = tiny_config()
         dense = sum(trajectory_kl(first, teacher, t, "cpu", None, config) for t in trajectories) / 2
         dense.backward()
         backward_opd_group(
@@ -382,7 +387,7 @@ class TrainingTests(unittest.TestCase):
                 [trajectory(policy_step=0)],
                 "cpu",
                 None,
-                OPDConfig(),
+                tiny_config(),
                 torch.amp.GradScaler("cuda", enabled=False),
                 1,
             )
@@ -391,7 +396,7 @@ class TrainingTests(unittest.TestCase):
         student, teacher = tiny_model().train(), tiny_model(77).requires_grad_(False)
         before = {k: v.clone() for k, v in student.state_dict().items()}
         result = fixed_trajectory_diagnostics(
-            student, teacher, [trajectory()], "cpu", None, OPDConfig()
+            student, teacher, [trajectory()], "cpu", None, tiny_config()
         )
         self.assertTrue(student.training)
         self.assertTrue(math.isfinite(result["mean_forward_kl_nats"]))
@@ -420,7 +425,7 @@ class TrainingTests(unittest.TestCase):
             checkpoint = directory / "initial"
             save_checkpoint(tiny_model(), tokenizer, checkpoint)
             examples = [example(i, (3, 4, 1) if i % 2 else (4, 1)) for i in range(3)]
-            config = OPDConfig(
+            config = tiny_config(
                 train_examples=3,
                 test_examples=1,
                 accumulation_steps=2,
@@ -434,7 +439,7 @@ class TrainingTests(unittest.TestCase):
             )
             evaluated = []
 
-            def evaluation(model, rows, name):
+            def evaluation(model, rows, name, *, directory=None, identity=None, budget=None):
                 result = generate_evaluation(
                     model,
                     tokenizer,
@@ -453,7 +458,7 @@ class TrainingTests(unittest.TestCase):
                     use_model_defaults=False,
                 )
                 evaluated.append(name)
-                write_json(directory / f"{name}.json", result)
+                write_json((directory or checkpoint.parent) / f"{name}.json", result)
                 return result
 
             namespace = dict(
@@ -515,8 +520,8 @@ class TrainingTests(unittest.TestCase):
             self.assertEqual(saved_policy["eos_token_id"], [1, 5])
             self.assertFalse(saved_policy.get("do_sample", False))
             self.assertEqual(
-                evaluated,
-                ["sft_control_validation", "on_policy_validation", "on_policy_validation"],
+                set(evaluated),
+                {"sft_control_boundary_0002_validation", "on_policy_boundary_0002_validation"},
             )
             # Execute the actual final evaluation/plot/export cells too. Everything
             # remains inside a temporary directory and is labelled random-model QA.
@@ -531,6 +536,8 @@ class TrainingTests(unittest.TestCase):
             namespace.update(
                 MODE="train",
                 FULL_RUN_COMPLETE=True,
+                RUN_STAGE="full",
+                control_checkpoint_directory=directory / "checkpoints/sft_control",
                 teacher_template_sha256="tiny-template",
                 PROJECT_ROOT=ROOT,
                 control_result=control,
@@ -587,7 +594,7 @@ class ArtifactAndProtocolTests(unittest.TestCase):
             {"warmup_fraction": 1},
         ):
             with self.assertRaises(ValueError):
-                OPDConfig(**options)
+                tiny_config(**options)
 
     def test_no_checkpoint_never_falls_back_to_base_weights(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -596,7 +603,7 @@ class ArtifactAndProtocolTests(unittest.TestCase):
 
     def test_cpu_preflight_stops_before_teacher_load(self):
         with patch("torch.cuda.is_available", return_value=False):
-            with self.assertRaisesRegex(RuntimeError, "Colab CUDA"):
+            with self.assertRaisesRegex(RuntimeError, "allocated CUDA"):
                 cuda_preflight(ROOT)
 
     def test_zip_inventory_round_trip_and_tampering(self):
@@ -728,13 +735,13 @@ class ArtifactAndProtocolTests(unittest.TestCase):
             self.assertTrue((parent / "step_0003").exists())
 
     def test_resume_signature_tracks_protocol_and_code_changes(self):
-        signature = experiment_signature(OPDConfig(), {}, {}, {}, {}, {"opd.py": "abc"})
+        signature = experiment_signature(tiny_config(), {}, {}, {}, {}, {"opd.py": "abc"})
         self.assertNotEqual(
             signature,
-            experiment_signature(replace(OPDConfig(), seed=7), {}, {}, {}, {}, {"opd.py": "abc"}),
+            experiment_signature(replace(tiny_config(), seed=7), {}, {}, {}, {}, {"opd.py": "abc"}),
         )
         self.assertNotEqual(
-            signature, experiment_signature(OPDConfig(), {}, {}, {}, {}, {"opd.py": "def"})
+            signature, experiment_signature(tiny_config(), {}, {}, {}, {}, {"opd.py": "def"})
         )
 
     def test_report_export_excludes_weights_and_keeps_auditable_sources(self):
@@ -836,7 +843,7 @@ class CorrectedContextTests(unittest.TestCase):
         self.assertEqual(row["teacher_prompt_token_ids"], [6, 2])
 
     def test_health_window_and_reference_loss_warning_are_independent(self):
-        config = OPDConfig()
+        config = tiny_config()
         healthy = [{"response_limit_flags": [True] * 23 + [False] * 9}]
         self.assertFalse(training_health(healthy, config, 1.0)["pause"])
         stopped = [{"response_limit_flags": [True] * 24 + [False] * 8}]
@@ -963,8 +970,10 @@ class StagedTrainingTests(unittest.TestCase):
         save_checkpoint(tiny_model(), tokenizer, checkpoint)
         examples = [example(i) for i in range(config.train_examples)]
 
-        def evaluate(model, rows, name):
-            result = generate_evaluation(
+        def evaluate(model, rows, name, *, directory=None, identity=None, budget=None):
+            from src.opd_experiment import evaluate_incrementally
+
+            return evaluate_incrementally(
                 model,
                 tokenizer,
                 rows,
@@ -978,10 +987,10 @@ class StagedTrainingTests(unittest.TestCase):
                 },
                 "cpu",
                 None,
-                use_model_defaults=False,
+                path=(directory or checkpoint.parent) / f"{name}.json",
+                identity=identity or "tiny-evaluation",
+                budget=budget,
             )
-            write_json(directory / f"{name}.json", result)
-            return result
 
         namespace = dict(
             globals(),
@@ -1016,7 +1025,7 @@ class StagedTrainingTests(unittest.TestCase):
     def test_pilot_resume_matches_uninterrupted_weights_rng_and_schedule(self):
         from safetensors.torch import load_file
 
-        config = OPDConfig(
+        config = tiny_config(
             train_examples=8,
             accumulation_steps=2,
             pilot_updates=2,
@@ -1071,7 +1080,7 @@ class StagedTrainingTests(unittest.TestCase):
 
     def test_default_pilot_boundary_is_32_of_128_updates(self):
         # Random-model responses need no quality qualification in this workflow test.
-        config = OPDConfig(
+        config = tiny_config(
             max_prompt_length=8,
             max_response_length=3,
             max_sequence_length=16,
@@ -1097,7 +1106,7 @@ class StagedTrainingTests(unittest.TestCase):
     def test_actual_teacher_alignment_cell_uses_separate_contexts(self):
         # Execute the notebook's entire alignment/qualification cell using random models.
         with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
-            config = OPDConfig(
+            config = tiny_config(
                 train_examples=2,
                 accumulation_steps=1,
                 max_prompt_length=8,
@@ -1116,6 +1125,7 @@ class StagedTrainingTests(unittest.TestCase):
                 display=lambda frame: None,
                 teacher_tokenizer=namespace["tokenizer"],
                 load_teacher=lambda device: teacher,
+                runtime={},
                 starting_validation={"scores": {"strict": {"accuracy": 0.0}}},
             )
             notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
@@ -1134,7 +1144,7 @@ class StagedTrainingTests(unittest.TestCase):
             self.assertIn("starting_fixed_diagnostics", namespace)
 
     def test_health_pause_saves_nonperiodic_boundary_and_blocks_resume(self):
-        config = OPDConfig(
+        config = tiny_config(
             train_examples=8,
             accumulation_steps=2,
             pilot_updates=4,

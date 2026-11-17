@@ -1,4 +1,4 @@
-"""Static and HTML QA for all four notebooks; this never executes model cells.
+"""Static and HTML QA for the notebook series; this never executes model cells.
 
 For equation rendering, install quickjs==1.19.4 in your isolated QA environment
 and supply the official KaTeX bundle with --katex-js. GPU checks are separate.
@@ -11,6 +11,7 @@ import ast
 import json
 import re
 import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
 from pathlib import Path
 
 import mistune
@@ -32,7 +33,7 @@ def validate(root: Path, katex_js: Path | None = None):
     destination = root / "results/notebook_series_qa"
     destination.mkdir(parents=True, exist_ok=True)
     records = []
-    for path in sorted((root / "notebooks").glob("0[1-4]_*.ipynb")):
+    for path in sorted((root / "notebooks").glob("0[1-5]_*.ipynb")):
         notebook = nbformat.read(path, as_version=4)
         nbformat.validate(notebook)
         assert len({cell.id for cell in notebook.cells}) == len(notebook.cells)
@@ -92,7 +93,7 @@ def validate(root: Path, katex_js: Path | None = None):
                 ET.parse(path)
                 image_count += 1
     result = {
-        "date": "2026-11-04",
+        "date": datetime.now(timezone.utc).date().isoformat(),
         "scope": "Offline validation. No notebook model execution or live browser layout check.",
         "notebooks": records,
         "image_files_checked": image_count,
