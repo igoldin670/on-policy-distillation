@@ -5,10 +5,11 @@ The active model profile is `configs/small_experiment.yaml`:
 - Student: `Qwen/Qwen3.5-0.8B-Base`, revision `dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`.
 - Teacher: `Qwen/Qwen3.8-27B`, revision `37561816e66b5b9153b1b64c10968c18c1e6f4a0`.
 
-The existing 01-04 notebooks, original 03 archives, and EOS pilot snapshots belong
-to the historical Qwen3 experiment. Notebook 04 reads `configs/qwen3_legacy.yaml`
-so changing the active profile cannot silently resume an old run with new models.
-Its teachers and checkpoint signatures remain unchanged.
+Notebooks 01 and 02, the archived original 03/04 notebooks, and recorded EOS pilots
+belong to the historical Qwen3 experiment. The active 03 and 04 notebooks default
+to `MODEL_PROFILE = "qwen38"`; `"legacy"` explicitly selects the older pair.
+Checkpoint architecture, model revisions, data, and source signatures prevent
+silently resuming old weights with the new models. The new student needs fresh SFT.
 
 ## 1. Sync the complete project
 
@@ -17,7 +18,8 @@ Run from the laptop terminal after saving notebook outputs:
 ```bash
 rsync -avP \
   --exclude='.git/' --exclude='.cache/' --exclude='.ruff_cache/' \
-  --exclude='results/' --exclude='artifacts/' --exclude='.venv/' \
+  --exclude='results/' --exclude='artifacts/' --exclude='.venv*/' \
+  --exclude='venv/' \
   --exclude='__pycache__/' \
   /home/isaac/Code/on-policy/on-policy-distillation/ \
   igg11@amarel.rutgers.edu:~/on-policy-distillation/
@@ -43,7 +45,9 @@ cd "$HOME/on-policy-distillation"
   -r requirements-qwen38.txt
 ```
 
-The constraints retain PyTorch 2.10.0, including the compatible `+cu128` build.
+If that environment already exists, keep it and run only the `uv pip install`
+commands to update its requirements. The constraints retain PyTorch 2.10.0,
+including the compatible `+cu128` build.
 The CPU inspection below downloads tokenizer/configuration files but no model weights:
 
 ```bash
