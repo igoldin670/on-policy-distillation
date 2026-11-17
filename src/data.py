@@ -20,6 +20,7 @@ def prepare_opd_splits(
     seed=42,
     max_prompt_length=512,
     max_sequence_length=1024,
+    max_response_length=None,
 ):
     """Choose fresh train prompts and a previously unused test subset.
 
@@ -55,6 +56,11 @@ def prepare_opd_splits(
                 )
                 if encoded["prompt_length"] > max_prompt_length:
                     raise ValueError("overlong_prompt")
+                if (
+                    max_response_length is not None
+                    and encoded["target_length"] > max_response_length
+                ):
+                    raise ValueError("overlong_reference_response")
             except ValueError as error:
                 reason = str(error)
         if reason:

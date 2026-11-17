@@ -1,3 +1,7 @@
+> Earlier revision record. The current profile-aware workflow and release checks
+> are documented in the [project validation record](../../../VALIDATION.md).
+> Original GPU executions remain preserved in the historical evidence.
+
 # Notebook 04 validation record
 
 Reviewed November 16–17, 2026. Local QA and the author's Amarel GPU runs have

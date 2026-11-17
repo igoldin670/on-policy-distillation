@@ -1,3 +1,7 @@
+> Earlier revision record. The current profile-aware workflow and release checks
+> are documented in the [project validation record](../../../VALIDATION.md).
+> Original GPU executions remain preserved in the historical evidence.
+
 # Notebook 03 validation record
 
 Reviewed on 2026-11-04. The notebook preserves the user's latest completed A100

@@ -101,7 +101,7 @@ first use `MODE = "inspect"`, then use `MODE = "gpu_check"` and run from the top
 Alternatively, from the allocated shell run:
 
 ```bash
-python -u scripts/inspect_qwen38.py --gpu
+python -u scripts/inspect_qwen38.py --gpu --qualify
 ```
 
 The first new teacher download is about 55.6 GB. The old Qwen3-32B cache cannot
@@ -111,16 +111,17 @@ PyTorch path is suitable for checking correctness but may be substantially slowe
 
 ## 5. Interpret and preserve the result
 
-The real-model check should report `new_model_scoring_passed`, finite aligned
-scores, exact response-token preservation, and per-GPU memory measurements.
-It saves one response, each causal offset, the generation settings, and both model
-revisions. It performs no weight update. Do not interpret this as a training-memory
-test or an accuracy benchmark.
+The scoring phase should report `new_model_scoring_passed`, finite aligned scores,
+exact response IDs, and per-GPU memory. The additional qualification reports
+`disposable_gpu_qualification_passed` after synthetic long-shape probes, one disposable
+update, cached generation, and reload verification. Temporary updated weights are
+discarded. These probes establish execution and memory for the tested shapes.
 
-Next, rebuild the baseline and supervised cold start for the new student in new
-output folders. Only then qualify a new guarded distillation pilot. Keep the old
-03 checkpoint and the failed 04 comparison as historical evidence. No old optimizer
-snapshot is compatible with the new architecture.
+Continue in [03](../../03_sft_cold_start.ipynb) with `MODEL_PROFILE = "qwen38"` and
+`MODE = "train"`. Its checkpoint and report stay in the persistent run folder.
+Then use [04](../../04_on_policy_distillation.ipynb) for the two fixed learning-rate
+pilots and matched reference-prefix control. Follow the [final checklist](../../../FINAL_RUN.md).
+Old checkpoints remain historical evidence and have a different model architecture.
 
 ## Source references
 

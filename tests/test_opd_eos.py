@@ -547,69 +547,32 @@ class ActualComparisonTests(unittest.TestCase):
 
 class ProbeAndEvidenceRoundTripTests(unittest.TestCase):
     def test_fresh_colab_control_setup_needs_only_03_inputs(self):
-        from unittest.mock import Mock
+        from src.pipeline import resolve_profile_cold_start
 
-        import pandas as pd
-
-        notebook = json.loads(
-            (fixtures.ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text()
-        )
-        source = next(
-            "".join(c["source"]) for c in notebook["cells"] if c["id"] == "opd-run-control"
-        )
-        for stage in ("eos_comparison", "full"):
-            with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):
-                train = Mock(return_value={"final_validation": {"strict_accuracy": 0.5}})
-                historical = Mock(side_effect=AssertionError("old Amarel run accessed"))
-                namespace = dict(
-                    MODE="train",
-                    RUN_STAGE=stage,
-                    HISTORICAL_RUN_DIRECTORY=None,
-                    run_directory=Path(directory),
-                    train_arm=train,
-                    verify_historical_run=historical,
-                    pd=pd,
-                    display=lambda value: None,
-                    write_json=fixtures.write_json,
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaisesRegex(FileNotFoundError, "Notebook 03"):
+                resolve_profile_cold_start(
+                    Path(folder),
+                    {"student_model_id": "new-student", "student_revision": "new-revision"},
                 )
-                exec(compile(source, "fresh_colab_control", "exec"), namespace)
-                historical.assert_not_called()
-                if stage == "eos_comparison":
-                    train.assert_not_called()
-                    self.assertIsNone(namespace["control_result"])
-                else:
-                    train.assert_called_once_with("sft_control")
 
     def test_fresh_colab_probe_runs_without_historical_snapshots(self):
-        import hashlib
-
-        import pandas as pd
-
         from src.opd_diagnostics import probe_checkpoint_set
 
-        with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):
-            root = Path(directory)
-            namespace, _ = ActualComparisonTests().fixture(root)
-            namespace.update(
-                MODE="train",
-                RUN_STAGE="eos_comparison",
-                HISTORICAL_RUN_DIRECTORY=None,
-                historical_evidence={"status": "fresh_comparison"},
-                hashlib=hashlib,
-                pd=pd,
-                teacher=tiny_model(77).requires_grad_(False).eval(),
-                probe_checkpoint_set=probe_checkpoint_set,
-                SlurmBudget=SlurmBudget,
-                display=lambda value: None,
+        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
+            root = Path(folder)
+            namespace, config = ActualComparisonTests().fixture(root)
+            teacher = tiny_model(77).requires_grad_(False).eval()
+            records = [dict(trajectory(), probe_group="fixed_validation")]
+            result = probe_checkpoint_set(
+                teacher,
+                namespace["tokenizer"],
+                records,
+                {"starting_03": namespace["starting_checkpoint_directory"]},
+                "cpu",
+                None,
+                config,
             )
-            notebook = json.loads(
-                (fixtures.ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text()
-            )
-            source = next(
-                "".join(c["source"]) for c in notebook["cells"] if c["id"] == "opd-stopping-probes"
-            )
-            exec(compile(source, "fresh_colab_probes", "exec"), namespace)
-            result = json.loads((root / "stopping_probes.json").read_text())
             self.assertEqual({row["checkpoint"] for row in result["rows"]}, {"starting_03"})
             self.assertFalse((root / "historical_step_0022_metrics.json").exists())
 

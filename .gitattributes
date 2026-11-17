@@ -17,3 +17,6 @@ notebooks/assets/04_on_policy_distillation/recorded_amarel_pilot/** -text
 notebooks/assets/04_on_policy_distillation/recorded_amarel_pilot/notebook_snapshot.json -diff
 notebooks/assets/04_on_policy_distillation/recorded_eos_comparison/** -text
 notebooks/assets/04_on_policy_distillation/recorded_eos_comparison/source/notebook04_source.json -diff
+
+notebooks/assets/historical_notebooks/** -text
+notebooks/assets/historical_notebooks/*.ipynb -diff

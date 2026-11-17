@@ -73,6 +73,18 @@ def write_inventory(directory: Path) -> dict:
     return inventory
 
 
+def copy_experiment_source(root: Path, destination: Path):
+    """Capture recursive helpers and pinned recipes without caches or weights."""
+    root, destination = Path(root), Path(destination)
+    destination.mkdir(parents=True, exist_ok=True)
+    paths = list((root / "src").rglob("*.py")) + list((root / "configs").glob("*.yaml"))
+    paths += list(root.glob("requirements*.txt")) + list(root.glob("constraints*.txt"))
+    for path in sorted(paths):
+        target = destination / path.relative_to(root)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, target)
+
+
 def verified_zip(directory: Path, archive: Path) -> Path:
     """Package a checksummed artifact atomically, or verify an existing archive.
 

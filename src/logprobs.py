@@ -16,6 +16,7 @@ def teacher_prompt_token_ids(tokenizer, prompt: str) -> list[int]:
         tokenize=True,
         add_generation_prompt=True,
         enable_thinking=False,
+        return_dict=False,
     )
     if not ids:
         raise ValueError("The teacher prompt must contain tokens.")

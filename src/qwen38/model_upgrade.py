@@ -260,7 +260,7 @@ def load_text_weights(location, *, config, dtype, device_map, revision=None):
     return model
 
 
-def load_upgrade_models(profile, configs):
+def load_upgrade_models(profile, configs, *, load_student=True):
     """Frozen BF16 teacher is sharded; FP32 student stays on logical CUDA GPU 0."""
     import torch
     from accelerate import infer_auto_device_map, init_empty_weights
@@ -292,6 +292,8 @@ def load_upgrade_models(profile, configs):
     )
     teacher.requires_grad_(False).eval()
     teacher.config.use_cache = False
+    if not load_student:
+        return None, teacher
     print("Loading the new FP32 student on CUDA GPU 0...", flush=True)
     try:
         student = load_text_weights(

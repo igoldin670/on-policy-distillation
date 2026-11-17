@@ -1,3 +1,7 @@
+> Earlier revision record. The current profile-aware workflow and release checks
+> are documented in the [project validation record](../../../VALIDATION.md).
+> Original GPU executions remain preserved in the historical evidence.
+
 # Model-upgrade validation
 
 Reviewed November 16–17, 2026. Actual pinned-file inspection, tiny CPU tests, and

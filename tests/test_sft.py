@@ -4,7 +4,6 @@ import copy
 import io
 import json
 import tempfile
-import time
 import unittest
 import zipfile
 from contextlib import redirect_stdout
@@ -37,7 +36,6 @@ from src.sft import (
     verify_checkpoint,
     verify_report,
     verify_tokenizer_roundtrip,
-    write_json,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -160,59 +158,21 @@ class SFTDataTests(unittest.TestCase):
 
 class SFTTensorTests(unittest.TestCase):
     def test_actual_notebook_loop_runs_on_cpu_with_a_tiny_model(self):
-        # Execute the actual notebook loop. Only CUDA housekeeping is mocked;
-        # the forward/backward passes, optimizer, scheduler, and validation run.
-        import math
+        from safetensors.torch import load_file
+        from test_opd import StagedTrainingTests, tiny_config
 
-        from transformers import get_linear_schedule_with_warmup
-
-        notebook = json.loads((ROOT / "notebooks/03_sft_cold_start.ipynb").read_text())
-        source = next(
-            "".join(c["source"]) for c in notebook["cells"] if c["id"] == "sft-train-loop"
-        )
-        model = tiny_model()
-        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-        original = {name: p.detach().clone() for name, p in model.named_parameters()}
-        examples = [sample(), sample((2, 3, 4, 5, 1)), sample((2, 6, 1), 1)]
-        with tempfile.TemporaryDirectory() as folder:
-            namespace = {
-                "MODE": "train",
-                "torch": torch,
-                "math": math,
-                "time": time,
-                "config": SFTConfig(
-                    train_examples=3,
-                    validation_examples=1,
-                    accumulation_steps=2,
-                    learning_rate=1e-3,
-                ),
-                "student": model,
-                "device": "cpu",
-                "compute_dtype": None,
-                "train_examples": examples,
-                "validation_examples": examples[:1],
-                "tokenizer": CharacterTokenizer(),
-                "run_directory": Path(folder),
-                "history": [],
-                "backward_group": backward_group,
-                "training_groups": training_groups,
-                "validation_loss": validation_loss,
-                "get_linear_schedule_with_warmup": get_linear_schedule_with_warmup,
-                "write_json": write_json,
-            }
-            namespace["tokenizer"].pad_token_id = 1
-            with (
-                patch("torch.cuda.synchronize"),
-                patch("torch.cuda.empty_cache"),
-                redirect_stdout(io.StringIO()),
-            ):
-                exec(compile(source, "notebook03_training_cell", "exec"), namespace)
-            self.assertEqual(namespace["step"], 2)
-            self.assertEqual(
-                len(json.loads((Path(folder) / "training_history.json").read_text())), 2
+        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
+            directory = Path(folder)
+            namespace = StagedTrainingTests().namespace(
+                directory, tiny_config(train_examples=3, accumulation_steps=2)
             )
+            before = load_file(directory / "initial/model.safetensors")
+            result = namespace["train_arm"]("sft_control")
+            after = load_file(directory / "checkpoints/sft_control/model.safetensors")
+            self.assertEqual(result["completed_steps"], 2)
+            self.assertEqual(len(result["history"]), 2)
             self.assertTrue(
-                any(not torch.equal(p, original[name]) for name, p in model.named_parameters())
+                any(not torch.equal(value, after[name]) for name, value in before.items())
             )
 
     def test_generation_uses_only_prompt_not_reference_solution(self):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.compat import generation_options
 from src.sft import precision_context
 
 
@@ -42,7 +43,7 @@ def sample_trajectory(
                 generation_config=generation_policy,
                 # Otherwise Transformers can replace temperature=1/top_p=1 with
                 # non-default values stored in this model's generation config.
-                use_model_defaults=False,
+                **generation_options(student),
             )
     finally:
         student.train(was_training)

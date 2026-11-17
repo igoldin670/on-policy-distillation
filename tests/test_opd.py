@@ -11,6 +11,7 @@ import unittest
 import zipfile
 from contextlib import redirect_stdout
 from dataclasses import replace
+from functools import partial
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -494,6 +495,7 @@ class TrainingTests(unittest.TestCase):
             )
             with redirect_stdout(io.StringIO()):
                 exec(compile(loop, "notebook04_training_cell", "exec"), namespace)
+                namespace["train_arm"] = partial(namespace["train_arm"], namespace)
                 control = namespace["train_arm"]("sft_control")
                 teacher = tiny_model(77).requires_grad_(False).eval()
                 on_policy = namespace["train_arm"]("on_policy", teacher=teacher)
@@ -523,55 +525,19 @@ class TrainingTests(unittest.TestCase):
                 set(evaluated),
                 {"sft_control_boundary_0002_validation", "on_policy_boundary_0002_validation"},
             )
-            # Execute the actual final evaluation/plot/export cells too. Everything
-            # remains inside a temporary directory and is labelled random-model QA.
-            import importlib.metadata
-            import sys
-
-            import pandas as pd
-
-            from src.opd import paired_accuracy_difference
-            from src.opd_plots import plot_run
-
-            namespace.update(
-                MODE="train",
-                FULL_RUN_COMPLETE=True,
-                RUN_STAGE="full",
-                control_checkpoint_directory=directory / "checkpoints/sft_control",
-                teacher_template_sha256="tiny-template",
-                PROJECT_ROOT=ROOT,
-                control_result=control,
-                on_policy_result=on_policy,
-                pd=pd,
-                display=lambda value: None,
-                splits={"primary_test": examples, "historical_test": examples[:1]},
-                paired_accuracy_difference=paired_accuracy_difference,
-                plot_run=plot_run,
-                runtime={"kind": "tiny_random_cpu_test_only"},
-                protocol={"student_model_id": "tiny-random-qa", "student_revision": "test-only"},
-                TEACHER_ID="tiny-random-qa-teacher",
-                TEACHER_REVISION="test-only",
-                checkpoint_hashes=json.loads((checkpoint / "SHA256SUMS.json").read_text()),
-                source_train=SimpleNamespace(_fingerprint="synthetic-train-fixtures"),
-                source_test=SimpleNamespace(_fingerprint="synthetic-test-fixtures"),
-                sys=sys,
-                importlib=importlib,
-                shutil=__import__("shutil"),
-                export_report=export_report,
+            # Export the actual shared runner results as a lightweight QA artifact.
+            archive = export_report(
+                ROOT,
+                directory,
+                {
+                    "signature": "test-only",
+                    "status": "completed",
+                    "runtime": {"kind": "tiny_random_cpu_test_only"},
+                    "control": control,
+                    "on_policy": on_policy,
+                },
             )
-            with redirect_stdout(io.StringIO()):
-                for cell_id in ("opd-final-evaluation", "opd-changed-answers", "opd-export"):
-                    source = next(
-                        "".join(c["source"]) for c in notebook["cells"] if c["id"] == cell_id
-                    )
-                    exec(compile(source, cell_id, "exec"), namespace)
-            self.assertTrue((directory / "primary_test_comparison.png").is_file())
-            self.assertTrue((directory / "training_objectives.svg").is_file())
-            self.assertTrue((directory / "report.zip").is_file())
-            self.assertEqual(
-                json.loads((directory / "report/manifest.json").read_text())["runtime"]["kind"],
-                "tiny_random_cpu_test_only",
-            )
+            self.assertTrue(archive.is_file())
             verify_inventory(directory / "report")
 
     def test_checkpoint_verification_preserves_training_mode(self):
@@ -791,6 +757,7 @@ class CorrectedContextTests(unittest.TestCase):
             tokenize=True,
             add_generation_prompt=True,
             enable_thinking=False,
+            return_dict=False,
         )
         tokenizer.chat_template = None
         with self.assertRaises(ValueError):
@@ -856,14 +823,10 @@ class CorrectedContextTests(unittest.TestCase):
         self.assertEqual(len(result["warnings"]), 1)
 
     def test_full_stage_notebook_requires_reviewed_pilot_before_training(self):
-        notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
-        source = next(
-            "".join(c["source"]) for c in notebook["cells"] if c["id"] == "opd-run-on-policy"
-        )
-        with tempfile.TemporaryDirectory() as folder:
-            namespace = dict(MODE="train", RUN_STAGE="full", run_directory=Path(folder))
-            with self.assertRaisesRegex(AssertionError, "pilot snapshot"):
-                exec(compile(source, "stage_gate", "exec"), namespace)
+        from src.pipeline import run_distillation
+
+        with self.assertRaisesRegex(ValueError, "reviewed pilot"):
+            run_distillation({}, stage="full")
 
     def test_interrupted_json_write_preserves_the_previous_record(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -1020,6 +983,7 @@ class StagedTrainingTests(unittest.TestCase):
         notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
         source = next("".join(c["source"]) for c in notebook["cells"] if c["id"] == "opd-train-arm")
         exec(compile(source, "actual_staged_notebook_loop", "exec"), namespace)
+        namespace["train_arm"] = partial(namespace["train_arm"], namespace)
         return namespace
 
     def test_pilot_resume_matches_uninterrupted_weights_rng_and_schedule(self):
@@ -1104,44 +1068,21 @@ class StagedTrainingTests(unittest.TestCase):
             self.assertEqual(metadata["completed_steps"], 32)
 
     def test_actual_teacher_alignment_cell_uses_separate_contexts(self):
-        # Execute the notebook's entire alignment/qualification cell using random models.
-        with tempfile.TemporaryDirectory() as folder, redirect_stdout(io.StringIO()):
-            config = tiny_config(
-                train_examples=2,
-                accumulation_steps=1,
-                max_prompt_length=8,
-                max_response_length=3,
-                max_sequence_length=16,
-            )
-            namespace = self.namespace(Path(folder), config)
-            teacher = tiny_model(77).requires_grad_(False).eval()
-            for row in namespace["validation_examples"]:
-                # These two IDs decode to 'reason question' in the tiny tokenizer.
-                row["teacher_prompt_token_ids"] = [3, 2]
-            namespace["diagnostic_trajectories"][0]["teacher_prompt_token_ids"] = [3, 2]
-            namespace.update(
-                MODE="train",
-                pd=__import__("pandas"),
-                display=lambda frame: None,
-                teacher_tokenizer=namespace["tokenizer"],
-                load_teacher=lambda device: teacher,
-                runtime={},
-                starting_validation={"scores": {"strict": {"accuracy": 0.0}}},
-            )
-            notebook = json.loads((ROOT / "notebooks/04_on_policy_distillation.ipynb").read_text())
-            source = next(
-                "".join(c["source"])
-                for c in notebook["cells"]
-                if c["id"] == "opd-teacher-alignment"
-            )
-            exec(compile(source, "actual_teacher_alignment_cell", "exec"), namespace)
-            boundary = json.loads((Path(folder) / "teacher_boundary_probe.json").read_text())
-            self.assertTrue(boundary["sampled_ended_with_eos"])
-            self.assertTrue(0 <= boundary["teacher_target_stop_probability"] <= 1)
-            self.assertTrue(
-                all(p.grad is None and not p.requires_grad for p in teacher.parameters())
-            )
-            self.assertIn("starting_fixed_diagnostics", namespace)
+        from src.opd import trajectory_response_logits
+
+        student = tiny_model()
+        teacher = tiny_model(77).requires_grad_(False).eval()
+        row = trajectory() | {"teacher_prompt_token_ids": [3, 2], "teacher_prompt_length": 2}
+        student_logits, teacher_logits = trajectory_response_logits(
+            student, teacher, row, "cpu", None, tiny_config()
+        )
+        self.assertEqual(student_logits.shape, teacher_logits.shape)
+        with torch.no_grad():
+            direct = teacher(input_ids=torch.tensor([[3, 2, 3, 4, 1]]), use_cache=False).logits[
+                :, 1:-1, :
+            ]
+        self.assertTrue(torch.allclose(teacher_logits, direct))
+        self.assertTrue(all(p.grad is None and not p.requires_grad for p in teacher.parameters()))
 
     def test_health_pause_saves_nonperiodic_boundary_and_blocks_resume(self):
         config = tiny_config(

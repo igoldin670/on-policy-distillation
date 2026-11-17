@@ -21,7 +21,14 @@ def main():
     parser.add_argument(
         "--gpu", action="store_true", help="Load actual models; requires allocated CUDA."
     )
+    parser.add_argument(
+        "--qualify",
+        action="store_true",
+        help="Add synthetic long-shape, update and reload checks; requires --gpu.",
+    )
     args = parser.parse_args()
+    if args.qualify and not args.gpu:
+        parser.error("--qualify requires --gpu")
     scratch = Path("/scratch") / os.environ.get("USER", "")
     if os.environ.get("SLURM_JOB_ID") and scratch.is_dir():
         os.environ.setdefault("HF_HOME", str(scratch / "huggingface"))
@@ -49,6 +56,10 @@ def main():
             "How many pencils remain? Explain your reasoning step by step. "
             "End with one final line: #### <number>.",
         )
+        if args.qualify:
+            from src.qwen38.qualification import qualify_gpu
+
+            report["gpu_qualification"] = qualify_gpu(student, teacher, tokenizers, profile, ROOT)
     directory = (
         ROOT
         / "results"

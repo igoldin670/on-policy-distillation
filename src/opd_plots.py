@@ -407,3 +407,66 @@ def plot_eos_comparison(results, starting_nll, directory):
         fig.suptitle("Controlled EOS comparison · one training seed", fontsize=17, color=NAVY)
         fig.tight_layout()
         _save(fig, Path(directory), "eos_comparison_diagnostics")
+
+
+def plot_pipeline_run(directory):
+    """Draw only measured histories and final scores from the profile-aware run."""
+    directory = Path(directory)
+    paths = sorted(directory.glob("pilot_lr_*/on_policy_history.json"))
+    if (directory / "supervised_kd/supervised_kd_history.json").exists():
+        paths.append(directory / "supervised_kd/supervised_kd_history.json")
+    if not paths:
+        return []
+    with plt.rc_context(STYLE):
+        figure, axes = plt.subplots(1, 3, figsize=(14, 4.3))
+        for path in paths:
+            history = json.loads(path.read_text())
+            if not history:
+                continue
+            label = path.parent.name.replace("pilot_lr_", "On-policy LR ").replace(
+                "supervised_kd", "Supervised KD"
+            )
+            axes[0].plot([r["step"] for r in history], [r["loss"] for r in history], label=label)
+            measured = [r for r in history if "generated_validation" in r]
+            axes[1].plot(
+                [r["step"] for r in measured],
+                [100 * r["generated_validation"]["strict_accuracy"] for r in measured],
+                marker="o",
+                label=label,
+            )
+            axes[2].plot(
+                [r["step"] for r in measured],
+                [r["validation_reference_nll"] for r in measured],
+                marker="o",
+                label=label,
+            )
+        for axis, title, ylabel in zip(
+            axes,
+            ["Training divergence", "Validation numeric matching", "Reference-token prediction"],
+            ["Mean forward KL (nats)", "Strict matches (%)", "Response NLL"],
+        ):
+            axis.set(title=title, xlabel="Completed optimizer updates", ylabel=ylabel)
+            axis.legend(fontsize=8, frameon=False)
+        figure.suptitle("Measured optimization and task behavior", fontsize=17, weight="bold")
+        figure.tight_layout(rect=(0, 0, 1, 0.92))
+        outputs = [_save(figure, directory, "measured_training")]
+        final = directory / "final_results.json"
+        if final.exists():
+            metrics = json.loads(final.read_text())["metrics"]
+            names = list(metrics)
+            labels = [n.replace("_", " ").title() for n in names]
+            figure, axis = plt.subplots(figsize=(10, 4.5))
+            axis.bar(
+                labels,
+                [100 * metrics[n]["strict"]["accuracy"] for n in names],
+                color=[SLATE, TEAL, PURPLE, BLUE, NAVY][: len(names)],
+            )
+            axis.set(
+                ylabel="Strict numeric matches (%)",
+                ylim=(0, 100),
+                title="Frozen held-out questions",
+            )
+            axis.tick_params(axis="x", labelrotation=12)
+            figure.tight_layout()
+            outputs.append(_save(figure, directory, "measured_final_comparison"))
+    return outputs

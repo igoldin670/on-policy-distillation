@@ -11,6 +11,7 @@ import math
 import random
 import re
 import shutil
+import tempfile
 import unicodedata
 from contextlib import nullcontext
 from dataclasses import asdict, dataclass
@@ -18,8 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.baseline import analysis_environment, sha256_file, validate_generation_ids
+from src.compat import generation_options
 from src.evaluation import extract_strict_final_answer, rescore_response_rows
-from src.utils import verify_inventory, write_json
+from src.utils import copy_experiment_source, verify_inventory, write_json
 
 
 @dataclass(frozen=True)
@@ -84,6 +86,8 @@ def encode_example(tokenizer, question: str, answer: str, protocol: dict, max_le
     full_ids = tokenizer(prompt + target, add_special_tokens=False)["input_ids"]
     if not prompt_ids or full_ids[: len(prompt_ids)] != prompt_ids:
         raise ValueError("unstable_token_boundary")
+    if len(prompt_ids) > protocol.get("max_prompt_tokens", max_length):
+        raise ValueError("overlong_prompt")
     if tokenizer.eos_token_id is None:
         raise ValueError("Tokenizer must define an end token.")
     response_ids = full_ids[len(prompt_ids) :]
@@ -290,6 +294,7 @@ def generate_evaluation(
     from transformers import GenerationConfig
 
     policy = GenerationConfig.from_dict(generation_policy)
+    policy.use_cache = True
     if type(progress_interval) is not int or progress_interval < 1:
         raise ValueError("progress_interval must be a positive integer.")
     if policy.do_sample or policy.num_beams != 1:
@@ -317,8 +322,7 @@ def generate_evaluation(
                     complete = model.generate(
                         **inputs,
                         generation_config=policy,
-                        use_cache=True,
-                        use_model_defaults=use_model_defaults,
+                        **generation_options(model, use_model_defaults),
                     )
                 if complete.ndim != 2 or complete.shape[0] != 1:
                     raise ValueError("Expected [1, complete_length] generated IDs.")
@@ -381,6 +385,8 @@ def save_report(
     evaluations,
     runtime,
     checkpoint_verified,
+    *,
+    checkpoint_directory=None,
 ):
     """Self-contained lightweight report; model weights live in a separate folder."""
     from src.evaluation import PROSE_CHECKER_VERSION
@@ -398,6 +404,7 @@ def save_report(
     source.mkdir()
     for name in ("sft.py", "evaluation.py", "baseline.py", "utils.py"):
         shutil.copyfile(root / "src" / name, source / name)
+    copy_experiment_source(root, source / "project")
     notebook = json.loads((root / "notebooks/03_sft_cold_start.ipynb").read_text())
     write_json(
         source / "notebook03_source.json",
@@ -406,14 +413,20 @@ def save_report(
     # Include the observed chart and the checkpoint's fingerprints, not its weights.
     if (directory / "observed_results.png").is_file():
         shutil.copyfile(directory / "observed_results.png", report / "observed_results.png")
-    if (directory / "checkpoint/SHA256SUMS.json").is_file():
+    checkpoint_directory = (
+        Path(checkpoint_directory) if checkpoint_directory is not None else directory / "checkpoint"
+    )
+    if (checkpoint_directory / "SHA256SUMS.json").is_file():
         shutil.copyfile(
-            directory / "checkpoint/SHA256SUMS.json",
+            checkpoint_directory / "SHA256SUMS.json",
             report / "checkpoint_SHA256SUMS.json",
         )
     manifest = {
         "status": "completed",
         "method": "reference_solution_sft",
+        "schema_version": 2 if protocol.get("model_profile") else 1,
+        "model_profile": protocol.get("model_profile", "legacy"),
+        "final_test_status": "completed" if "final_test" in evaluations else "deferred",
         "student_model_id": protocol["student_model_id"],
         "student_revision": protocol["student_revision"],
         "teacher_loaded": False,
@@ -422,7 +435,7 @@ def save_report(
         "runtime": runtime,
         "analysis_environment": analysis_environment(),
         "checkpoint_reload_verified": checkpoint_verified,
-        "checkpoint_directory": "../checkpoint",
+        "checkpoint_directory": str(Path("..") / checkpoint_directory.relative_to(directory)),
         "checkpoint_in_report_zip": False,
         "limitations": [
             "Small custom experiment",
@@ -451,17 +464,21 @@ def save_checkpoint(model, tokenizer, directory: Path):
     directory = Path(directory)
     if directory.exists():
         raise FileExistsError("Never overwrite an earlier checkpoint.")
+    directory.parent.mkdir(parents=True, exist_ok=True)
     old_cache = model.config.use_cache
     try:
         model.config.use_cache = True
-        model.save_pretrained(directory, safe_serialization=True)
-        tokenizer.save_pretrained(directory)
+        with tempfile.TemporaryDirectory(prefix=".checkpoint-", dir=directory.parent) as temporary:
+            staged = Path(temporary) / "checkpoint"
+            model.save_pretrained(staged, safe_serialization=True)
+            tokenizer.save_pretrained(staged)
+            write_json(
+                staged / "SHA256SUMS.json",
+                {p.name: sha256_file(p) for p in sorted(staged.iterdir()) if p.is_file()},
+            )
+            staged.rename(directory)
     finally:
         model.config.use_cache = old_cache
-    write_json(
-        directory / "SHA256SUMS.json",
-        {p.name: sha256_file(p) for p in sorted(directory.iterdir()) if p.is_file()},
-    )
 
 
 def load_checkpoint_tokenizer(directory: Path):

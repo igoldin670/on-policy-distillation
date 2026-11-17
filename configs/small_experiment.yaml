@@ -1,5 +1,5 @@
 # Next experiment: new models, new baseline, and a fresh supervised checkpoint.
-# Notebook 05 verifies this pair. Historical notebooks 01-04 retain their models.
+# Notebook 05 qualifies this pair. Notebooks 03/04 support this and the legacy profile.
 profile: qwen38
 student_model_id: Qwen/Qwen3.5-0.8B-Base
 student_revision: dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68

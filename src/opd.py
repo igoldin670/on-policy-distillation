@@ -22,6 +22,7 @@ from src.opd_loss import forward_kl_loss
 from src.sft import collate_examples, precision_context, response_loss_sum
 from src.utils import (
     artifact_directory,
+    copy_experiment_source,
     verified_zip,
     verify_inventory,
     write_inventory,
@@ -87,7 +88,7 @@ class OPDConfig:
                 raise ValueError(f"{name} must be finite and positive.")
         if not math.isfinite(self.weight_decay) or self.weight_decay < 0:
             raise ValueError("Weight decay must be finite and nonnegative.")
-        if self.teacher_context != "qwen3_nonthinking_v1":
+        if self.teacher_context not in {"qwen3_nonthinking_v1", "qwen3_5_nonthinking_v1"}:
             raise ValueError("The corrected experiment requires the non-thinking teacher context.")
         if self.eos_loss_mode not in {"raw_token", "semantic_stop"}:
             raise ValueError("Choose raw_token or semantic_stop EOS loss.")
@@ -143,7 +144,12 @@ def load_sft_report(path: Path, cache: Path) -> tuple[Path, dict]:
         raise ValueError("SFT model identity differs between manifest and protocol.")
     if not manifest.get("checkpoint_reload_verified"):
         raise ValueError("The SFT report does not record a verified saved checkpoint.")
-    for name in ("before_validation", "after_validation", "final_test"):
+    names = ["before_validation", "after_validation"]
+    if manifest.get("schema_version", 1) == 1 or manifest.get("final_test_status") == "completed":
+        names.append("final_test")
+    elif manifest.get("final_test_status") != "deferred":
+        raise ValueError("The SFT report must explicitly record deferred test evaluation.")
+    for name in names:
         evaluation = read(name + ".json")
         _, scores = rescore_response_rows(evaluation["rows"])
         if scores != evaluation["scores"]:
@@ -557,7 +563,14 @@ def fixed_trajectory_diagnostics(student, teacher, trajectories, device, dtype, 
 
 
 def experiment_signature(
-    config, protocol, splits, checkpoint_hashes, evaluation_policy, code_hashes=None
+    config,
+    protocol,
+    splits,
+    checkpoint_hashes,
+    evaluation_policy,
+    code_hashes=None,
+    *,
+    model_profile=None,
 ):
     import hashlib
 
@@ -568,9 +581,13 @@ def experiment_signature(
         "starting_checkpoint_hashes": checkpoint_hashes,
         "evaluation_policy": evaluation_policy,
         "code_hashes": code_hashes or {},
-        "teacher_id": TEACHER_ID,
-        "teacher_revision": TEACHER_REVISION,
+        "teacher_id": model_profile["teacher_model_id"] if model_profile else TEACHER_ID,
+        "teacher_revision": model_profile["teacher_revision"]
+        if model_profile
+        else TEACHER_REVISION,
     }
+    if model_profile is not None:
+        specification["model_profile"] = model_profile
     return hashlib.sha256(
         json.dumps(specification, sort_keys=True, allow_nan=False).encode()
     ).hexdigest()
@@ -824,13 +841,19 @@ def export_report(root, directory, manifest, *, report_name="report"):
         # Comparison arms have independent evidence directories. Their model and
         # optimizer tensors remain outside the small report archive.
         comparison = directory / "eos_comparison"
-        for source in sorted(comparison.glob("*/*")):
+        arm_files = list(comparison.glob("*/*"))
+        for child in list(directory.glob("pilot_lr_*")) + [directory / "supervised_kd"]:
+            arm_files.extend(child.glob("*"))
+            arm_files.extend(child.glob("resume/*/step_*/resume.json"))
+            arm_files.extend(child.glob("resume/*/step_*/SHA256SUMS.json"))
+        for source in sorted(arm_files):
             if source.is_file() and source.suffix in {".json", ".jsonl"}:
                 target = staging / source.relative_to(directory)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
         sources = staging / "source"
         sources.mkdir()
+        copy_experiment_source(root, sources / "project")
         for source in sorted((root / "src").glob("*.py")):
             shutil.copyfile(source, sources / source.name)
         for name in (
