@@ -16,10 +16,29 @@ from src import pipeline
 from src.opd import OPDConfig
 from src.profiles import load_profile_student
 from src.sft import SFTConfig
-from src.utils import verify_inventory
+from src.utils import export_source_root, freeze_experiment_source, verify_inventory
 
 
 class PipelineContracts(unittest.TestCase):
+    def test_cold_start_accumulation_is_a_token_mean_with_unequal_lengths(self):
+        student = fixtures.tiny_model()
+        reference = copy.deepcopy(student)
+        examples = [fixtures.example(0), fixtures.example(1)]
+        examples[1]["input_ids"] += [4, 4, 1]
+        examples[1]["labels"] += [4, 4, 1]
+        scaler = torch.amp.GradScaler("cuda", enabled=False)
+        metrics = pipeline.backward_cold_start_group(student, examples, 1, "cpu", None, scaler)
+        sums = [
+            pipeline.sft.response_loss_sum(reference, pipeline.sft.collate_examples([row], 1))
+            for row in examples
+        ]
+        token_mean = sum(loss for loss, _ in sums) / sum(count for _, count in sums)
+        token_mean.backward()
+        self.assertAlmostEqual(metrics["loss"], float(token_mean.detach()), places=5)
+        self.assertEqual(metrics["response_tokens"], sum(count for _, count in sums))
+        for actual, expected in zip(student.parameters(), reference.parameters()):
+            torch.testing.assert_close(actual.grad, expected.grad, atol=2e-7, rtol=2e-5)
+
     def test_gpu_qualification_requires_matching_completed_evidence(self):
         from src.qwen38.qualification import require_qualification
 
@@ -174,6 +193,36 @@ class PipelineContracts(unittest.TestCase):
         self.assertIn("requirements-qwen38.txt", hashes)
         self.assertIn("notebooks/03_sft_cold_start.ipynb", hashes)
 
+    def test_frozen_source_survives_live_edits_and_detects_snapshot_tampering(self):
+        import shutil
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "project"
+            (root / "notebooks").mkdir(parents=True)
+            (root / "src").mkdir()
+            source = root / "src/example.py"
+            source.write_text("value = 'original'\n")
+            for name in ("03_sft_cold_start", "04_on_policy_distillation"):
+                shutil.copyfile(
+                    fixtures.ROOT / "notebooks" / f"{name}.ipynb",
+                    root / "notebooks" / f"{name}.ipynb",
+                )
+            run = Path(directory) / "run"
+            run.mkdir()
+            hashes = pipeline.source_hashes(root)
+            frozen = freeze_experiment_source(root, run, hashes)
+            source.write_text("value = 'changed while the kernel was running'\n")
+            self.assertEqual(
+                (export_source_root(root, run) / "src/example.py").read_text(),
+                "value = 'original'\n",
+            )
+            self.assertEqual(freeze_experiment_source(root, run, hashes), frozen)
+            with self.assertRaisesRegex(ValueError, "signed code"):
+                freeze_experiment_source(root, run, pipeline.source_hashes(root))
+            (frozen / "src/example.py").write_text("tampered\n")
+            with self.assertRaisesRegex(ValueError, "checksum mismatch"):
+                export_source_root(root, run)
+
     def test_checkpoint_profile_mismatch_is_rejected_before_loading(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "checkpoint"
@@ -187,6 +236,52 @@ class PipelineContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(ValueError, "qualified pilot"):
                 pipeline._run_distillation({}, stage="full", run_directory=directory)
+
+    def test_selection_requires_complete_pilots_and_uses_predeclared_ranking(self):
+        config = OPDConfig(pilot_updates=2)
+
+        def measured(rate, accuracy, nll):
+            return {
+                "status": "pilot_complete",
+                "validation_status": "completed",
+                "completed_steps": 2,
+                "history": [
+                    {"step": 1, "response_limit_flags": [False] * 8},
+                    {
+                        "step": 2,
+                        "response_limit_flags": [False] * 8,
+                        "validation_reference_nll": nll,
+                        "generated_validation": {"strict_accuracy": accuracy},
+                    },
+                ],
+                "final_validation": {"strict_accuracy": accuracy},
+                "final_validation_reference_nll": nll,
+                "learning_rate": rate,
+            }
+
+        pilots = {str(rate): measured(rate, 0.5, 1.0) for rate in pipeline.PILOT_LEARNING_RATES}
+        decision = pipeline.select_pilot(pilots, config, 1.0, 0.5, "fixed")
+        self.assertEqual(decision["selected_learning_rate"], 1e-6)
+        pilots["5e-06"] = measured(5e-6, 0.6, 1.0)
+        improved = pipeline.select_pilot(pilots, config, 1.0, 0.5, "fixed")
+        self.assertEqual(improved["selected_learning_rate"], 5e-6)
+        self.assertNotEqual(improved["pilot_results_sha256"], decision["pilot_results_sha256"])
+        self.assertEqual(
+            pipeline.select_pilot(json.loads(json.dumps(pilots)), config, 1.0, 0.5, "fixed"),
+            improved,
+        )
+        pilots["5e-06"]["completed_steps"] = 1
+        self.assertEqual(
+            pipeline.select_pilot(pilots, config, 1.0, 0.5, "fixed")["selected_learning_rate"],
+            1e-6,
+        )
+        pilots["1e-06"]["history"].pop()
+        self.assertEqual(
+            pipeline.select_pilot(pilots, config, 1.0, 0.5, "fixed")["status"],
+            "review_required",
+        )
+        with self.assertRaisesRegex(ValueError, "both predeclared"):
+            pipeline.select_pilot({}, config, 1.0, 0.5, "fixed")
 
 
 class HybridPipelineTests(unittest.TestCase):
@@ -297,8 +392,12 @@ class HybridPipelineTests(unittest.TestCase):
                 patch.object(pipeline, "load_profile_student", side_effect=factory),
                 patch.object(pipeline, "_load_teacher", return_value=teacher),
                 patch.object(pipeline, "sample_trajectory", side_effect=sampled),
+                patch.object(
+                    pipeline, "backward_cold_start_group", wraps=pipeline.backward_cold_start_group
+                ) as cold_start_backward,
             ):
                 sft_run = pipeline.run_cold_start(state, root / "sft")
+                self.assertEqual(cold_start_backward.call_count, 2)
                 self.assertEqual(sft_run["result"]["completed_steps"], 2)
                 manifest = json.loads((Path(sft_run["report"]) / "manifest.json").read_text())
                 self.assertEqual(manifest["final_test_status"], "deferred")
@@ -335,6 +434,19 @@ class HybridPipelineTests(unittest.TestCase):
                 )
                 self.assertEqual(pilot["status"], "qualified_pilot")
                 self.assertFalse(list(run.glob("primary_*.json")))
+                selection_path = run / "selection.json"
+                selection = json.loads(selection_path.read_text())
+                selection_path.write_text(json.dumps({**selection, "selected_learning_rate": 2e-6}))
+                with self.assertRaisesRegex(ValueError, "measured qualifying recipe"):
+                    pipeline._run_distillation(
+                        state,
+                        sft_run_directory=sft_run["directory"],
+                        run_directory=run,
+                        stage="full",
+                        config=config,
+                    )
+                self.assertFalse((run / "pilot_lr_2e-06").exists())
+                selection_path.write_text(json.dumps(selection))
                 full = pipeline.run_distillation(
                     state,
                     sft_run_directory=sft_run["directory"],
@@ -343,6 +455,9 @@ class HybridPipelineTests(unittest.TestCase):
                     config=config,
                 )
                 self.assertEqual(full["status"], "completed")
+                with self.assertRaisesRegex(ValueError, "entered full training"):
+                    pipeline._run_distillation(state, run_directory=run, stage="pilot")
+                self.assertEqual(json.loads(selection_path.read_text()), selection)
                 self.assertEqual(
                     set(full["metrics"]),
                     {"original_student", "starting_sft", "on_policy", "supervised_kd", "teacher"},
@@ -365,6 +480,10 @@ class HybridPipelineTests(unittest.TestCase):
                 verify_inventory(run / "report")
                 self.assertTrue(
                     (run / "report/source/project/src/qwen38/model_upgrade.py").is_file()
+                )
+                self.assertEqual(
+                    (run / "report/source/project/src/pipeline.py").read_bytes(),
+                    (run / "source_snapshot/project/src/pipeline.py").read_bytes(),
                 )
                 again = pipeline.run_distillation(
                     state,

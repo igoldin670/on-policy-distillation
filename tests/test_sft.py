@@ -347,6 +347,55 @@ class SFTTensorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "checksum mismatch"):
                 verify_report(restored)
 
+    def test_interrupted_report_write_can_retry_without_partial_publication(self):
+        from src import sft
+
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            arguments = (
+                ROOT,
+                directory,
+                SFTConfig(),
+                {"student_model_id": "random-test", "student_revision": "none"},
+                {"train": [], "validation": []},
+                [],
+                {},
+                {"kind": "unit_test_only"},
+                True,
+            )
+            with patch.object(sft, "copy_experiment_source", side_effect=OSError("interrupted")):
+                with self.assertRaisesRegex(OSError, "interrupted"):
+                    save_report(*arguments)
+            self.assertFalse((directory / "report").exists())
+            self.assertFalse((directory / "report.zip").exists())
+            save_report(*arguments)
+            self.assertEqual(verify_report(directory / "report")["status"], "completed")
+
+    def test_interrupted_report_packaging_preserves_verified_folder(self):
+        from src import sft
+        from src.utils import verified_zip
+
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            with patch.object(sft, "verified_zip", side_effect=OSError("interrupted ZIP")):
+                with self.assertRaisesRegex(OSError, "interrupted ZIP"):
+                    save_report(
+                        ROOT,
+                        directory,
+                        SFTConfig(),
+                        {"student_model_id": "random-test", "student_revision": "none"},
+                        {"train": [], "validation": []},
+                        [],
+                        {},
+                        {"kind": "unit_test_only"},
+                        True,
+                    )
+            self.assertEqual(verify_report(directory / "report")["status"], "completed")
+            self.assertFalse((directory / "report.zip").exists())
+            archive = verified_zip(directory / "report", directory / "report.zip")
+            with zipfile.ZipFile(archive) as bundle:
+                self.assertIsNone(bundle.testzip())
+
 
 if __name__ == "__main__":
     unittest.main()

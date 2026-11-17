@@ -11,6 +11,31 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ColabSetupTests(unittest.TestCase):
+    def test_replay_redirects_only_figure_destination_without_editing_source(self):
+        import nbformat
+
+        from scripts.validate_notebook02 import redirect_figures
+
+        path = ROOT / "notebooks/02_baseline_evaluation.ipynb"
+        original = path.read_bytes()
+        notebook = nbformat.read(path, as_version=4)
+        sources = [cell.source for cell in notebook.cells]
+        destination = ROOT / "results/notebook02_qa/figures"
+        redirect_figures(notebook, destination)
+        differences = [
+            cell for before, cell in zip(sources, notebook.cells) if before != cell.source
+        ]
+        self.assertEqual(len(differences), 1)
+        assignment = next(
+            node
+            for node in ast.parse(differences[0].source).body
+            if isinstance(node, ast.Assign) and node.targets[0].id == "FIGURES"
+        )
+        namespace = {"Path": Path}
+        exec(compile(ast.Module(body=[assignment], type_ignores=[]), "figures", "exec"), namespace)
+        self.assertEqual(namespace["FIGURES"], destination)
+        self.assertEqual(path.read_bytes(), original)
+
     def run_setup(self, installed_version, loaded_modules, *, mode="replay"):
         notebook = json.loads((ROOT / "notebooks/02_baseline_evaluation.ipynb").read_text())
         source = "".join(notebook["cells"][2]["source"])

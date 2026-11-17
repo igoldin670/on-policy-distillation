@@ -1,6 +1,6 @@
 # Release validation
 
-Reviewed November 16, 2026. The active experiment uses the pinned `qwen38` profile.
+Reviewed November 17, 2026. The active experiment uses the pinned `qwen38` profile.
 Historical GPU measurements remain linked from the notebook evidence directories.
 
 ## What is implemented
@@ -17,14 +17,25 @@ final-update recovery, reference-log truncation, and pilot/full source identity.
 Editing mode, run paths, stage selection, or Markdown preserves resume identity.
 Changes to training code or resolved scientific inputs create a new identity.
 
+The final review also corrected the new SFT entry point to use a pooled response-token
+mean. Unequal-length gradient tests and the shared-runner integration cover that wiring.
+SFT reports and ZIPs publish atomically and can recover interrupted packaging. Source
+files are captured before training, checked against the signed implementation, and
+used for exports even if the live checkout changes. Full continuation rechecks the
+complete measured pilot records and locks the qualifying recipe. Editing a selection
+file cannot start an untested rate or restart a completed run in pilot mode.
+
 ## Local checks
 
-The final new-environment suite ran **169 tests, all passing**. The legacy suite
-reported **167 tests, OK (skipped=2)**, with its two new-architecture classes
-explicitly skipped. The local release sequence completed nine commands with zero
-exit codes. Formatting also passed and is included in the portable command.
-Python 3.11 parsed all active helpers, scripts, tests, and 02–05 code cells.
-
+Fresh, separate Python 3.11.16 environments ran both release sequences. The new-model
+suite ran **175 tests, all passing**. The legacy suite reported **173 tests,
+OK (skipped=2)**, with its two new-architecture classes explicitly skipped. All
+**10 new-profile commands** and **7 legacy commands** returned exit code zero.
+Both sequences include Ruff formatting, equation rendering, and clean notebook kernels.
+Fresh installation exposed missing kernel/widget dependencies and display-math
+delimiter compatibility; these were corrected before the successful complete runs.
+Notebook 02 replay redirects newly generated artwork to the ignored QA directory;
+the versioned notebooks, original figures, and recorded results remain unchanged.
 
 The final portable command records each actual exit code in
 `results/cpu_release_qa/qwen38_checks.json`. It also records commit identity and
@@ -45,17 +56,23 @@ whether the checkout has unpublished edits. The full source remains unchanged by
   [historical notebooks](notebooks/assets/historical_notebooks/README.md). The later
   local missing-upload error has its own untouched snapshot.
 
-Local QA uses PyTorch 2.10.0+cpu with Python 3.14.7. New-model checks use an isolated
-Transformers 5.3.0 package set. The portable QA requirements support Python 3.11,
-matching the intended Amarel interpreter family. Tiny-model measurements establish
+The final clean environments use PyTorch 2.10.0+cpu, Python 3.11.16, Transformers
+5.3.0 / 4.57.6, and the pinned portable QA requirements. An earlier Python 3.14.7
+suite provided additional local coverage. The final notebook inspections used pinned
+cached metadata, tokenizers, and GSM8K data, acquired and checked separately online.
+All 65 equations and 50 PNG/SVG assets passed static rendering/integrity checks.
+Desktop and narrow-screen Chrome previews were inspected; focused 03/04 HTML
+previews also typeset the equations with MathJax. These previews are local HTML,
+not a claim of live GitHub or Amarel execution. Tiny-model measurements establish
 code behavior and supply no pretrained Qwen task-performance evidence.
 
 ## Independent Cloud check
 
-A separate clean Cloud task will check the published candidate by exact commit.
-It will install user-owned Python 3.11 environments, run the full new-model release
-command, and run the legacy compatibility checks. Its actual result and tested
-commit will be reported with delivery. A local shell is recorded as local QA.
+Independent Cloud validation has not passed. The first task-creation attempt was
+blocked by automatic approval review's account usage limit. A retry after the stated
+reset has not returned a task ID or execution evidence. The successful Python 3.11
+checks above were run locally and are recorded as local QA. Cloud results must name
+the exact tested commit before they can be added as independent evidence.
 
 ## Required real-GPU qualification
 

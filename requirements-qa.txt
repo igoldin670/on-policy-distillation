@@ -1,4 +1,5 @@
 # Python 3.11-compatible notebook/CPU QA additions to requirements-qwen38.txt.
+ipykernel==7.1.0
 nbformat==5.10.4
 nbclient==0.10.2
 nbconvert==7.16.6

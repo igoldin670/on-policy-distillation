@@ -29,7 +29,14 @@ from src.profiles import (
 )
 from src.qwen38.model_upgrade import inspect_upgrade, load_upgrade_models
 from src.training_safety import TrainingSafetyConfig
-from src.utils import sha256_file, verify_inventory, write_json
+from src.utils import (
+    freeze_experiment_source,
+    notebook_code_hash,
+    sha256_file,
+    verified_zip,
+    verify_inventory,
+    write_json,
+)
 
 
 def source_hashes(root):
@@ -41,14 +48,7 @@ def source_hashes(root):
         path = root / "notebooks" / f"{name}.ipynb"
         # Profile, mode, run paths, and pilot/full selection are execution
         # settings. Their resolved scientific inputs are signed separately.
-        source = [
-            c["source"]
-            for c in json.loads(path.read_text())["cells"]
-            if c["cell_type"] == "code" and c["id"] not in {"sft-setup", "opd-setup-runtime"}
-        ]
-        hashes[str(path.relative_to(root))] = hashlib.sha256(
-            json.dumps(source, sort_keys=True).encode()
-        ).hexdigest()
+        hashes[str(path.relative_to(root))] = notebook_code_hash(path)
     return hashes
 
 
@@ -308,9 +308,20 @@ def _specification(state, directory, config, checkpoint_hashes, *, kind):
     path = Path(directory) / "experiment.json"
     if path.exists() and json.loads(path.read_text()) != json.loads(json.dumps(payload)):
         raise ValueError("Experiment inputs or code changed. Use a fresh run directory.")
+    freeze_experiment_source(state["root"], directory, code)
     write_json(path, payload)
     write_json(Path(directory) / "data_splits.json", state["splits"])
     return signature
+
+
+def backward_cold_start_group(student, examples, pad_token_id, device, dtype, scaler):
+    """03 weights each response target equally, including unequal-length examples."""
+    # The shared runner supplies a flat group. SFT's microbatch-size-one helper
+    # expects a list of microbatches and divides by the actual target-token count.
+    metrics = sft.backward_group(
+        student, [[example] for example in examples], pad_token_id, device, dtype, scaler
+    )
+    return {**metrics, "token_limit_stops": 0}
 
 
 def run_cold_start(state, run_directory=None):
@@ -330,14 +341,15 @@ def run_cold_start(state, run_directory=None):
     if sft_config.epochs != 1 or sft_config.microbatch_size != 1:
         raise ValueError("This fixed study uses one epoch and microbatch size one.")
     config = opd.OPDConfig(
+        seed=sft_config.seed,
         train_examples=len(state["splits"]["train"]),
         accumulation_steps=sft_config.accumulation_steps,
         learning_rate=sft_config.learning_rate,
         weight_decay=sft_config.weight_decay,
         warmup_fraction=sft_config.warmup_fraction,
         max_grad_norm=sft_config.max_grad_norm,
-        checkpoint_interval=8,
-        validation_interval=8,
+        checkpoint_interval=sft_config.validation_interval,
+        validation_interval=sft_config.validation_interval,
         eos_token_ids=tuple(state["profile"]["eos_token_ids"]),
     )
     signature = _specification(state, directory, config, {}, kind="reference_solution_sft")
@@ -371,6 +383,7 @@ def run_cold_start(state, run_directory=None):
     context = make_context(
         state, directory, config, signature, initial, before, before_nll, device, dtype
     )
+    context["backward_sft_group"] = backward_cold_start_group
     result = run_training_arm(context, "sft_control", recover_pause_validation=True)
     if result["status"] != "completed":
         return dict(directory=str(directory), result=result, report=None)
@@ -405,11 +418,13 @@ def run_cold_start(state, run_directory=None):
             checkpoint_directory=checkpoint,
         )
     sft.verify_report(directory / "report")
+    report_archive = verified_zip(directory / "report", directory / "report.zip")
     return dict(
         directory=str(directory),
         checkpoint=str(checkpoint),
         result=result,
         report=str(directory / "report"),
+        report_archive=str(report_archive),
     )
 
 
@@ -503,9 +518,17 @@ def teacher_evaluation_examples(state, examples):
     return prepared
 
 
-def _pilot_passes(result, baseline_nll, baseline_accuracy):
+PILOT_LEARNING_RATES = (1e-6, 5e-6)
+
+
+def _pilot_passes(result, baseline_nll, baseline_accuracy, required_steps):
     history = result.get("history", [])
-    if result.get("status") != "pilot_complete" or not history:
+    if (
+        result.get("status") != "pilot_complete"
+        or len(history) != required_steps
+        or result.get("completed_steps") != required_steps
+        or any(row.get("step") != index for index, row in enumerate(history, 1))
+    ):
         return False
     health = opd.training_health(
         history,
@@ -517,12 +540,49 @@ def _pilot_passes(result, baseline_nll, baseline_accuracy):
     return result.get("validation_status") == "completed" and not health["pause"]
 
 
+def select_pilot(pilots, config, baseline_nll, baseline_accuracy, signature):
+    """Seal the predeclared ranking against the complete measured pilot records."""
+    if set(pilots) != {str(rate) for rate in PILOT_LEARNING_RATES}:
+        raise ValueError("Complete both predeclared pilots before selecting a full recipe.")
+    required_steps = min(config.pilot_updates, config.optimizer_steps)
+    accepted = [
+        (float(rate), result)
+        for rate, result in pilots.items()
+        if _pilot_passes(result, baseline_nll, baseline_accuracy, required_steps)
+    ]
+    decision = {
+        "status": "review_required",
+        "selected_learning_rate": None,
+        "signature": signature,
+        "pilot_results_sha256": hashlib.sha256(
+            json.dumps(pilots, sort_keys=True, allow_nan=False).encode()
+        ).hexdigest(),
+    }
+    if accepted:
+        rate, _ = min(
+            accepted,
+            key=lambda item: (
+                -item[1]["final_validation"]["strict_accuracy"],
+                item[1]["final_validation_reference_nll"],
+                item[0],
+            ),
+        )
+        decision.update(status="qualified_pilot", selected_learning_rate=rate)
+    return decision
+
+
 def _run_distillation(
     state, *, sft_run_directory=None, run_directory=None, stage="pilot", config=None
 ):
     """Two predeclared pilots, then matched supervised/on-policy KD and final testing."""
     if stage not in {"pilot", "full"}:
         raise ValueError("Choose pilot or full.")
+    if (
+        stage == "pilot"
+        and run_directory is not None
+        and (Path(run_directory) / "full_stage.json").exists()
+    ):
+        raise ValueError("This run has entered full training. Resume with RUN_STAGE = 'full'.")
     if stage == "full" and run_directory is None:
         raise ValueError("Set RESUME_RUN_DIRECTORY to the reviewed pilot folder.")
     if stage == "full":
@@ -641,9 +701,7 @@ def _run_distillation(
             if (directory / "pilots.json").exists()
             else {}
         )
-        rates_to_run = (
-            () if stage == "full" and (directory / "selection.json").exists() else (1e-6, 5e-6)
-        )
+        rates_to_run = () if stage == "full" else PILOT_LEARNING_RATES
         for rate in rates_to_run:
             budget.require_time()
             recipe = replace(config, learning_rate=rate)
@@ -676,29 +734,23 @@ def _run_distillation(
             write_json(directory / "pilots.json", pilots)
             if result["status"] == "walltime_paused":
                 return dict(directory=str(directory), status="walltime_paused", pilots=pilots)
-        accepted = [
-            (float(rate), result)
-            for rate, result in pilots.items()
-            if _pilot_passes(result, baseline_nll, baseline["scores"]["strict"]["accuracy"])
-        ]
-        if stage == "full" and (directory / "selection.json").exists():
-            selection = json.loads((directory / "selection.json").read_text())
-            if selection["selected_learning_rate"] is None:
-                return dict(directory=str(directory), **selection)
-            rate = selection["selected_learning_rate"]
-        elif not accepted:
-            selection = {"status": "review_required", "selected_learning_rate": None}
+        selection = select_pilot(
+            pilots, config, baseline_nll, baseline["scores"]["strict"]["accuracy"], parent_signature
+        )
+        selection_path = directory / "selection.json"
+        if stage == "full":
+            saved_selection = json.loads(selection_path.read_text())
+            if saved_selection != selection or selection["status"] != "qualified_pilot":
+                raise ValueError(
+                    "Saved pilot selection differs from the measured qualifying recipe."
+                )
+            lock_path = directory / "full_stage.json"
+            if lock_path.exists() and json.loads(lock_path.read_text()) != selection:
+                raise ValueError("The full-stage recipe changed after continuation began.")
+            if not lock_path.exists():
+                write_json(lock_path, selection)
         else:
-            rate, _ = min(
-                accepted,
-                key=lambda item: (
-                    -item[1]["final_validation"]["strict_accuracy"],
-                    item[1]["final_validation_reference_nll"],
-                    item[0],
-                ),
-            )
-            selection = {"status": "qualified_pilot", "selected_learning_rate": rate}
-        write_json(directory / "selection.json", selection)
+            write_json(selection_path, selection)
         if stage == "pilot" or selection["selected_learning_rate"] is None:
             opd.export_report(
                 state["root"],
@@ -707,6 +759,7 @@ def _run_distillation(
                 report_name=f"report_pilots_{len(pilots)}",
             )
             return dict(directory=str(directory), pilots=pilots, **selection)
+        rate = selection["selected_learning_rate"]
         recipe = replace(config, learning_rate=rate)
         results = {}
         for arm, child in (

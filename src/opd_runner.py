@@ -554,7 +554,7 @@ def run_training_arm(
             )
             validation_interval = (
                 config.pilot_check_interval
-                if update_index <= config.pilot_updates
+                if arm == "on_policy" and update_index <= config.pilot_updates
                 else config.validation_interval
             )
             boundary = (

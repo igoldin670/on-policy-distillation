@@ -21,7 +21,13 @@ from pathlib import Path
 from src.baseline import analysis_environment, sha256_file, validate_generation_ids
 from src.compat import generation_options
 from src.evaluation import extract_strict_final_answer, rescore_response_rows
-from src.utils import copy_experiment_source, verify_inventory, write_json
+from src.utils import (
+    copy_experiment_source,
+    export_source_root,
+    verified_zip,
+    verify_inventory,
+    write_json,
+)
 
 
 @dataclass(frozen=True)
@@ -392,65 +398,79 @@ def save_report(
     from src.evaluation import PROSE_CHECKER_VERSION
 
     directory, root = Path(directory), Path(root)
-    report = directory / "report"
-    report.mkdir(exist_ok=False)
-    write_json(report / "configuration.json", asdict(config))
-    write_json(report / "protocol.json", protocol)
-    write_json(report / "data_splits.json", splits)
-    write_json(report / "training_history.json", history)
-    for name, evaluation in evaluations.items():
-        write_json(report / f"{name}.json", evaluation)
-    source = report / "source"
-    source.mkdir()
-    for name in ("sft.py", "evaluation.py", "baseline.py", "utils.py"):
-        shutil.copyfile(root / "src" / name, source / name)
-    copy_experiment_source(root, source / "project")
-    notebook = json.loads((root / "notebooks/03_sft_cold_start.ipynb").read_text())
-    write_json(
-        source / "notebook03_source.json",
-        [{"cell_type": cell["cell_type"], "source": cell["source"]} for cell in notebook["cells"]],
-    )
-    # Include the observed chart and the checkpoint's fingerprints, not its weights.
-    if (directory / "observed_results.png").is_file():
-        shutil.copyfile(directory / "observed_results.png", report / "observed_results.png")
-    checkpoint_directory = (
-        Path(checkpoint_directory) if checkpoint_directory is not None else directory / "checkpoint"
-    )
-    if (checkpoint_directory / "SHA256SUMS.json").is_file():
-        shutil.copyfile(
-            checkpoint_directory / "SHA256SUMS.json",
-            report / "checkpoint_SHA256SUMS.json",
+    root = export_source_root(root, directory)
+    destination = directory / "report"
+    if destination.exists():
+        raise FileExistsError("An existing completed report must be verified before reuse.")
+    # Publish the whole report at once. Interrupted writes stay in temporary
+    # folders and never look like a completed report to the checkpoint handoff.
+    with tempfile.TemporaryDirectory(prefix=".sft-report-", dir=directory) as temporary:
+        report = Path(temporary) / "report"
+        report.mkdir()
+        write_json(report / "configuration.json", asdict(config))
+        write_json(report / "protocol.json", protocol)
+        write_json(report / "data_splits.json", splits)
+        write_json(report / "training_history.json", history)
+        for name, evaluation in evaluations.items():
+            write_json(report / f"{name}.json", evaluation)
+        source = report / "source"
+        source.mkdir()
+        for name in ("sft.py", "evaluation.py", "baseline.py", "utils.py"):
+            shutil.copyfile(root / "src" / name, source / name)
+        copy_experiment_source(root, source / "project")
+        notebook = json.loads((root / "notebooks/03_sft_cold_start.ipynb").read_text())
+        write_json(
+            source / "notebook03_source.json",
+            [
+                {"cell_type": cell["cell_type"], "source": cell["source"]}
+                for cell in notebook["cells"]
+            ],
         )
-    manifest = {
-        "status": "completed",
-        "method": "reference_solution_sft",
-        "schema_version": 2 if protocol.get("model_profile") else 1,
-        "model_profile": protocol.get("model_profile", "legacy"),
-        "final_test_status": "completed" if "final_test" in evaluations else "deferred",
-        "student_model_id": protocol["student_model_id"],
-        "student_revision": protocol["student_revision"],
-        "teacher_loaded": False,
-        "seed": config.seed,
-        "checker_version": PROSE_CHECKER_VERSION,
-        "runtime": runtime,
-        "analysis_environment": analysis_environment(),
-        "checkpoint_reload_verified": checkpoint_verified,
-        "checkpoint_directory": str(Path("..") / checkpoint_directory.relative_to(directory)),
-        "checkpoint_in_report_zip": False,
-        "limitations": [
-            "Small custom experiment",
-            "Exploratory prose metric",
-            "Numeric agreement does not verify reasoning",
-            "No distillation yet",
-        ],
-    }
-    write_json(report / "manifest.json", manifest)
-    hashes = {
-        str(p.relative_to(report)): sha256_file(p) for p in sorted(report.rglob("*")) if p.is_file()
-    }
-    write_json(report / "SHA256SUMS.json", hashes)
-    archive = Path(shutil.make_archive(str(directory / "report"), "zip", root_dir=report))
-    return archive
+        # Include the observed chart and the checkpoint's fingerprints, not its weights.
+        if (directory / "observed_results.png").is_file():
+            shutil.copyfile(directory / "observed_results.png", report / "observed_results.png")
+        checkpoint_directory = (
+            Path(checkpoint_directory)
+            if checkpoint_directory is not None
+            else directory / "checkpoint"
+        )
+        if (checkpoint_directory / "SHA256SUMS.json").is_file():
+            shutil.copyfile(
+                checkpoint_directory / "SHA256SUMS.json",
+                report / "checkpoint_SHA256SUMS.json",
+            )
+        manifest = {
+            "status": "completed",
+            "method": "reference_solution_sft",
+            "schema_version": 2 if protocol.get("model_profile") else 1,
+            "model_profile": protocol.get("model_profile", "legacy"),
+            "final_test_status": "completed" if "final_test" in evaluations else "deferred",
+            "student_model_id": protocol["student_model_id"],
+            "student_revision": protocol["student_revision"],
+            "teacher_loaded": False,
+            "seed": config.seed,
+            "checker_version": PROSE_CHECKER_VERSION,
+            "runtime": runtime,
+            "analysis_environment": analysis_environment(),
+            "checkpoint_reload_verified": checkpoint_verified,
+            "checkpoint_directory": str(Path("..") / checkpoint_directory.relative_to(directory)),
+            "checkpoint_in_report_zip": False,
+            "limitations": [
+                "Small custom experiment",
+                "Exploratory prose metric",
+                "Numeric agreement does not verify reasoning",
+                "No distillation yet",
+            ],
+        }
+        write_json(report / "manifest.json", manifest)
+        hashes = {
+            str(p.relative_to(report)): sha256_file(p)
+            for p in sorted(report.rglob("*"))
+            if p.is_file()
+        }
+        write_json(report / "SHA256SUMS.json", hashes)
+        report.rename(destination)
+    return verified_zip(destination, directory / "report.zip")
 
 
 def verify_report(directory: Path):

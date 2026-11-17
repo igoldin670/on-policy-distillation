@@ -23,6 +23,7 @@ from src.sft import collate_examples, precision_context, response_loss_sum
 from src.utils import (
     artifact_directory,
     copy_experiment_source,
+    export_source_root,
     verified_zip,
     verify_inventory,
     write_inventory,
@@ -817,6 +818,7 @@ def new_run_directory(root):
 def export_report(root, directory, manifest, *, report_name="report"):
     """Atomically archive evidence; safely reuse a completed report on re-export."""
     directory, root = Path(directory), Path(root)
+    root = export_source_root(root, directory)
     if not report_name or Path(report_name).name != report_name or report_name in {".", ".."}:
         raise ValueError("Report name must be one directory name.")
     report = directory / report_name

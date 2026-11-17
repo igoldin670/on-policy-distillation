@@ -23,6 +23,19 @@ from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 
 
+def redirect_figures(notebook, destination: Path):
+    """Change only the replay's figure destination, preserving versioned artwork."""
+    assignment = 'FIGURES = ASSETS / "figures"'
+    matches = [
+        cell for cell in notebook.cells if cell.cell_type == "code" and assignment in cell.source
+    ]
+    if len(matches) != 1:
+        raise ValueError("Expected exactly one Notebook 02 figure directory assignment.")
+    matches[0].source = matches[0].source.replace(
+        assignment, "FIGURES = Path(" + json.dumps(str(destination)) + ")"
+    )
+
+
 def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
     print("Checking notebook structure and relative assets...", flush=True)
     path = root / "notebooks/02_baseline_evaluation.ipynb"
@@ -45,6 +58,13 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
     for link in re.findall(r"\]\(([^)]+)\)", markdown):
         if not link.startswith(("http:", "https:", "#")) and not (path.parent / link).exists():
             raise ValueError(f"Missing relative asset or file: {link}")
+
+    output_directory = root / "results/notebook02_qa"
+    output_directory.mkdir(parents=True, exist_ok=True)
+    if not update_notebook:
+        # Replay still executes the original calculations and plotting functions.
+        # Only their output folder changes; tracked evidence must stay byte-identical.
+        redirect_figures(notebook, output_directory / "figures")
 
     # A private temporary kernelspec points to this exact Python environment.
     # It neither changes the user's selected VS Code/Colab kernel nor installs globally.
@@ -103,8 +123,6 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
         "language": "python",
         "name": "python3",
     }
-    output_directory = root / "results/notebook02_qa"
-    output_directory.mkdir(parents=True, exist_ok=True)
     replay_path = output_directory / "notebook02_replay.ipynb"
     replay_notebook = copy.deepcopy(notebook)
     for cell in replay_notebook.cells:
@@ -153,6 +171,7 @@ def validate_and_execute(root: Path, *, update_notebook: bool = False) -> dict:
         "html_export": str(html_path.relative_to(root)),
         "replay_notebook": str(replay_path.relative_to(root)),
         "source_notebook_updated": update_notebook,
+        "figures_redirected_to_qa": not update_notebook,
     }
     (output_directory / "execution_report.json").write_text(json.dumps(report, indent=2) + "\n")
     return report

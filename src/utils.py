@@ -85,6 +85,65 @@ def copy_experiment_source(root: Path, destination: Path):
         shutil.copyfile(path, target)
 
 
+def notebook_code_hash(path: Path) -> str:
+    """Fingerprint learning code while allowing prose and execution settings to change."""
+    cells = json.loads(Path(path).read_text())["cells"]
+    source = [
+        cell["source"]
+        for cell in cells
+        if cell["cell_type"] == "code" and cell.get("id") not in {"sft-setup", "opd-setup-runtime"}
+    ]
+    return hashlib.sha256(json.dumps(source, sort_keys=True).encode()).hexdigest()
+
+
+def _verify_source_snapshot(snapshot: Path, expected: dict | None = None) -> Path:
+    verify_inventory(snapshot)
+    hashes = json.loads((snapshot / "code_hashes.json").read_text())
+    if expected is not None and hashes != expected:
+        raise ValueError("Frozen source differs from the experiment's signed code.")
+    project = snapshot / "project"
+    for name, digest in hashes.items():
+        path = project / relative_member(name)
+        observed = notebook_code_hash(path) if path.suffix == ".ipynb" else sha256_file(path)
+        if observed != digest:
+            raise ValueError(f"Frozen experiment source changed: {name}")
+    return project
+
+
+def freeze_experiment_source(root: Path, directory: Path, hashes: dict) -> Path:
+    """Capture source before training so later edits cannot change exported evidence."""
+    root, directory = Path(root), Path(directory)
+    snapshot = directory / "source_snapshot"
+    if snapshot.exists():
+        return _verify_source_snapshot(snapshot, hashes)
+    with tempfile.TemporaryDirectory(prefix=".source-", dir=directory) as temporary:
+        staged = Path(temporary) / "snapshot"
+        project = staged / "project"
+        copy_experiment_source(root, project)
+        for name in hashes:
+            if Path(name).suffix != ".ipynb":
+                continue
+            notebook = json.loads((root / name).read_text())
+            # Outputs may be large and do not identify the implementation.
+            for cell in notebook["cells"]:
+                if cell["cell_type"] == "code":
+                    cell["outputs"], cell["execution_count"] = [], None
+            destination = project / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            write_json(destination, notebook)
+        write_json(staged / "code_hashes.json", hashes)
+        write_inventory(staged)
+        _verify_source_snapshot(staged, hashes)
+        staged.rename(snapshot)
+    return snapshot / "project"
+
+
+def export_source_root(root: Path, directory: Path) -> Path:
+    """Prefer the immutable run source; older artifact writers retain their fallback."""
+    snapshot = Path(directory) / "source_snapshot"
+    return _verify_source_snapshot(snapshot) if snapshot.exists() else Path(root)
+
+
 def verified_zip(directory: Path, archive: Path) -> Path:
     """Package a checksummed artifact atomically, or verify an existing archive.
 

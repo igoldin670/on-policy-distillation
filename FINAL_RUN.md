@@ -46,10 +46,14 @@ For a qualified pilot, set `RUN_STAGE = "full"` and `RESUME_RUN_DIRECTORY` to it
 parent run folder. The winning optimizer continues. The reference-prefix KD control
 starts from the same SFT weights. Held-out evaluation begins after both full arms
 complete. A quality-paused run can finish evaluation without restarting its optimizer.
+The saved selection is checked against the measured pilot records and locked when
+full continuation starts. Keep `RUN_STAGE = "full"` when reopening that experiment.
 
 Keep raw responses, histories, selection, runtime metadata, and checkpoints. The
 small report supports review and contains no weights. Measured PNG/SVG figures are
 created from actual histories. Final metrics include paired question-level intervals.
+Each run captures its source before training. Reports and ZIPs publish only after
+their inventories are complete; interrupted packaging can reuse the verified folder.
 
 A six-hour allocation can end before all stages finish. The runner reserves ten
 minutes, saves an optimizer boundary, and resumes unfinished validation by question.
